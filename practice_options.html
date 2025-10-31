@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Options</title>
+    <style>
+        /* Reusing common styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFE0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #ffff94;
+            color: black;
+            padding: 15px 10px;
+            text-align: center;
+        }
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            text-align: center;
+        }
+        footer {
+            background-color: #ffff94;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.1em;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        .button-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        .option-button {
+            padding: 15px;
+            font-size: 1.2em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            text-decoration: none; /* For links acting as buttons */
+            font-weight: bold;
+        }
+        .option-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Security check: If 'isLoggedIn' is NOT in sessionStorage, redirect to login page.
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+        // Redirect to the login page
+        window.location.href = 'index.html'; 
+    }
+</script>
+
+    <header>
+        <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
+        <h2>Daily Practice App - Choose Category</h2>
+    </header>
+
+    <main>
+        <h3>Select a Practice Category</h3>
+        <div class="button-grid">
+            <a href="multiplication.html" class="option-button">Multiplication</a>
+            <a href="division.html" class="option-button">Division</a>
+            <a href="plus_minus.html" class="option-button">Plus Minus</a>
+            <a href="FlashCardsV1.html" class="option-button">Flash Cards</a>
+        </div>
+    </main>
+
+    <footer>
+        For any queries call 9730482620
+    </footer>
+</body>
+</html>

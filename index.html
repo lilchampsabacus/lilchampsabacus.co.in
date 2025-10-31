@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Li'l Champs - Daily Practice</title>
+    <style>
+        /* Basic CSS for mobile-friendliness and styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFE0; /* Light yellow background */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #ffff94;
+            color: black;
+            padding: 15px 10px;
+            text-align: center;
+        }
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            text-align: center;
+        }
+        footer {
+            background-color: #ffff94;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        h1 {
+            font-size: 1.5em; /* Smaller on mobile */
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.1em;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: white;
+            text-align: left;
+        }
+        label, input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="password"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #login-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
+        <h2>Daily Practice App</h2>
+    </header>
+
+    <main>
+        <p style="font-weight: bold;">Start Practice with Login</p>
+        <form id="loginForm">
+            <label for="username">Username (use small-caps):</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit" >Start Practice</button>
+        </form>
+        <p id="login-message"></p>
+    </main>
+
+    <footer>
+        For any queries call 9730482620
+    </footer>
+
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        // The username input value is used as the identifier
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageElement = document.getElementById('login-message');
+        
+        // Stored Credentials
+        const users = {
+            "kaira.kamble": "9730482620",
+            "nikhil.kamble": "9730482620",
+            "test": "1234",
+            "snehal.kamble": "8329570485"
+        };
+
+        if (users[username] === password) {
+                // Successful login
+                messageElement.textContent = "Login successful!";
+                
+                // 1. Set the session flag
+                sessionStorage.setItem('isLoggedIn', 'true');
+                
+                // 2. CRITICAL FIX: Save the username so 2x1.html can retrieve it
+                sessionStorage.setItem('studentIdentifier', username); 
+				
+				setTimeout(function() {
+                window.location.href = 'practice_options.html';
+            }, 50);
+                
+        } else {
+            // Failed login
+            messageElement.textContent = "Check username or password.";
+        }
+    });
+</script>
+</body>
+</html>

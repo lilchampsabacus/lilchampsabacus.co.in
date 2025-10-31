@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Practice</title>
+    <style>
+        /* Reusing common styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFE0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #ffff94;
+            color: black;
+            padding: 15px 10px;
+            text-align: center;
+        }
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            text-align: center;
+        }
+        footer {
+            background-color: #ffff94;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.1em;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        .button-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .practice-button {
+            padding: 10px;
+            font-size: 1em;
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .practice-button:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Security check: If 'isLoggedIn' is NOT in sessionStorage, redirect to login page.
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+        // Redirect to the login page
+        window.location.href = 'index.html'; 
+    }
+</script>
+
+    <header>
+        <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
+        <h2>Daily Practice App - Multiplication</h2>
+    </header>
+
+    <main>
+        <h3>Select Multiplication Format</h3>
+        <div class="button-grid">
+            <a href="2x1.html" class="practice-button">2 digits x 1 digit</a>
+            <a href="2x2.html" class="practice-button">2 digits x 2 digits</a>
+            <a href="3x1.html" class="practice-button">3 digits x 1 digit</a>
+            <a href="3x2.html" class="practice-button">3 digits x 2 digits</a>
+            <a href="4x1.html" class="practice-button">4 digits x 1 digit</a>
+            <a href="5x1.html" class="practice-button">5 digits x 1 digit</a>
+        </div>
+        <p><a href="practice_options.html">← Back to Options</a></p>
+    </main>
+
+    <footer>
+        For any queries call 9730482620
+    </footer>
+</body>
+</html>
