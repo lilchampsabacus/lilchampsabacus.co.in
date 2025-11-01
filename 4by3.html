@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-digit ÷ 3-digit Practice</title>
+    <!-- Use Tailwind CSS for mobile-friendliness and easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensures smooth scrolling and prevents fixed elements from obscuring content anchors */
+        html {
+            scroll-padding-top: 100px;
+        }
+        /* Style for the two vertical grids */
+        .vertical-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 0.5rem;
+        }
+        /* Style for each sum container to make them look uniform */
+        .sum-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        /* Style for the answer input to ensure consistent sizing */
+        .answer-input {
+            width: 24;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            text-align: center;
+            font-size: 1.125rem; /* text-lg */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+    <!-- Header Section -->
+    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">4-digit number divided by a 3-digit number</h2>
+
+        <!-- Start Screen -->
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Practice Setup</h3>
+			
+            <!-- Hidden Input for Auto-filled Username (from sessionStorage) -->
+			<div class="mb-6 hidden"> 
+                <input type="text" id="student-identifier-input" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-gray-100" readonly>
+            </div>
+
+            <!-- Display for Auto-filled Username -->
+            <div class="text-lg font-bold text-blue-700 mb-6 border-b pb-2">
+                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
+            </div>
+
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of **30** unique division sums (4-digit &divide; 3-digit, no remainder). The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
+            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50" disabled>
+                Start Practice
+            </button>
+        </section>
+
+        <!-- Test Area -->
+        <section id="test-area" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-20 z-10">
+                <div class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
+                    Student: <span id="display-student-name" class="font-bold"></span>
+                </div>
+                <div class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
+                    Time Elapsed: <span id="timer-display">0:00</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-2xl grid md:grid-cols-2 gap-6">
+                <!-- Grid 1 (Sums 1-15) -->
+                <div class="mb-4 md:mb-0 border-b md:border-b-0 md:border-r pb-4 md:pr-6">
+                    <h4 class="text-xl font-bold text-gray-700 mb-4">Questions 1 - 15</h4>
+                    <div id="grid-one" class="vertical-grid"></div>
+                </div>
+
+                <!-- Grid 2 (Sums 16-30) -->
+                <div class="md:pl-6">
+                    <h4 class="text-xl font-bold text-gray-700 mb-4">Questions 16 - 30</h4>
+                    <div id="grid-two" class="vertical-grid"></div>
+                </div>
+            </div>
+            
+            <button id="submit-button" onclick="endTest(true)" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                End Practice & Get Report
+            </button>
+        </section>
+
+        <!-- Report Area -->
+        <section id="report-area" class="hidden flex justify-center">
+            <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+                
+                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">4 digits &divide; 3 digits Report</h3>
+                
+                <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
+                    Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
+                </p>
+
+                <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
+                        <p class="text-xs text-gray-500">No. of Correct Sums</p>
+                        <p class="text-xl font-bold text-green-600" id="report-correct">0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
+                        <p class="text-xs text-gray-500">No. of Sums Attempted</p>
+                        <p class="text-xl font-bold text-purple-900" id="report-attempted">0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500 col-span-2">
+                        <p class="text-xs text-gray-500">Avg. time taken to solve 1 sum</p>
+                        <p class="text-xl font-bold text-blue-900" id="report-avg-time">N/A</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-yellow-500 col-span-2">
+                        <p class="text-xs text-gray-500">Total Time Spent</p>
+                        <p class="text-xl font-bold text-yellow-800" id="report-time-elapsed">0:00</p>
+                    </div>
+                </div>
+				
+                <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
+                    📸 Take screenshot of this report and send to your Abacus teacher.
+                </p>
+                
+				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                    Practice again
+                </button>
+            </div>
+        </section>
+
+        <!-- Message Box (Error/Info Display) -->
+         <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
+            <p id="message-text" class="font-semibold"></p>
+            <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
+        </div>
+
+    </main>
+
+    <!-- Back to Options Link (Assuming division.html is the options page) -->
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+        <a href="division.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Back to Division Options
+        </a>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">For any queries call 9730482620</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- SESSION GUARDRAIL ---
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
+        
+        const TOTAL_SUMS = 30;
+        let timerInterval;
+        let sumsData = []; // Stores {x: dividend, y: divisor, quotient: answer, studentAnswer}
+        let startTime;
+        
+        // --- DOM CONTENT LOADED ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('student-identifier-input');
+            const startButton = document.getElementById('start-button');
+			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+			
+			// Auto-fill Student Name
+			if (studentIdentifier) {
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = studentIdentifier;
+                startButton.disabled = false;
+                startButton.textContent = "Start Practice for " + studentIdentifier;
+            } else {
+                document.getElementById('auto-student-name-display').textContent = 'Error: Name not found. Please log in.';
+                startButton.disabled = true;
+            }
+            
+            // Generate the sums and render them into the grids
+            sumsData = generateUniqueSums(TOTAL_SUMS);
+            renderSums();
+        });
+
+        // --- CORE FUNCTIONS ---
+
+        function showMessage(text) {
+            const box = document.getElementById('message-box');
+            document.getElementById('message-text').textContent = text;
+            box.classList.remove('hidden');
+            box.style.opacity = '1';
+        }
+
+        /**
+         * Generates unique division problems (X / Y = Q) ensuring:
+         * 1. X is 4-digit (1000-9999).
+         * 2. Y is 3-digit (111-999).
+         * 3. X is perfectly divisible by Y (no remainder).
+         */
+        function generateUniqueSums(count) {
+            const allPossibilities = [];
+            const MIN_DIVIDEND = 1000;
+            const MAX_DIVIDEND = 9999;
+            const MIN_DIVISOR = 111;
+            const MAX_DIVISOR = 999;
+
+            // Loop through all possible 3-digit divisors (Y)
+            for (let y = MIN_DIVISOR; y <= MAX_DIVISOR; y++) {
+                
+                // Calculate the smallest quotient (Q) needed to result in a 4-digit dividend (X = Q * Y)
+                // Q = ceil(1000 / Y)
+                const minQ = Math.ceil(MIN_DIVIDEND / y); 
+                // Calculate the largest quotient (Q) needed to result in a 4-digit dividend
+                // Q = floor(9999 / Y)
+                const maxQ = Math.floor(MAX_DIVIDEND / y); 
+                
+                // Loop through all possible quotients (Q)
+                for (let q = minQ; q <= maxQ; q++) {
+                    const x = q * y; // Dividend
+                    
+                    // Store the result if it falls within the 4-digit range
+                    if (x >= MIN_DIVIDEND && x <= MAX_DIVIDEND) {
+                        allPossibilities.push({ x: x, y: y, quotient: q, studentAnswer: null });
+                    }
+                }
+            }
+            
+            // Fisher-Yates shuffle for uniqueness and randomness
+            for (let i = allPossibilities.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allPossibilities[i], allPossibilities[j]] = [allPossibilities[j], allPossibilities[i]];
+            }
+
+            // Take the first 'count' (30) sums
+            return allPossibilities.slice(0, Math.min(count, allPossibilities.length));
+        }
+
+        /**
+         * Renders the 30 sums into two separate vertical grid containers.
+         */
+        function renderSums() {
+            const containerOne = document.getElementById('grid-one');
+            const containerTwo = document.getElementById('grid-two');
+            containerOne.innerHTML = '';
+            containerTwo.innerHTML = '';
+            
+            for (let index = 0; index < TOTAL_SUMS; index++) {
+                if (!sumsData[index]) break; 
+                
+                const data = sumsData[index];
+                
+                // Use Indian locale for number grouping (e.g., 1,000)
+                const dividendFormatted = data.x.toLocaleString('en-IN'); 
+                const divisorFormatted = data.y.toLocaleString('en-IN'); 
+                
+                const sumHtml = `
+                    <div class="sum-item">
+                        <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
+                        <!-- Display as X divided by Y -->
+                        <span class="text-lg font-semibold text-gray-800">${dividendFormatted} &divide; ${divisorFormatted} =</span>
+                        <input type="number" data-index="${index}" class="answer-input" disabled>
+                    </div>
+                `;
+                
+                // Split sums: 1-15 (index 0-14) go to container one, 16-30 (index 15-29) go to container two
+                if (index < 15) {
+                    containerOne.innerHTML += sumHtml;
+                } else {
+                    containerTwo.innerHTML += sumHtml;
+                }
+            }
+        }
+
+        function setupInputFocus() {
+            const inputElements = document.querySelectorAll('.answer-input');
+            
+            inputElements.forEach((input, index, list) => {
+                // Listener for Enter key to move focus
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); 
+                        const nextIndex = index + 1; 
+                        
+                        if (nextIndex < list.length) {
+                            list[nextIndex].focus();
+                        } else {
+                            document.getElementById('submit-button').focus();
+                        }
+                    }
+                });
+
+                // Update sumsData object on input change
+                input.addEventListener('input', () => {
+                    const idx = parseInt(input.getAttribute('data-index'));
+                    const value = input.value.trim();
+                    sumsData[idx].studentAnswer = value === "" ? null : parseInt(value);
+                });
+            });
+            
+            // Continuous Focus logic
+            let lastActiveInput = inputElements[0];
+            document.addEventListener('focusin', (e) => {
+                if (e.target && e.target.classList.contains('answer-input')) {
+                    lastActiveInput = e.target;
+                }
+            });
+            // This interval ensures the focus remains on the last active input if the user clicks away
+            setInterval(() => {
+                if (!document.getElementById('test-area').classList.contains('hidden') && 
+                    document.activeElement !== document.getElementById('submit-button') && 
+                    document.activeElement !== lastActiveInput && 
+                    lastActiveInput) {
+                    lastActiveInput.focus();
+                }
+            }, 50);
+        }
+
+        function startTest() {
+            const studentName = document.getElementById('student-identifier-input').value.trim();
+            if (!studentName) {
+                showMessage("Student details not loaded. Please log in again.");
+                return;
+            }
+
+            document.getElementById('display-student-name').textContent = studentName;
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('test-area').classList.remove('hidden');
+            document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
+
+            setupInputFocus(); 
+            document.querySelectorAll('.answer-input').forEach(input => {
+                input.disabled = false;
+            });
+            
+            const firstInput = document.querySelector('.answer-input');
+            if (firstInput) {
+                firstInput.focus();
+            }
+
+            startTime = Date.now();
+            startTimer(); 
+        }
+
+        function startTimer() {
+            const display = document.getElementById('timer-display');
+            let timeElapsed = 0;
+
+            function updateTimer() {
+                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(timeElapsed / 60);
+                const seconds = timeElapsed % 60;
+
+                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function endTest() {
+            clearInterval(timerInterval);
+
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
+
+            document.querySelectorAll('.answer-input').forEach(input => {
+                input.disabled = true;
+            });
+
+            let correctCount = 0;
+            let attemptedCount = 0;
+            const inputElements = document.querySelectorAll('.answer-input');
+
+            // --- Process Answers ---
+            inputElements.forEach((input, index) => {
+                const studentAnswer = parseInt(input.value.trim());
+                // The correct answer is the stored quotient
+                const correctAnswer = sumsData[index].quotient; 
+                
+                if (!isNaN(studentAnswer) && input.value.trim() !== "") {
+                    attemptedCount++;
+                    const isCorrect = studentAnswer === correctAnswer;
+                    sumsData[index].isCorrect = isCorrect;
+                    
+                    if (isCorrect) {
+                        correctCount++;
+                        input.classList.add('bg-green-100'); 
+                    } else {
+                        input.classList.add('bg-red-100'); 
+                        // Show correct answer in a tooltip
+                        input.title = `Correct Answer: ${correctAnswer}`;
+                    }
+                }
+            });
+
+            // Calculate time metrics
+            const endTime = Date.now();
+            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+
+            let avgTimeDisplay = 'N/A';
+
+            if (attemptedCount > 0) {
+                const avgTimeSeconds = timeElapsedSeconds / attemptedCount;
+                avgTimeDisplay = `${avgTimeSeconds.toFixed(2)}s`;
+            }
+            
+            // Format time elapsed for report display
+            const minutes = Math.floor(timeElapsedSeconds / 60);
+            const seconds = timeElapsedSeconds % 60;
+            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // --- Update Date and Time (dd/mm/yy and hh:mm) ---
+            const now = new Date();
+            const date = ('0' + now.getDate()).slice(-2);
+            const month = ('0' + (now.getMonth() + 1)).slice(-2);
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = ('0' + now.getHours()).slice(-2);
+            const mins = ('0' + now.getMinutes()).slice(-2);
+            
+            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
+            document.getElementById('report-datetime').textContent = formattedDateTime;
+            
+            // Update Report UI
+            document.getElementById('report-student-name').textContent = document.getElementById('student-identifier-input').value.trim();
+            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
+            document.getElementById('report-attempted').textContent = attemptedCount;
+            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+        }
+
+    </script>
+</body>
+</html>
