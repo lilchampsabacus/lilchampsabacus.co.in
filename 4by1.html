@@ -25,6 +25,27 @@
             padding: 0.25rem 0;
             border-bottom: 1px dotted #ccc;
         }
+        /* Style for the answer input to ensure consistent sizing */
+        .answer-input {
+            width: 20;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            text-align: center;
+            font-size: 1.125rem; /* text-lg */
+        }
+        /* Style for the Wrong Answers table rows */
+        .wrong-sum-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr; /* Problem, Student, Correct */
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            align-items: center;
+        }
+        .wrong-sum-row:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col font-sans">
@@ -53,7 +74,7 @@
                 Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
             </div>
 
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of **30** unique division sums (no remainder). The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 30 unique division sums (4-digit &divide; 1-digit,no remainder). The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
             <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50" disabled>
                 Start Practice
             </button>
@@ -84,7 +105,7 @@
                 </div>
             </div>
             
-            <button id="submit-button" onclick="endTest(true)" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+            <button id="submit-button" onclick="endTest()" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
                 End Practice & Get Report
             </button>
         </section>
@@ -120,7 +141,12 @@
                     </div>
                 </div>
 				
-                <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
+                <!-- The "See Wrong Answers" Button -->
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 disabled:opacity-50 disabled:bg-gray-400">
+                    See Solved Wrong Sums (0)
+                </button>
+
+                <p class="mt-4 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
                     📸 Take screenshot of this report and send to your Abacus teacher.
                 </p>
                 
@@ -128,6 +154,29 @@
                     Practice again
                 </button>
             </div>
+        </section>
+
+        <!-- Wrong Answer Review Area -->
+        <section id="wrong-answer-area" class="hidden">
+            <h3 class="text-3xl font-extrabold text-red-700 mb-6 text-center border-b pb-2">Review Incorrect Sums</h3>
+
+            <div class="bg-white p-4 rounded-xl shadow-2xl">
+                <!-- Header Row -->
+                <div class="wrong-sum-row font-bold text-gray-700 bg-gray-100 p-3 rounded-t-lg">
+                    <span>Problem</span>
+                    <span>Your Answer</span>
+                    <span>Correct Answer</span>
+                </div>
+                <!-- Sums will be injected here -->
+                <div id="wrong-sums-list">
+                    <!-- Dynamically injected rows -->
+                </div>
+            </div>
+            
+            <!-- Back to Report Button -->
+            <button onclick="showReport()" class="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                &larr; Back to Report Summary
+            </button>
         </section>
 
         <!-- Message Box (Error/Info Display) -->
@@ -160,7 +209,7 @@
         
         const TOTAL_SUMS = 30;
         let timerInterval;
-        let sumsData = []; // Stores {x: dividend, y: divisor, quotient: answer, studentAnswer}
+        let sumsData = []; // Stores {x: dividend, y: divisor, quotient: answer, studentAnswer, isCorrect}
         let startTime;
         
         // --- DOM CONTENT LOADED ---
@@ -202,20 +251,23 @@
          */
         function generateUniqueSums(count) {
             const allPossibilities = [];
+            const MIN_DIVIDEND = 1000;
+            const MAX_DIVIDEND = 9999;
+            const MIN_DIVISOR = 2; // Start at 2 for meaningful practice
+            const MAX_DIVISOR = 9;
+
+            for (let y = MIN_DIVISOR; y <= MAX_DIVISOR; y++) {
+                // Calculate the smallest quotient (Q) needed to result in a 3-digit dividend (X = Q * Y)
+                const minQ = Math.ceil(MIN_DIVIDEND / y); 
+                // Calculate the largest quotient (Q) needed to result in a 3-digit dividend
+                const maxQ = Math.floor(MAX_DIVIDEND / y);
             
-            // Iterate through possible divisors (Y) from 2 to 9
-            for (let y = 2; y <= 9; y++) {
-                // Calculate the range of quotients (Q) to ensure the dividend (X = Q * Y) is 4 digits (1000-9999)
-                // Smallest quotient Q = ceil(1000 / Y)
-                const minQ = Math.ceil(1000 / y); 
-                // Largest quotient Q = floor(9999 / Y)
-                const maxQ = Math.floor(9999 / y); 
-                
-                // Iterate through all possible quotients (Q) in the valid range
                 for (let q = minQ; q <= maxQ; q++) {
                     const x = q * y; // Dividend
-                    // Store the dividend (x) and divisor (y). The answer is the quotient (q).
-                    allPossibilities.push({ x: x, y: y, quotient: q, studentAnswer: null });
+
+                    if (x >= MIN_DIVIDEND && x <= MAX_DIVIDEND) {
+                        allPossibilities.push({ x: x, y: y, quotient: q, studentAnswer: null, isCorrect: null });
+                    }
                 }
             }
             
@@ -226,7 +278,7 @@
             }
 
             // Take the first 'count' (30) sums
-            return allPossibilities.slice(0, count);
+            return allPossibilities.slice(0, Math.min(count, allPossibilities.length));
         }
 
         /**
@@ -239,14 +291,19 @@
             containerTwo.innerHTML = '';
             
             for (let index = 0; index < TOTAL_SUMS; index++) {
-                const data = sumsData[index];
+                if (!sumsData[index]) break;
+
+                 const data = sumsData[index];
+
+                 // Use Indian locale for number grouping (though unnecessary for 3-digit numbers, it's good practice)
+                const dividendFormatted = data.x.toLocaleString('en-IN'); 
                 
                 const sumHtml = `
                     <div class="sum-item">
                         <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
                         <!-- Display as X divided by Y -->
-                        <span class="text-lg font-semibold text-gray-800">${data.x} &divide; ${data.y} =</span>
-                        <input type="number" data-index="${index}" class="answer-input w-24 p-1 border border-gray-300 rounded text-center text-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled>
+                        <span class="text-lg font-semibold text-gray-800">${dividendFormatted} &divide; ${data.y} =</span>
+                        <input type="number" data-index="${index}" class="answer-input" disabled>
                     </div>
                 `;
                 
@@ -357,6 +414,7 @@
 
             let correctCount = 0;
             let attemptedCount = 0;
+            let solvedWrongCount = 0;
             const inputElements = document.querySelectorAll('.answer-input');
 
             // --- Process Answers ---
@@ -365,7 +423,9 @@
                 // The correct answer is the stored quotient
                 const correctAnswer = sumsData[index].quotient; 
                 
-                if (!isNaN(studentAnswer) && input.value.trim() !== "") {
+                const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== "";
+
+                if (isAttempted) {
                     attemptedCount++;
                     const isCorrect = studentAnswer === correctAnswer;
                     sumsData[index].isCorrect = isCorrect;
@@ -374,11 +434,19 @@
                         correctCount++;
                         input.classList.add('bg-green-100'); 
                     } else {
+                        solvedWrongCount++;
                         input.classList.add('bg-red-100'); 
                         input.title = `Correct Answer: ${correctAnswer}`;
                     }
+                    } else {
+                         // Unattempted sums: Keep isCorrect as null (its initial state)
+                    sumsData[index].isCorrect = null; 
+                    sumsData[index].studentAnswer = null; // Ensure consistency
                 }
             });
+            
+            // CRITICAL STEP: Store the sumsData (with results) for later review
+            sessionStorage.setItem('division3by1SumsData', JSON.stringify(sumsData));
 
             // Calculate time metrics
             const endTime = Date.now();
@@ -413,6 +481,58 @@
             document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+            
+             // Update Wrong Button: Use the NEW solvedWrongCount
+            const wrongButton = document.getElementById('see-wrong-button');
+            
+            wrongButton.textContent = `See Solved Wrong Sums (${solvedWrongCount})`;
+            if (solvedWrongCount === 0) {
+                wrongButton.disabled = true;
+                wrongButton.textContent = "All Correct! Great Job!";
+            } else {
+                wrongButton.disabled = false;
+            }
+        }
+        
+        // --- NEW: Toggle Functions ---
+
+        function showWrongAnswers() {
+            // Retrieve data from session storage for review
+            const allSums = JSON.parse(sessionStorage.getItem('division3by1SumsData'));
+
+            // Filter only show sums that are NOT correct (includes unattempted sums)
+            const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
+
+            const listContainer = document.getElementById('wrong-sums-list');
+            listContainer.innerHTML = '';
+            
+            if (wrongSums.length === 0) {
+                listContainer.innerHTML = '<p class="text-center py-4 text-green-600 font-bold">Great job! You made no mistakes on attempted sums!</p>';
+            } else {
+                wrongSums.forEach((sum, index) => {
+                    // studentAnswer is guaranteed to be a number since it passed the filter
+                    const studentAnswerText = sum.studentAnswer;
+                    
+                    const row = `
+                        <div class="wrong-sum-row hover:bg-red-50 transition duration-150">
+                            <span class="font-semibold text-gray-800">${index + 1}. ${sum.x.toLocaleString('en-IN')} &divide; ${sum.y}</span>
+                            <span class="text-red-600 font-bold font-mono">${studentAnswerText}</span>
+                            <span class="text-green-700 font-bold font-mono">${sum.quotient}</span>
+                        </div>
+                    `;
+                    listContainer.innerHTML += row;
+                });
+            }
+
+            document.getElementById('report-area').classList.add('hidden');
+            document.getElementById('wrong-answer-area').classList.remove('hidden');
+            document.getElementById('wrong-answer-area').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showReport() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
         }
 
     </script>
