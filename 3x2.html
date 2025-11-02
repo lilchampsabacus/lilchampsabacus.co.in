@@ -19,6 +19,18 @@
             padding: 0.25rem 0;
             border-bottom: 1px dotted #ccc;
         }
+                /* ADD THESE STYLES */
+        .wrong-sum-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr; /* Problem, Student, Correct */
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            align-items: center;
+        }
+        .wrong-sum-row:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col font-sans">
@@ -40,7 +52,7 @@
             <div class="text-lg font-bold text-blue-700 mb-6 border-b pb-2">
                 Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
             </div>
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of **30** unique multiplication sums. The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 30 unique multiplication sums. The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
             <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50" disabled>
                 Start Practice
             </button>
@@ -101,6 +113,9 @@
                     </div>
                 </div>
 				
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 disabled:opacity-50 disabled:bg-gray-400">See Solved Wrong Sums (0)
+                </button>
+
                 <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
                     📸 Take screenshot of this report and send to your Abacus teacher.
                 </p>
@@ -110,12 +125,38 @@
                 </button>
             </div>
         </section>
+        
+        <section id="wrong-answer-area" class="hidden">
+            <h3 class="text-3xl font-extrabold text-red-700 mb-6 text-center border-b pb-2">Review Incorrect Sums</h3>
+
+            <div class="bg-white p-4 rounded-xl shadow-2xl">
+            <div class="wrong-sum-row font-bold text-gray-700 bg-gray-100 p-3 rounded-t-lg">
+                <span>Problem</span>
+                <span>Your Answer</span>
+                <span>Correct Answer</span>
+            </div>
+
+            <div id="wrong-sums-list">
+            </div>
+        </div>
+    
+    <button onclick="showReport()" class="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+        &larr; Back to Report Summary
+    </button>
+        </section>
 
          <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
             <p id="message-text" class="font-semibold"></p>
             <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
         </div>
     </main>
+
+    <!-- Back to Options Link (Assuming multiplication.html is the options page) -->
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+        <a href="multiplication.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Back to Multiplication Options
+        </a>
+    </div>
 
     <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
         <div class="max-w-7xl mx-auto text-center">
@@ -272,7 +313,7 @@
             timerInterval = setInterval(updateTimer, 1000);
         }
 
-        function endTest() { /* ... function is identical ... */
+        function endTest() {
             clearInterval(timerInterval);
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
@@ -281,14 +322,17 @@
 
             let correctCount = 0;
             let attemptedCount = 0;
+            let solvedWrongCount = 0; // NEW: Counter for sums that were attempted and wrong
             const inputElements = document.querySelectorAll('.answer-input');
 
             inputElements.forEach((input, index) => {
                 const studentAnswer = parseInt(input.value.trim());
                 const correctAnswer = sumsData[index].product;
                 
-                if (!isNaN(studentAnswer) && input.value.trim() !== "") {
-                    attemptedCount++;
+                const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== ""; // NEW: Check if answer was entered
+        
+        if (isAttempted) { // Check against isAttempted
+                           attemptedCount++;
                     const isCorrect = studentAnswer === correctAnswer;
                     sumsData[index].isCorrect = isCorrect;
                     
@@ -296,11 +340,19 @@
                         correctCount++;
                         input.classList.add('bg-green-100'); 
                     } else {
+                        solvedWrongCount++; // Sum was attempted but wrong
                         input.classList.add('bg-red-100'); 
                         input.title = `Correct Answer: ${correctAnswer}`;
                     }
+                    } else {
+            // Unattempted sums: Keep isCorrect as null (its initial state)
+            sumsData[index].isCorrect = null; 
+            sumsData[index].studentAnswer = null; // Ensure consistency        
                 }
             });
+
+            // CRITICAL STEP: Store the sumsData (with results) for later review
+    sessionStorage.setItem('multiplication3x1SumsData', JSON.stringify(sumsData));
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -328,6 +380,56 @@
             document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+            // NEW: Update Wrong Button
+    const wrongButton = document.getElementById('see-wrong-button');
+    wrongButton.textContent = `Review Incorrect Sums (${solvedWrongCount})`;
+    if (solvedWrongCount === 0) {
+        wrongButton.disabled = true;
+        wrongButton.textContent = "All Correct! Great Job!";
+    } else {
+        wrongButton.disabled = false;
+    }
+}
+
+// ADD THESE NEW FUNCTIONS
+
+function showWrongAnswers() {
+    // Retrieve data from session storage for review
+    const allSums = JSON.parse(sessionStorage.getItem('multiplication3x1SumsData'));
+
+    // Filter only show sums that were attempted but NOT correct
+    const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
+
+    const listContainer = document.getElementById('wrong-sums-list');
+    listContainer.innerHTML = '';
+    
+    if (wrongSums.length === 0) {
+        listContainer.innerHTML = '<p class="text-center py-4 text-green-600 font-bold">Great job! You made no mistakes on attempted sums!</p>';
+    } else {
+        wrongSums.forEach((sum, index) => {
+            // studentAnswer is guaranteed to be a number since it passed the filter
+            const studentAnswerText = sum.studentAnswer;
+            
+            const row = `
+                <div class="wrong-sum-row hover:bg-red-50 transition duration-150">
+                    <span class="font-semibold text-gray-800">${index + 1}. ${sum.x} &times; ${sum.y}</span>
+                    <span class="text-red-600 font-bold font-mono">${studentAnswerText}</span>
+                    <span class="text-green-700 font-bold font-mono">${sum.product}</span>
+                </div>
+            `;
+            listContainer.innerHTML += row;
+        });
+    }
+
+    document.getElementById('report-area').classList.add('hidden');
+    document.getElementById('wrong-answer-area').classList.remove('hidden');
+    document.getElementById('wrong-answer-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showReport() {
+    document.getElementById('wrong-answer-area').classList.add('hidden');
+    document.getElementById('report-area').classList.remove('hidden');
+    document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
         }
 
     </script>
