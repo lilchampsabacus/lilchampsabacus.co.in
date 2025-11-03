@@ -1,35 +1,27 @@
-// netlify/login-handler.js
+// netlify/login-handler.js (Concept)
 
-// IMPORTANT: Credentials must be loaded from a SECURE environment variable!
-// This variable (SECURE_USER_CREDS) is set in the Netlify UI, NOT in the code.
-const SECURE_USERS = JSON.parse(process.env.SECURE_USER_CREDS || '{}'); 
+// 1. Initialize Supabase using the secure Environment Variables
+import { createClient } from '@supabase/supabase-js';
 
-exports.handler = async (event, context) => {
-    // Only allow POST requests
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
+
+exports.handler = async (event) => {
+    // ... (Your POST method check and body parsing logic) ...
+
+    // 2. Use the Supabase API to securely check credentials
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: username, // Supabase uses email by default, but can be configured for username
+        password: password
+    });
+
+    if (error) {
+        // Login failed (e.g., bad password, user not found)
+        return { statusCode: 401, body: JSON.stringify({ success: false, message: error.message }) };
     }
 
-    try {
-        const { username, password } = JSON.parse(event.body);
-
-        // This check happen securely on the Netlify server
-        if (SECURE_USERS[username] && SECURE_USERS[username] === password) {
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ success: true })
-            };
-        } else {
-            return {
-                statusCode: 401, // Unauthorized
-                body: JSON.stringify({ success: false, message: "Check username or password." })
-            };
-        }
-    } catch (error) {
-        console.error(error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ success: false, message: 'Server error.' })
-        };
-    }
+    // 3. Login succeeded
+    return { statusCode: 200, body: JSON.stringify({ success: true }) };
 };
