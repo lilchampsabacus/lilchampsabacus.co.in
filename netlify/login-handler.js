@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
     try {
         const { username, password } = JSON.parse(event.body);
 
-        // This check happens securely on the Netlify server
+        // This check happen securely on the Netlify server
         if (SECURE_USERS[username] && SECURE_USERS[username] === password) {
             return {
                 statusCode: 200,
