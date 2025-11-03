@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Addition/Subtraction Practice (20 Rows)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
+        html { scroll-padding-top: 100px; }
+        
+        /* Custom styles to ensure 20 numbers fit vertically (MAXIMUM SPACE USAGE) */
+        .sum-list-container {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column */
+            gap: 0.1rem; /* Tighter gap to fit 20 rows */
+            /* Set a maximum height relative to the viewport for no scrolling */
+            max-height: 72vh; /* Maximized vertical height */
+            overflow: hidden; 
+            align-content: start; 
+            padding-bottom: 0.5rem; 
+        }
+
+        /* Style for each number row - FONT SIZE ADJUSTED FOR ALL DEVICES */
+        .number-row {
+            text-align: center;
+            /* clamp(min_size: 0.85rem, preferred_size: 4vw, max_size: 1.1rem) 
+               Aggressively scaled down minimum size to guarantee 20 rows fit. */
+            font-size: clamp(0.85rem, 4vw, 1.1rem); 
+            line-height: 1.05; /* Reduced line height for tighter fit */
+            font-weight: 700; /* All numbers should be bold */
+            padding: 0 0.5rem; 
+        }
+
+        /* Custom Colors */
+        .positive-number { color: black; } /* Plus numbers in black (no sign) */
+        .negative-number { color: rgb(37, 99, 235); /* Tailwind blue-600 */ } /* Minus numbers in blue */
+
+        /* Report area styles inherited from 2x1.html */
+        .wrong-sum-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Addition Subtraction Practice (20 Rows)</h2>
+
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Practice Settings</h3>			
+            <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2">
+                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
+            </div>
+
+            <div class="mb-6">
+                <label for="practice-type" class="block text-sm font-medium text-gray-700 mb-2">Select Sum Type:</label>
+                <select id="practice-type" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-white text-lg font-semibold">
+                    <option value="1">1 Digit - 20 Rows</option>
+                    <option value="2">2 Digits - 20 Rows</option>
+                    <option value="3">3 Digits - 20 Rows</option>
+                </select>
+            </div>
+
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 20 unique sums, each with a 20-row calculation. All final answers are <strong>positive</strong>.</p>
+
+            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50">
+                Start Practice
+            </button>
+        </section>
+
+        <section id="test-area" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-20 z-10">
+                <div class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
+                    Student: <span id="display-student-name" class="font-bold"></span>
+                </div>
+                <div class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
+                    Time Elapsed: <span id="timer-display">0:00</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center">
+                <div class="w-full max-w-xs mx-auto"> 
+                    <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">1 Digit - 20 Rows</h4>
+                    
+                    <div id="sum-grid" class="sum-list-container mb-2">
+                        </div>
+                    
+                    <div class="w-full h-0.5 bg-gray-700 mb-4"></div> 
+
+                    <div class="flex flex-col items-center mx-auto">
+                        <input type="number" id="answer-input" class="w-40 p-2 border-2 border-gray-400 rounded-lg text-center text-2xl font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500" placeholder="Enter Answer">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex flex-col items-center max-w-md mx-auto">
+                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                    Submit Answer
+                </button>
+
+                <div id="feedback-area" class="mt-4 w-full text-center hidden">
+                    <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
+                </div>
+
+                <button id="next-sum-button" onclick="nextSum()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
+                    Next Sum (1/20)
+                </button>
+            </div>
+        </section>
+
+        <section id="report-area" class="hidden flex justify-center">
+            <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+
+                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Addition Subtraction Report</h3>
+
+                <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
+                    Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
+                </p>
+                <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
+                        <p class="text-xs text-gray-500">No. of Correct Sums</p>
+                        <p class="text-xl font-bold text-green-600" id="report-correct">0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
+                        <p class="text-xs text-gray-500">No. of Sums Attempted</p>
+                        <p class="text-xl font-bold text-purple-900" id="report-attempted">0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500 col-span-2">
+                        <p class="text-xs text-gray-500">Avg. time taken to solve 1 sum</p>
+                        <p class="text-xl font-bold text-blue-900" id="report-avg-time">N/A</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-yellow-500 col-span-2">
+                        <p class="text-xs text-gray-500">Total Time Spent</p>
+                        <p class="text-xl font-bold text-yellow-800" id="report-time-elapsed">0:00</p>
+                    </div>
+                </div>
+
+                <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
+                    📸 Take screenshot of this report and send to your Abacus teacher.
+                </p>
+                
+				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                    Practice again
+                </button>
+            </div>
+        </section>
+
+        <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
+            <p id="message-text" class="font-semibold"></p>
+            <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
+        </div>
+    </main>
+
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Back to Main Menu
+        </a>
+    </div>
+
+    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">For any queries call 9730482620</p>
+        </div>
+    </footer>
+
+    <script>
+        
+        const TOTAL_SUMS_PER_PRACTICE = 20;
+        const NEGATIVE_INDICES = [3, 6, 9, 12, 15, 18]; 
+        
+        let timerInterval;
+        let currentSumIndex = 0;
+        let practiceData = []; 
+        let startTime;
+        let totalTimeElapsedSeconds = 0;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for student identifier. No 'Guest User' fallback allowed.
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            const displayElement = document.getElementById('auto-student-name-display');
+            const startButton = document.getElementById('start-button');
+            
+            if (studentIdentifier) {
+                displayElement.textContent = studentIdentifier;
+                startButton.textContent = "Start Practice for " + studentIdentifier;
+            } else {
+                // If not logged in, block access
+                displayElement.textContent = 'Login Required (Go to Main Menu)';
+                displayElement.classList.add('text-red-600', 'font-extrabold'); 
+                startButton.textContent = "Log In on Main Menu to Start";
+                startButton.disabled = true; // Block practice start
+                
+                // Alert the user
+                showMessage("Access Denied. Please log in with your username on the main menu page (index.html) to start your practice.");
+            }
+
+            generateAllPracticeSums(); 
+            renderSum();
+            
+            document.getElementById('practice-type').addEventListener('change', () => {
+                // Only generate new sums if the button is not disabled (i.e., user is logged in)
+                if (!startButton.disabled) {
+                    generateAllPracticeSums();
+                    currentSumIndex = 0;
+                    renderSum();
+                }
+            });
+        });
+
+        function showMessage(text) {
+            const box = document.getElementById('message-box');
+            document.getElementById('message-text').textContent = text;
+            box.classList.remove('hidden');
+            box.style.opacity = '1';
+        }
+
+        // --- SUM GENERATION LOGIC ---
+
+        function generateRandomNumber(digits) {
+            let min, max;
+            if (digits === 1) { min = 1; max = 9; } 
+            else if (digits === 2) { min = 10; max = 99; } 
+            else if (digits === 3) { min = 100; max = 999; } 
+            else { min = 1; max = 9; } 
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateSingleSum(digits) {
+            let sumSet = [];
+            let total = 0;
+
+            for (let i = 1; i <= 20; i++) {
+                let number = generateRandomNumber(digits);
+                let isNegative = NEGATIVE_INDICES.includes(i);
+                
+                if (isNegative) {
+                    number = -number;
+                }
+                
+                sumSet.push(number);
+                total += number;
+            }
+
+            // Ensure the final answer is positive
+            if (total <= 0) {
+                return generateSingleSum(digits);
+            }
+            
+            return { numbers: sumSet, correctTotal: total };
+        }
+        
+        function generateAllPracticeSums() {
+            practiceData = [];
+            const digits = parseInt(document.getElementById('practice-type').value);
+            for (let i = 0; i < TOTAL_SUMS_PER_PRACTICE; i++) {
+                practiceData.push({
+                    ...generateSingleSum(digits),
+                    studentAnswer: null,
+                    isCorrect: null,
+                    timeTaken: 0,
+                    digits: digits 
+                });
+            }
+        }
+
+        // --- RENDERING LOGIC ---
+
+        function renderSum() {
+            const sumContainer = document.getElementById('sum-grid');
+            const digits = parseInt(document.getElementById('practice-type').value);
+            
+            // Check if the practiceData is empty (which it will be if the user hasn't logged in and is blocked)
+            if (practiceData.length === 0) return;
+
+            const currentSum = practiceData[currentSumIndex];
+            
+            sumContainer.innerHTML = '';
+            
+            document.getElementById('sum-title').textContent = `${digits} Digit - 20 Rows`;
+            
+            currentSum.numbers.forEach((number, index) => {
+                const isNegative = number < 0;
+                const absNumber = Math.abs(number);
+                
+                const colorClass = isNegative ? 'negative-number' : 'positive-number';
+                
+                // Do not show plus sign for positive numbers
+                const displayString = isNegative ? `-${absNumber}` : `${absNumber}`;
+                
+                const row = document.createElement('div');
+                row.className = `number-row ${colorClass}`;
+                row.textContent = displayString;
+                
+                sumContainer.appendChild(row);
+            });
+            
+            // Reset input and feedback
+            document.getElementById('answer-input').value = '';
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('submit-button').disabled = false;
+            document.getElementById('next-sum-button').disabled = true;
+            document.getElementById('next-sum-button').textContent = `Next Sum (${currentSumIndex + 1}/${TOTAL_SUMS_PER_PRACTICE})`;
+
+            if (!document.getElementById('test-area').classList.contains('hidden')) {
+                document.getElementById('answer-input').focus();
+            }
+        }
+
+
+        // --- PRACTICE FLOW LOGIC ---
+
+        function startTest() {
+            const startButton = document.getElementById('start-button');
+            if (startButton.disabled) {
+                // Should not happen if button is disabled, but as a safety check
+                showMessage("Access Denied. Please log in on the main menu (index.html) to start.");
+                return;
+            }
+
+            const studentName = document.getElementById('auto-student-name-display').textContent.trim();
+            
+            generateAllPracticeSums();
+            currentSumIndex = 0; 
+            renderSum();
+            
+            document.getElementById('display-student-name').textContent = studentName;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('test-area').classList.remove('hidden');
+            document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
+            
+            totalTimeElapsedSeconds = 0; 
+            startTime = Date.now(); 
+            startTimer(); 
+        }
+
+        function startTimer() {
+            const display = document.getElementById('timer-display');
+            let overallStartTime = Date.now() - totalTimeElapsedSeconds * 1000;
+            
+            function updateTimer() {
+                const totalTime = Math.floor((Date.now() - overallStartTime) / 1000);
+                const minutes = Math.floor(totalTime / 60);
+                const seconds = totalTime % 60;
+                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input');
+            const studentAnswer = parseInt(input.value.trim());
+            
+            if (isNaN(studentAnswer)) {
+                showMessage("Please enter a valid number.");
+                return;
+            }
+            
+            const currentSum = practiceData[currentSumIndex];
+            const correctAnswer = currentSum.correctTotal;
+            const feedbackArea = document.getElementById('feedback-area');
+            const answerDisplay = document.getElementById('correct-answer-display');
+            
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+            totalTimeElapsedSeconds += timeTaken;
+            currentSum.timeTaken = timeTaken;
+            
+            const isCorrect = studentAnswer === correctAnswer;
+            currentSum.isCorrect = isCorrect;
+            currentSum.studentAnswer = studentAnswer;
+            
+            // Show Feedback
+            if (isCorrect) {
+                answerDisplay.textContent = "Correct!";
+                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-green-200 text-green-800";
+            } else {
+                // Show correct answer below submit button
+                answerDisplay.innerHTML = `Wrong. Correct Answer: <span class="text-green-700">${correctAnswer}</span>`;
+                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
+            }
+            feedbackArea.classList.remove('hidden');
+            
+            document.getElementById('submit-button').disabled = true;
+            document.getElementById('next-sum-button').disabled = false;
+        }
+
+        function nextSum() {
+            if (document.getElementById('submit-button').disabled === false) {
+                 showMessage("Please submit your answer first.");
+                return;
+            }
+
+            currentSumIndex++;
+            
+            if (currentSumIndex < TOTAL_SUMS_PER_PRACTICE) {
+                startTime = Date.now();
+                renderSum();
+            } else {
+                endTest();
+            }
+        }
+
+        // --- REPORT LOGIC ---
+
+        function endTest() {
+            clearInterval(timerInterval);
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
+
+            let correctCount = practiceData.filter(s => s.isCorrect === true).length;
+            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; 
+            
+            let avgTimeDisplay = 'N/A';
+            if (attemptedCount > 0) {
+                const avgTimeSeconds = totalTimeElapsedSeconds / attemptedCount;
+                avgTimeDisplay = `${avgTimeSeconds.toFixed(2)}s`;
+            }
+            
+            const minutes = Math.floor(totalTimeElapsedSeconds / 60);
+            const seconds = totalTimeElapsedSeconds % 60;
+            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            const now = new Date();
+            const date = ('0' + now.getDate()).slice(-2);
+            const month = ('0' + (now.getMonth() + 1)).slice(-2);
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = ('0' + now.getHours()).slice(-2);
+            const mins = ('0' + now.getMinutes()).slice(-2);            
+            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
+            
+            document.getElementById('report-datetime').textContent = formattedDateTime;
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent.trim();
+            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
+            document.getElementById('report-attempted').textContent = attemptedCount;
+            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+            document.getElementById('report-title').textContent = `${document.getElementById('sum-title').textContent} Report`;
+        }
+    </script>
+</body>
+</html>
