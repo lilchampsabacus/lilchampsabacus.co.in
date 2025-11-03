@@ -116,33 +116,44 @@
         const password = document.getElementById('password').value;
         const messageElement = document.getElementById('login-message');
         
-        // Stored Credentials
-        const users = {
-            "kaira.kamble": "9730482620",
-            "nikhil.kamble": "9730482620",
-            "test": "1234",
-            "snehal.kamble": "8329570485"
-        };
+       // New Login Logic using Fetch (Send credentials to the secure backend)
 
-        if (users[username] === password) {
-                // Successful login
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageElement = document.getElementById('login-message');
+        
+        // 1. Send data to the secure serverless function
+        fetch('/.netlify/functions/login-handler', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password }) // Send data securely over HTTPS
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Successful login response from the server
                 messageElement.textContent = "Login successful!";
-                
-                // 1. Set the session flag
                 sessionStorage.setItem('isLoggedIn', 'true');
-                
-                // 2. CRITICAL FIX: Save the username so 2x1.html can retrieve it
                 sessionStorage.setItem('studentIdentifier', username); 
-				
-				setTimeout(function() {
-                window.location.href = 'practice_options.html';
-            }, 50);
-                
-        } else {
-            // Failed login
-            messageElement.textContent = "Check username or password.";
-        }
+                setTimeout(() => {
+                    window.location.href = 'practice_options.html';
+                }, 50);
+            } else {
+                // Failed login response from the server
+                messageElement.textContent = data.message || "Check username or password.";
+            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            messageElement.textContent = "An error occurred during login.";
+        });
     });
 </script>
 </body>
+
 </html>
