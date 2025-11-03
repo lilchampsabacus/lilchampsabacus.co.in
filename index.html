@@ -108,16 +108,7 @@
     </footer>
 
     <script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        // The username input value is used as the identifier
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const messageElement = document.getElementById('login-message');
-        
-       // New Login Logic using Fetch (Send credentials to the secure backend)
-
+    // This is the single, correctly closed event listener function
     document.getElementById('loginForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -152,8 +143,9 @@
             console.error('Login error:', error);
             messageElement.textContent = "An error occurred during login.";
         });
-    });
+    }); // <--- This now correctly closes the function and the addEventListener call.
 </script>
 </body>
 
 </html>
+
