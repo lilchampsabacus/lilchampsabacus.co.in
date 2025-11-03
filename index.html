@@ -108,26 +108,25 @@
     </footer>
 
     <script>
-    // This is the single, correctly closed event listener function
     document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+        event.preventDefault(); // Prevent the default form submission
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const messageElement = document.getElementById('login-message');
         
-        // 1. Send data to the secure serverless function
+        // The fetch logic remains correct, targeting the Netlify function
         fetch('/.netlify/functions/login-handler', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password }) // Send data securely over HTTPS
+            body: JSON.stringify({ username, password })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Successful login response from the server
+                // Successful login
                 messageElement.textContent = "Login successful!";
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('studentIdentifier', username); 
@@ -135,7 +134,7 @@
                     window.location.href = 'practice_options.html';
                 }, 50);
             } else {
-                // Failed login response from the server
+                // Failed login
                 messageElement.textContent = data.message || "Check username or password.";
             }
         })
@@ -143,10 +142,7 @@
             console.error('Login error:', error);
             messageElement.textContent = "An error occurred during login.";
         });
-    }); // <--- This now correctly closes the function and the addEventListener call.
-</script>
+    });
+    </script>
 </body>
-
 </html>
-
-
