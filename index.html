@@ -92,7 +92,7 @@
 
     <main>
         <p style="font-weight: bold;">Start Practice with Login</p>
-        <form id="loginForm" action="#">
+        <form id="loginForm">
             <label for="username">Username (use small-caps):</label>
             <input type="text" id="username" name="username" required>
             
@@ -107,59 +107,51 @@
     <footer>
         For any queries call 9730482620
     </footer>
-    
-<script>
-    // 1. SUPABASE CONFIGURATION (Must be at the top)
-    const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
-    // Initialize the Supabase Client
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
+        // 1. SUPABASE CONFIGURATION (REPLACE THESE PLACEHOLDERS)
+        const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
-    // 2. NEW Dedicated Login Function (Called by the button)
-    async function handleLogin() {
-        // No need for event.preventDefault() now!
-        
-        const identifier = document.getElementById('username').value; 
-        const password = document.getElementById('password').value;
-        const messageElement = document.getElementById('login-message');
-        
-        messageElement.textContent = "Checking credentials...";
+        // Initialize the Supabase Client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // SUPABASE AUTHENTICATION CALL
-        const { error } = await supabase.auth.signInWithPassword({
-            email: identifier, 
-            password: password
-        });
-
-        if (error) {
-            // Failed login
-            console.error('Supabase Login Error:', error);
-            messageElement.textContent = "Login failed. Check your username/email or password.";
-            sessionStorage.removeItem('isLoggedIn'); 
-            sessionStorage.removeItem('studentIdentifier');
-        } else {
-            // Successful login
-            messageElement.textContent = "Login successful!";
+        // 2. Dedicated Login Function (Replaces the unreliable event listener)
+        async function handleLogin() {
             
-            // Set the session flag and identifier
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('studentIdentifier', identifier); 
+            // **NOTE:** Supabase signInWithPassword expects an email address for the identifier.
+            const identifier = document.getElementById('username').value; 
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('login-message');
             
-            // Redirect
-            setTimeout(function() {
-                window.location.href = 'practice_options.html';
-            }, 50);
+            messageElement.textContent = "Checking credentials...";
+
+            // 3. SUPABASE AUTHENTICATION CALL
+            const { error } = await supabase.auth.signInWithPassword({
+                email: identifier, 
+                password: password
+            });
+
+            if (error) {
+                // Failed login
+                console.error('Supabase Login Error:', error);
+                messageElement.textContent = "Login failed. Check your username/email or password.";
+                sessionStorage.removeItem('isLoggedIn'); // Clear any possible old/stale flags
+                sessionStorage.removeItem('studentIdentifier');
+            } else {
+                // Successful login
+                messageElement.textContent = "Login successful!";
+                
+                // 4. Set the session flag and identifier
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('studentIdentifier', identifier); 
+                
+                // Wait briefly before redirecting
+                setTimeout(function() {
+                    window.location.href = 'practice_options.html';
+                }, 50);
+            }
         }
-    }
-    
-    // 3. Remove the old event listener, it is no longer needed.
-    // We will leave the <form> tag in case you need it for other things, but it's inert now.
-    
-</script>
-    </body>
+    </script>
+</body>
 </html>
-
-
-
-
