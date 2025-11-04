@@ -24,16 +24,19 @@
             justify-content: space-between;
             padding: 0.25rem 0;
             border-bottom: 1px dotted #ccc;
-			white-space: nowrap;
         }
-		/* NEW: Reduce font size specifically for the problem span on small screens */
-    .sum-item .problem-text {
-        font-size: 1rem; /* text-base (default is text-lg) */
-        font-weight: 500; /* font-medium */
-    }
+		/* ADDED: Targeting the index number (e.g., "1.") to save space */
+    	.sum-item > span:nth-child(1) { 
+        	width: 1.5rem; /* Adjusted for mobile width */
+        	text-align: right;
+    	}
+    	/* ADDED: Targeting the X ÷ Y span to prevent wrapping */
+    	.sum-item > span:nth-child(2) { 
+       	 white-space: nowrap; /* Forces content onto a single line */
+   	 	}
         /* Style for the answer input to ensure consistent sizing */
         .answer-input {
-            width: 10;
+            width: 4rem;
             padding: 0.25rem 0.5rem;
             border: 1px solid #d1d5db;
             border-radius: 0.25rem;
@@ -302,13 +305,13 @@
                  const data = sumsData[index];
 
                  // Use Indian locale for number grouping (though unnecessary for 3-digit numbers, it's good practice)
-                const dividendFormatted = data.x; 
+                const dividendFormatted = data.x.toLocaleString('en-IN'); 
                 
                 const sumHtml = `
                     <div class="sum-item">
                         <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
                         <!-- Display as X divided by Y -->
-                        <span class="problem-text text-gray-800">${dividendFormatted} &divide; ${data.y} =</span>
+                        <span class="text-lg font-semibold text-gray-800">${dividendFormatted} &divide; ${data.y} =</span>
                         <input type="number" data-index="${index}" class="answer-input" disabled>
                     </div>
                 `;
@@ -544,7 +547,6 @@
     </script>
 </body>
 </html>
-
 
 
 
