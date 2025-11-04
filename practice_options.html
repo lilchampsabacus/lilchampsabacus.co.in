@@ -73,6 +73,23 @@
         // Redirect to the login page
         window.location.href = 'index.html'; 
     }
+    // NEW: Display the welcome message
+    const studentId = sessionStorage.getItem('studentIdentifier');
+    if (studentId) {
+        // Use a simple capitalization for a better look, since the user was asked to use small-caps
+        const capitalizedId = studentId.charAt(0).toUpperCase() + studentId.slice(1);
+        document.getElementById('welcome-message').textContent = `Welcome, ${capitalizedId}!`;
+    }
+
+    // NEW: Logout Function
+    function logout() {
+        // 1. Clear the session data
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('studentIdentifier');
+        
+        // 2. Redirect back to the login page
+        window.location.href = 'index.html';
+    }
 </script>
 
     <header>
@@ -81,6 +98,8 @@
     </header>
 
     <main>
+        <p id="welcome-message" style="font-weight: bold; margin-bottom: 25px; font-size: 1.1em;"></p>
+        
         <h3>Select a Practice Category</h3>
         <div class="button-grid">
             <a href="multiplication.html" class="option-button">Multiplication</a>
@@ -88,10 +107,14 @@
             <a href="plus_minus.html" class="option-button">Plus Minus</a>
             <a href="FlashCardsV1.html" class="option-button">Flash Cards</a>
         </div>
+        <button onclick="logout()" class="option-button" style="background-color: #dc3545; margin-top: 30px;">
+            Logout
+        </button>
     </main>
 
     <footer>
         For any queries call 9730482620
     </footer>
 </body>
+
 </html>
