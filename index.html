@@ -109,25 +109,25 @@
     </footer>
 
     <script>
-        // 1. SUPABASE CONFIGURATION (REPLACE THESE PLACEHOLDERS)
+        // 1. SUPABASE CONFIGURATION 
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
-        // Initialize the Supabase Client
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // FIX: Initialize the Supabase Client with a different variable name (supabaseClient)
+        // This avoids conflict with the global 'supabase' object provided by the CDN.
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 2. Dedicated Login Function (Replaces the unreliable event listener)
+        // This function is called by the button with onclick="handleLogin()"
         async function handleLogin() {
             
-            // **NOTE:** Supabase signInWithPassword expects an email address for the identifier.
             const identifier = document.getElementById('username').value; 
             const password = document.getElementById('password').value;
             const messageElement = document.getElementById('login-message');
             
             messageElement.textContent = "Checking credentials...";
 
-            // 3. SUPABASE AUTHENTICATION CALL
-            const { error } = await supabase.auth.signInWithPassword({
+            // 2. USE THE CORRECTED VARIABLE NAME FOR THE AUTHENTICATION CALL
+            const { error } = await supabaseClient.auth.signInWithPassword({
                 email: identifier, 
                 password: password
             });
@@ -136,13 +136,13 @@
                 // Failed login
                 console.error('Supabase Login Error:', error);
                 messageElement.textContent = "Login failed. Check your username/email or password.";
-                sessionStorage.removeItem('isLoggedIn'); // Clear any possible old/stale flags
+                sessionStorage.removeItem('isLoggedIn');
                 sessionStorage.removeItem('studentIdentifier');
             } else {
                 // Successful login
                 messageElement.textContent = "Login successful!";
                 
-                // 4. Set the session flag and identifier
+                // Set the session flag and identifier
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('studentIdentifier', identifier); 
                 
@@ -155,3 +155,4 @@
     </script>
 </body>
 </html>
+
