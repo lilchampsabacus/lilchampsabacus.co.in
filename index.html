@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Li'l Champs - Daily Practice</title>
@@ -108,41 +109,53 @@
     </footer>
 
     <script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
+        // 1. SUPABASE CONFIGURATION (REPLACE THESE PLACEHOLDERS)
+        const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const messageElement = document.getElementById('login-message');
-        
-        // The fetch logic remains correct, targeting the Netlify function
-        fetch('/.netlify/functions/login-handler', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Successful login
+        // Initialize the Supabase Client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // **NOTE:** Supabase signInWithPassword expects an email address for the identifier.
+            // Instruct your students to use their registered email/username here.
+            const identifier = document.getElementById('username').value; 
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('login-message');
+            
+            messageElement.textContent = "Checking credentials...";
+
+            // 2. SUPABASE AUTHENTICATION CALL
+            // Use the identifier as the email for Supabase
+            const { error } = await supabase.auth.signInWithPassword({
+                email: identifier, 
+                password: password
+            });
+
+            if (error) {
+                // Failed login
+                console.error('Supabase Login Error:', error);
+                // Supabase error messages are secure, so a generic failure message is best practice.
+                messageElement.textContent = "Login failed. Check your username/email or password.";
+                sessionStorage.removeItem('isLoggedIn'); // Clear any possible old/stale flags
+                sessionStorage.removeItem('studentIdentifier');
+            } else {
+                // Successful login: Supabase securely manages the session token in browser storage
                 messageElement.textContent = "Login successful!";
+                
+                // 3. Set the session flag and identifier
                 sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('studentIdentifier', username); 
-                setTimeout(() => {
+                sessionStorage.setItem('studentIdentifier', identifier); 
+                
+                // Wait briefly before redirecting
+                setTimeout(function() {
                     window.location.href = 'practice_options.html';
                 }, 50);
-            } else {
-                // Failed login
-                messageElement.textContent = data.message || "Check username or password.";
             }
-        })
-        .catch(error => {
-            console.error('Login error:', error);
-            messageElement.textContent = "An error occurred during login.";
         });
-    });
     </script>
 </body>
 </html>
+
