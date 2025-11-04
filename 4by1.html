@@ -25,18 +25,9 @@
             padding: 0.25rem 0;
             border-bottom: 1px dotted #ccc;
         }
-		/* ADDED: Targeting the index number (e.g., "1.") to save space */
-    	.sum-item > span:nth-child(1) { 
-        	width: 1.5rem; /* Adjusted for mobile width */
-        	text-align: right;
-    	}
-    	/* ADDED: Targeting the X ÷ Y span to prevent wrapping */
-    	.sum-item > span:nth-child(2) { 
-       	 white-space: nowrap; /* Forces content onto a single line */
-   	 	}
         /* Style for the answer input to ensure consistent sizing */
         .answer-input {
-            width: 4rem;
+            width: 20;
             padding: 0.25rem 0.5rem;
             border: 1px solid #d1d5db;
             border-radius: 0.25rem;
@@ -312,7 +303,7 @@
                         <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
                         <!-- Display as X divided by Y -->
                         <span class="text-lg font-semibold text-gray-800">${dividendFormatted} &divide; ${data.y} =</span>
-                        <input type="number" data-index="${index}" class="answer-input" disabled>
+                        <input type="number" data-index="${index}" class="answer-input w-24 p-1 border border-gray-300 rounded text-center text-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled>
                     </div>
                 `;
                 
