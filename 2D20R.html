@@ -355,7 +355,27 @@ function formatStudentName(identifier) {
 
 
         // --- PRACTICE FLOW LOGIC ---
-
+		// Add this function definition:
+function setupInputFocus() {
+    const input = document.getElementById('answer-input');
+    if (input) {
+        // Handle Enter key to simulate clicking Submit or Next
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!document.getElementById('submit-button').disabled) {
+                    checkAnswer();
+                } else if (!document.getElementById('next-sum-button').disabled) {
+                     nextSum();
+                }
+            }
+        });
+        
+        // Ensure focus is kept on the input field when the test is active
+        setTimeout(() => input.focus(), 100); 
+    }
+}
+		
         function startTest() {
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (!studentIdentifier) {
@@ -372,10 +392,13 @@ function formatStudentName(identifier) {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
-            setupInputFocus(); 
-   			document.querySelectorAll('.number-input').forEach(input => { input.disabled = false; });
-            const firstInput = document.querySelector('.number-input'); 
-   			 if (firstInput) { firstInput.focus();}
+            
+			setupInputFocus(); 
+   			
+			// ✅ FIX: Target the single answer input by ID, not a non-existent class
+    		const answerInput = document.getElementById('answer-input');
+    		answerInput.disabled = false;
+    		answerInput.focus();
 			
 			totalTimeElapsedSeconds = 0; 
             startTime = Date.now(); 
