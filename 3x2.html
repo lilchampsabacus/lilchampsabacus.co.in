@@ -316,7 +316,7 @@ function formatStudentName(identifier) {
         }
 
         function startTest() { /* ... function is identical ... */
-            const studentName = document.getElementById('student-identifier-input').value.trim();
+            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
             if (!studentIdentifier) {
                 showMessage("Student details not loaded. Please log in again.");
                 return;
@@ -385,7 +385,7 @@ function formatStudentName(identifier) {
             });
 
             // CRITICAL STEP: Store the sumsData (with results) for later review
-    sessionStorage.setItem('multiplication3x1SumsData', JSON.stringify(sumsData));
+    sessionStorage.setItem('multiplication3x2SumsData', JSON.stringify(sumsData));
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -429,7 +429,7 @@ function formatStudentName(identifier) {
 
 function showWrongAnswers() {
     // Retrieve data from session storage for review
-    const allSums = JSON.parse(sessionStorage.getItem('multiplication3x1SumsData'));
+    const allSums = JSON.parse(sessionStorage.getItem('multiplication3x2SumsData'));
 
     // Filter only show sums that were attempted but NOT correct
     const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
@@ -469,5 +469,6 @@ function showReport() {
     </script>
 </body>
 </html>
+
 
 
