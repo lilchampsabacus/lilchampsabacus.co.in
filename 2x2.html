@@ -209,6 +209,7 @@ function formatStudentName(identifier) {
             const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+			const displayStudentName = formatStudentName(studentIdentifier);
 			
 			if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
@@ -468,5 +469,6 @@ function showReport() {
     </script>
 </body>
 </html>
+
 
 
