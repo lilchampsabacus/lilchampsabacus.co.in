@@ -357,10 +357,11 @@ function formatStudentName(identifier) {
         // --- PRACTICE FLOW LOGIC ---
 
         function startTest() {
-            const startButton = document.getElementById('start-button');
-            if (startButton.disabled) {
+			const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
+            //const startButton = document.getElementById('start-button');
+            if (!studentIdentifier) {
                 // Should not happen if button is disabled, but as a safety check
-                showMessage("Access Denied. Please log in on the main menu (index.html) to start.");
+                showMessage("Access Denied. Please log in again.");
                 return;
             }
 			const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
@@ -373,8 +374,11 @@ function formatStudentName(identifier) {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
-            
-            totalTimeElapsedSeconds = 0; 
+            setupInputFocus(); 
+   			document.querySelectorAll('.number-input').forEach(input => { input.disabled = false; });
+            const firstInput = document.querySelector('.number-input'); 
+    if (firstInput) { firstInput.focus();
+			totalTimeElapsedSeconds = 0; 
             startTime = Date.now(); 
             startTimer(); 
         }
