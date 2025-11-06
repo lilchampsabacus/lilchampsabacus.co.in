@@ -226,7 +226,7 @@ function formatStudentName(identifier) {
             const startButton = document.getElementById('start-button');
             const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
             if (studentIdentifier) {
-                nameInput.value = studentIdentifier;
+                //nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName; // <--- MODIFIED
                 startButton.disabled = false;
                 startButton.textContent = "Start Practice for " + displayStudentName;
@@ -357,19 +357,17 @@ function formatStudentName(identifier) {
         // --- PRACTICE FLOW LOGIC ---
 
         function startTest() {
-			const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
+			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             //const startButton = document.getElementById('start-button');
             if (!studentIdentifier) {
                 // Should not happen if button is disabled, but as a safety check
                 showMessage("Access Denied. Please log in again.");
                 return;
             }
-			const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
-    
-            generateAllPracticeSums();
+			generateAllPracticeSums();
             currentSumIndex = 0; 
             renderSum();
-            
+            const displayStudentName = formatStudentName(studentIdentifier);
             document.getElementById('display-student-name').textContent = displayStudentName;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
