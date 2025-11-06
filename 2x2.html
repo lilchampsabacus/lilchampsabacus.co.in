@@ -209,6 +209,7 @@ function formatStudentName(identifier) {
             const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+			
 			const displayStudentName = formatStudentName(studentIdentifier);
 			
 			if (studentIdentifier) {
@@ -386,7 +387,7 @@ function formatStudentName(identifier) {
             });
 
             // CRITICAL STEP: Store the sumsData (with results) for later review
-    sessionStorage.setItem('multiplication3x1SumsData', JSON.stringify(sumsData));
+    sessionStorage.setItem('multiplication2x2SumsData', JSON.stringify(sumsData));
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -469,6 +470,7 @@ function showReport() {
     </script>
 </body>
 </html>
+
 
 
 
