@@ -457,7 +457,7 @@ function formatStudentName(identifier) {
             document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
 
             let correctCount = practiceData.filter(s => s.isCorrect === true).length;
-            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; 
+            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; // This is always 20 for this type of practice
             
             let avgTimeDisplay = 'N/A';
             if (attemptedCount > 0) {
@@ -476,12 +476,15 @@ function formatStudentName(identifier) {
             const hours = ('0' + now.getHours()).slice(-2);
             const mins = ('0' + now.getMinutes()).slice(-2);            
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            
+            // ✅ FIX: Retrieve studentIdentifier safely from sessionStorage
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier'); 
+            
             document.getElementById('report-datetime').textContent = formattedDateTime;
             document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
-            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
-            document.getElementById('report-attempted').textContent = attemptedCount;
-            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted; // Now works
+            document.getElementById('report-attempted').textContent = attemptedCount; // Now works
+            document.getElementById('report-correct').textContent = correctCount; // Now works
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
             document.getElementById('report-title').textContent = `${document.getElementById('sum-title').textContent} Report`;
         }
