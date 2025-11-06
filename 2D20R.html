@@ -323,7 +323,7 @@ function formatStudentName(identifier) {
             
             sumContainer.innerHTML = '';
             
-            document.getElementById('sum-title').textContent = `${digits} Digit - 20 Rows`;
+            document.getElementById('sum-title').textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
             
             currentSum.numbers.forEach((number, index) => {
                 const isNegative = number < 0;
@@ -357,8 +357,7 @@ function formatStudentName(identifier) {
             }
         }
 
-
-        // --- PRACTICE FLOW LOGIC ---
+		// --- PRACTICE FLOW LOGIC ---
 		// Add this function definition:
 function setupInputFocus() {
     const input = document.getElementById('answer-input');
