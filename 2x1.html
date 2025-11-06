@@ -155,7 +155,6 @@
         </div>
     </main>
 
-    <!-- Back to Options Link (Assuming multiplication.html is the options page) -->
     <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
         <a href="multiplication.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
             &larr; Back to Multiplication Options
@@ -177,52 +176,55 @@
         let timerInterval;
         let sumsData = [];
         let startTime;
-        
-		/**
- * Extracts a formatted name (First Name Last Name) from a student identifier 
- * which is expected to be an email-like string (e.g., "first.last@domain.com").
- * @param {string} identifier - The student identifier string.
- * @returns {string} The formatted name or the original identifier if extraction fails.
- */
-function formatStudentName(identifier) {
-    if (!identifier || typeof identifier !== 'string') {
-        return 'Student';
-    }
-    
-    // 1. Remove the domain part (everything after the first '@')
-    const namePart = identifier.split('@')[0];
-    
-    // 2. Split by '.' (or any common name separator)
-    const parts = namePart.split('.');
-    
-    // 3. Capitalize the first letter of each part and join them with a space
-    let formattedName = parts.map(part => {
-        if (part.length > 0) {
-            // Capitalize first letter, lowercase the rest
-            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+
+        /** * START OF NEW/MODIFIED CODE BLOCK 
+         * Function to extract First Name and Last Name from an email-like identifier.
+         */
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') {
+                return 'Student';
+            }
+            
+            // 1. Remove the domain part (everything after the first '@')
+            const namePart = identifier.split('@')[0];
+            
+            // 2. Split by '.' (or any common name separator)
+            const parts = namePart.split('.');
+            
+            // 3. Capitalize the first letter of each part and join them with a space
+            let formattedName = parts.map(part => {
+                if (part.length > 0) {
+                    // Capitalize first letter, lowercase the rest
+                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                }
+                return '';
+            }).filter(p => p.length > 0) // Remove empty strings
+              .join(' ');
+              
+            // 4. Return the formatted name, or a fallback if the result is empty
+            return formattedName || identifier; 
         }
-        return '';
-    }).filter(p => p.length > 0) // Remove empty strings
-      .join(' ');
-      
-    // 4. Return the formatted name, or a fallback if the result is empty
-    return formattedName || identifier; 
-}
+        /** * END OF NEW/MODIFIED CODE BLOCK 
+         */
+        
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-			const displayStudentName = formatStudentName(studentIdentifier);
 			
+            // --- MODIFIED LINES START ---
+            const displayStudentName = formatStudentName(studentIdentifier); 
+            
 			if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
-                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName; // MODIFIED
                 startButton.disabled = false;
-                startButton.textContent = "Start Practice for " + displayStudentName;
+                startButton.textContent = "Start Practice for " + displayStudentName; // MODIFIED
             } else {
                 document.getElementById('auto-student-name-display').textContent = 'Error: Name not found. Please log in.';
                 startButton.disabled = true;
             }
+            // --- MODIFIED LINES END ---
             
             sumsData = generateUniqueSums(TOTAL_SUMS);
             renderSums();
@@ -319,13 +321,16 @@ function formatStudentName(identifier) {
         }
 
         function startTest() {
-            const studentName = document.getElementById('student-identifier-input').value.trim();
+            // --- MODIFIED LINES START ---
+            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
             if (!studentIdentifier) {
                 showMessage("Student details not loaded. Please log in again.");
                 return;
             }
-			const displayStudentName = formatStudentName(studentIdentifier);
-            document.getElementById('display-student-name').textContent = displayStudentName;
+            const displayStudentName = formatStudentName(studentIdentifier); // Get formatted name
+            document.getElementById('display-student-name').textContent = displayStudentName; // Use formatted name
+            // --- MODIFIED LINES END ---
+            
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
@@ -369,7 +374,7 @@ function formatStudentName(identifier) {
                 const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== ""; // NEW: Check if answer was entered
         
         if (isAttempted) { // Check against isAttempted
-                            attemptedCount++;
+                    attemptedCount++;
                     const isCorrect = studentAnswer === correctAnswer;
                     sumsData[index].isCorrect = isCorrect;
                     
@@ -411,8 +416,12 @@ function formatStudentName(identifier) {
             const mins = ('0' + now.getMinutes()).slice(-2);            
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
             document.getElementById('report-datetime').textContent = formattedDateTime;
+            
+            // --- MODIFIED LINES START ---
             const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
-            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
+            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier); // Use formatted name
+            // --- MODIFIED LINES END ---
+            
             document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
             document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
@@ -472,4 +481,3 @@ function showReport() {
     </script>
 </body>
 </html>
-
