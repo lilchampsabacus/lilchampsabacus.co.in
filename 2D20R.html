@@ -358,16 +358,16 @@ function formatStudentName(identifier) {
 
         function startTest() {
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            //const startButton = document.getElementById('start-button');
             if (!studentIdentifier) {
                 // Should not happen if button is disabled, but as a safety check
                 showMessage("Access Denied. Please log in again.");
                 return;
             }
+			const displayStudentName = formatStudentName(studentIdentifier);
 			generateAllPracticeSums();
             currentSumIndex = 0; 
             renderSum();
-            const displayStudentName = formatStudentName(studentIdentifier);
+            
             document.getElementById('display-student-name').textContent = displayStudentName;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
@@ -376,6 +376,7 @@ function formatStudentName(identifier) {
    			document.querySelectorAll('.number-input').forEach(input => { input.disabled = false; });
             const firstInput = document.querySelector('.number-input'); 
    			 if (firstInput) { firstInput.focus();}
+			
 			totalTimeElapsedSeconds = 0; 
             startTime = Date.now(); 
             startTimer(); 
