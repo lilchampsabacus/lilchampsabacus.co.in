@@ -187,6 +187,7 @@
         let practiceData = []; 
         let startTime;
         let totalTimeElapsedSeconds = 0;
+		let practiceTitleText = "";
 
 		/**
  * Extracts a formatted name (First Name Last Name) from a student identifier 
@@ -387,6 +388,11 @@ function setupInputFocus() {
                 return;
             }
 			const displayStudentName = formatStudentName(studentIdentifier);
+
+			// ✅ CAPTURE THE FULL PRACTICE TITLE HERE
+    const practiceTypeSelect = document.getElementById('practice-type');
+    practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
+			
 			generateAllPracticeSums();
             currentSumIndex = 0; 
             renderSum();
@@ -513,7 +519,7 @@ function setupInputFocus() {
             document.getElementById('report-attempted').textContent = attemptedCount; // Now works
             document.getElementById('report-correct').textContent = correctCount; // Now works
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-            document.getElementById('report-title').textContent = `${document.getElementById('sum-title').textContent} Report`;
+            document.getElementById('report-title').textContent = `${practiceTitleText} Report`;
         }
     </script>
 </body>
