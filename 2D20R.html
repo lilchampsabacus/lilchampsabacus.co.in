@@ -167,7 +167,7 @@
 
     <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
         <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Main Menu
+            &larr; Back to Plus Minus
         </a>
     </div>
 
@@ -342,6 +342,10 @@ function formatStudentName(identifier) {
             });
             
             // Reset input and feedback
+			const answerInput = document.getElementById('answer-input'); // <-- Grab the input element
+    answerInput.value = '';
+    // ✅ CRITICAL FIX: Re-enable the input field for the new sum
+    answerInput.disabled = false;
             document.getElementById('answer-input').value = '';
             document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('submit-button').disabled = false;
@@ -427,7 +431,7 @@ function setupInputFocus() {
                 showMessage("Please enter a valid number.");
                 return;
             }
-            
+            input.disabled = true;
             const currentSum = practiceData[currentSumIndex];
             const correctAnswer = currentSum.correctTotal;
             const feedbackArea = document.getElementById('feedback-area');
