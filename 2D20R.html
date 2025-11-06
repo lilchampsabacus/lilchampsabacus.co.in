@@ -187,16 +187,49 @@
         let practiceData = []; 
         let startTime;
         let totalTimeElapsedSeconds = 0;
+
+		/**
+ * Extracts a formatted name (First Name Last Name) from a student identifier 
+ * which is expected to be an email-like string (e.g., "first.last@domain.com").
+ * @param {string} identifier - The student identifier string.
+ * @returns {string} The formatted name or the original identifier if extraction fails.
+ */
+function formatStudentName(identifier) {
+    if (!identifier || typeof identifier !== 'string') {
+        return 'Student';
+    }
+    
+    // 1. Remove the domain part (everything after the first '@')
+    const namePart = identifier.split('@')[0];
+    
+    // 2. Split by '.' (or any common name separator)
+    const parts = namePart.split('.');
+    
+    // 3. Capitalize the first letter of each part and join them with a space
+    let formattedName = parts.map(part => {
+        if (part.length > 0) {
+            // Capitalize first letter, lowercase the rest
+            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }
+        return '';
+    }).filter(p => p.length > 0) // Remove empty strings
+      .join(' ');
+      
+    // 4. Return the formatted name, or a fallback if the result is empty
+    return formattedName || identifier; 
+}
         
         document.addEventListener('DOMContentLoaded', () => {
             // Check for student identifier. No 'Guest User' fallback allowed.
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             const displayElement = document.getElementById('auto-student-name-display');
             const startButton = document.getElementById('start-button');
-            
+            const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
             if (studentIdentifier) {
-                displayElement.textContent = studentIdentifier;
-                startButton.textContent = "Start Practice for " + studentIdentifier;
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName; // <--- MODIFIED
+                startButton.disabled = false;
+                startButton.textContent = "Start Practice for " + displayStudentName;
             } else {
                 // If not logged in, block access
                 displayElement.textContent = 'Login Required (Go to Main Menu)';
@@ -330,14 +363,13 @@
                 showMessage("Access Denied. Please log in on the main menu (index.html) to start.");
                 return;
             }
-
-            const studentName = document.getElementById('auto-student-name-display').textContent.trim();
-            
+			const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
+    
             generateAllPracticeSums();
             currentSumIndex = 0; 
             renderSum();
             
-            document.getElementById('display-student-name').textContent = studentName;
+            document.getElementById('display-student-name').textContent = displayStudentName;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
@@ -442,9 +474,9 @@
             const hours = ('0' + now.getHours()).slice(-2);
             const mins = ('0' + now.getMinutes()).slice(-2);            
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
-            
+            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
             document.getElementById('report-datetime').textContent = formattedDateTime;
-            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent.trim();
+            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
             document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
             document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
