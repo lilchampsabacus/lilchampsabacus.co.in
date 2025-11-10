@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Li'l Champs Abacus Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for appearance */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex-grow: 1;
+        }
+        .screen-container {
+            max-width: 480px;
+            margin: auto;
+            padding: 1.5rem;
+            width: 100%;
+        }
+        .card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Custom states for answer box feedback */
+        .feedback-correct {
+            border-color: #10B981 !important; /* Green 500 */
+            background-color: #ECFDF5; /* Green 50 */
+        }
+        .feedback-wrong {
+            border-color: #EF4444 !important; /* Red 500 */
+            background-color: #FEF2F2; /* Red 50 */
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
+        <h1 class="text-2xl font-extrabold text-center tracking-wide">Li'l Champs Abacus Academy Ambernath</h1>
+    </header>
+
+    <main class="flex items-center justify-center">
+        <div class="screen-container">
+
+            <div id="setupScreen" class="card">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Start Your Practice</h2>
+                
+                <div class="space-y-4">
+                    
+                    <div class="text-lg font-bold text-indigo-700 mb-6 border-b pb-2">
+                        Student: <span id="autoStudentNameDisplay" class="text-indigo-900">... Loading ...</span>
+                    </div>
+
+                    <div>
+                        <label for="startNumber" class="block text-sm font-medium text-gray-700 mb-1">Practice Number (1 - 99999)</label>
+                        <input type="number" id="startNumber" min="1" max="99999" placeholder="e.g., 22 or 5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required>
+                    </div>
+
+                    <div>
+                        <label for="stepCount" class="block text-sm font-medium text-gray-700 mb-1">Number of Steps</label>
+                        <select id="stepCount" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                            <option value="10">10 Steps</option>
+                            <option value="20">20 Steps</option>
+                            <option value="30">30 Steps</option>
+                            <option value="40">40 Steps</option>
+                            <option value="50">50 Steps</option>
+                            <option value="60">60 Steps</option>
+                            <option value="70">70 Steps</option>
+                            <option value="80">80 Steps</option>
+                            <option value="90">90 Steps</option>
+                            <option value="100">100 Steps</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2">
+                        <span class="text-sm font-medium text-gray-700 block mb-2">Select Operation</span>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                                <input type="radio" name="operation" value="addition" checked class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-sm font-medium text-gray-900">Continuous Addition</span>
+                            </label>
+                            <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                                <input type="radio" name="operation" value="subtraction" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-sm font-medium text-gray-900">Continuous Subtraction</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="startButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg mt-6" disabled>
+                        Start Practice
+                    </button>
+                    <p id="setupError" class="text-sm text-red-600 text-center mt-2 hidden"></p>
+                </div>
+            </div>
+
+            <div id="practiceScreen" class="card hidden text-center">
+                <p id="studentDisplay" class="text-lg font-medium text-indigo-600 mb-2"></p>
+                <p id="stepDisplay" class="text-sm font-medium text-gray-500 mb-4"></p>
+                
+                <div class="bg-gray-100 p-6 rounded-xl shadow-inner mb-6">
+                    <p class="text-sm text-gray-600">Current Value</p>
+                    <p id="currentNumber" class="text-5xl font-extrabold text-gray-900 mt-1 transition duration-500 ease-in-out"></p>
+                    <p id="operationText" class="text-xl font-bold text-indigo-500 mt-2"></p>
+                    <p id="stepNumber" class="text-3xl font-extrabold text-indigo-600 mt-1"></p>
+                </div>
+
+                <label for="answerInput" class="block text-sm font-medium text-gray-700 mb-2">Enter Your Answer</label>
+                <input type="number" id="answerInput" placeholder="Type your total here" class="text-center text-2xl font-bold w-full p-4 border-4 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150" autocomplete="off">
+                <p id="answerFeedback" class="text-sm mt-2 text-gray-500"></p>
+
+                <button id="nextButton" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200 mt-6 shadow-md" disabled>
+                    Next Step <span id="currentStepCount"></span> / <span id="totalStepCount"></span>
+                </button>
+            </div>
+
+            <div id="completionScreen" class="card hidden text-center">
+                <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 class="text-2xl font-bold text-gray-800 mt-4 mb-2">Practice Complete!</h2>
+                <p id="completionMessage" class="text-lg text-gray-600 mb-6">Great job, [Name]! You finished all the steps.</p>
+                
+                <button id="mainPageButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg">
+                    Go to Main Page
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center p-3 text-sm">
+        Contact: 9730482620
+    </footer>
+
+    <script>
+        // --- Global State Variables ---
+        let state = {
+            studentName: '', // Will be set from sessionStorage
+            studentNumber: 0,
+            totalSteps: 0,
+            operation: '',
+            currentStep: 0,
+            currentValue: 0, // The number the student sees and adds/subtracts from
+            targetValue: 0  // The correct answer for the current step
+        };
+
+        // --- DOM Elements ---
+        const $ = id => document.getElementById(id);
+
+        const setupScreen = $('setupScreen');
+        const practiceScreen = $('practiceScreen');
+        const completionScreen = $('completionScreen');
+        
+        const startButton = $('startButton');
+        const nextButton = $('nextButton');
+        const mainPageButton = $('mainPageButton');
+
+        const autoStudentNameDisplay = $('autoStudentNameDisplay'); // NEW DOM element
+        const startNumberInput = $('startNumber');
+        const stepCountSelect = $('stepCount');
+        const operationRadios = document.querySelectorAll('input[name="operation"]');
+        const setupError = $('setupError');
+        
+        const studentDisplay = $('studentDisplay');
+        const stepDisplay = $('stepDisplay');
+        const currentNumberDisplay = $('currentNumber');
+        const operationText = $('operationText');
+        const answerInput = $('answerInput');
+        const answerFeedback = $('answerFeedback');
+        const completionMessage = $('completionMessage');
+
+
+        /**
+         * Function to extract First Name and Last Name from an email-like identifier.
+         */
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') {
+                return 'Student';
+            }
+            
+            // 1. Remove the domain part (everything after the first '@')
+            const namePart = identifier.split('@')[0];
+            
+            // 2. Split by '.' (or any common name separator)
+            const parts = namePart.split('.');
+            
+            // 3. Capitalize the first letter of each part and join them with a space
+            let formattedName = parts.map(part => {
+                if (part.length > 0) {
+                    // Capitalize first letter, lowercase the rest
+                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                }
+                return '';
+            }).filter(p => p.length > 0) // Remove empty strings
+              .join(' ');
+              
+            // 4. Return the formatted name, or a fallback if the result is empty
+            return formattedName || identifier; 
+        }
+
+        // --- Screen Management ---
+        function showScreen(screenId) {
+            setupScreen.classList.add('hidden');
+            practiceScreen.classList.add('hidden');
+            completionScreen.classList.add('hidden');
+            
+            if (screenId === 'setup') {
+                setupScreen.classList.remove('hidden');
+                // Reset form values if needed
+                answerInput.value = '';
+                startNumberInput.focus(); // Focus on the number input for setup screen
+            } else if (screenId === 'practice') {
+                practiceScreen.classList.remove('hidden');
+                answerInput.focus(); // Focus on the answer input
+            } else if (screenId === 'complete') {
+                completionScreen.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Updates the UI elements based on the current state.
+         * This function is called after every state change (start or next step).
+         */
+        function updatePracticeDisplay() {
+            // Reset input and button state
+            answerInput.value = '';
+            answerInput.classList.remove('feedback-correct', 'feedback-wrong');
+            answerInput.disabled = false;
+            nextButton.disabled = true;
+            nextButton.textContent = 'Enter your answer first';
+            answerFeedback.textContent = '';
+            answerFeedback.classList.remove('text-red-600', 'text-green-600');
+            
+            // Update step number and current value displays
+            currentNumberDisplay.textContent = state.currentValue;
+            stepDisplay.textContent = `Step ${state.currentStep} of ${state.totalSteps}`;
+
+            // Update operation text
+            const operationSign = state.operation === 'addition' ? '+' : '-';
+            operationText.textContent = `${operationSign} ${state.studentNumber}`;
+
+            // Set the Next button text back to default with counts
+            nextButton.innerHTML = `Next Step <span id="currentStepCount">${state.currentStep}</span> / <span id="totalStepCount">${state.totalSteps}</span>`;
+            if (state.currentStep === state.totalSteps) {
+                nextButton.innerHTML = 'Finish Practice';
+            }
+        }
+
+
+        // --- Game Logic ---
+        function startGame() {
+            // Get name from state (set during DOMContentLoaded)
+            const name = state.studentName; 
+            const num = parseInt(startNumberInput.value, 10);
+            const steps = parseInt(stepCountSelect.value, 10);
+            const operation = document.querySelector('input[name="operation"]:checked').value;
+            
+            // Basic Validation (Check number is sufficient, name should already be set)
+            if (!name || num < 1 || num > 99999) {
+                setupError.textContent = 'Please enter a valid number between 1 and 99999.';
+                setupError.classList.remove('hidden');
+                return;
+            }
+            setupError.classList.add('hidden');
+
+            // Initialize State
+            state.studentNumber = num;
+            state.totalSteps = steps;
+            state.operation = operation;
+            state.currentStep = 1; // Start at step 1
+
+            // --- Determine Starting Value based on requirements ---
+            if (operation === 'addition') {
+                // Continuous Addition starts with 0
+                state.currentValue = 0;
+                state.targetValue = state.currentValue + state.studentNumber; 
+            } else { // subtraction
+                // Continuous Subtraction starts with X * (N + 1)
+                state.currentValue = num * (steps + 1);
+                state.targetValue = state.currentValue - state.studentNumber;
+            }
+
+            // Update UI for Practice Screen
+            studentDisplay.textContent = `Hello, ${state.studentName}!`;
+            updatePracticeDisplay(); // Display the initial problem (Step 1)
+            showScreen('practice');
+        }
+
+        /**
+         * Advances the state to the next step. Called after a correct answer.
+         */
+        function nextStep() {
+            state.currentStep++;
+            
+            // Check for completion
+            if (state.currentStep > state.totalSteps) {
+                // Game over
+                completionMessage.textContent = `Excellent work, ${state.studentName}! You completed all ${state.totalSteps} steps of Continuous ${state.operation}.`;
+                showScreen('complete');
+                return;
+            }
+
+            // 1. Update Current Value for next step (The target from the previous step is now the current number)
+            state.currentValue = state.targetValue;
+
+            // 2. Calculate New Target Value
+            if (state.operation === 'addition') {
+                state.targetValue = state.currentValue + state.studentNumber;
+            } else { // subtraction
+                state.targetValue = state.currentValue - state.studentNumber;
+            }
+            
+            updatePracticeDisplay();
+            
+            // NEW: Explicitly place the cursor in the answer box for the new problem
+            answerInput.focus();
+        }
+
+        function checkAnswer() {
+            const studentAnswer = parseInt(answerInput.value, 10);
+            
+            // Ignore empty input or non-numeric input for better UX
+            if (isNaN(studentAnswer) || answerInput.value === '') {
+                answerInput.classList.remove('feedback-correct', 'feedback-wrong');
+                nextButton.disabled = true;
+                nextButton.textContent = 'Enter your answer first';
+                return;
+            }
+
+            // Check if the student's answer matches the calculated target value
+            if (studentAnswer === state.targetValue) {
+                // Correct Answer
+                answerInput.classList.add('feedback-correct');
+                answerInput.classList.remove('feedback-wrong');
+                answerInput.disabled = true; // Lock the box once correct
+                nextButton.disabled = false;
+                
+                nextButton.textContent = (state.currentStep === state.totalSteps) ? 'Finish Practice' : 'Correct! Click for Next Step';
+                answerFeedback.textContent = 'Correct! Ready for the next one.';
+                answerFeedback.classList.remove('text-red-600');
+                answerFeedback.classList.add('text-green-600');
+
+            } else {
+                // Wrong Answer
+                answerInput.classList.add('feedback-wrong');
+                answerInput.classList.remove('feedback-correct');
+                nextButton.disabled = true;
+                nextButton.textContent = 'Try Again...';
+                answerFeedback.textContent = 'Keep trying! That is not the correct total yet.';
+                answerFeedback.classList.remove('text-green-600');
+                answerFeedback.classList.add('text-red-600');
+            }
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        
+        mainPageButton.addEventListener('click', () => {
+            showScreen('setup');
+        });
+
+        nextButton.addEventListener('click', nextStep);
+        
+        // Listen for input changes in the answer box
+        answerInput.addEventListener('input', checkAnswer);
+        
+        // Allow pressing Enter key to check the answer (only if 'Next' is enabled)
+        answerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                if (!nextButton.disabled) {
+                    // If the answer is correct and 'Next' is enabled, click the button
+                    nextButton.click(); 
+                } else {
+                    // Check the answer if Enter is pressed and button is disabled
+                    checkAnswer();
+                }
+            }
+        });
+
+        // Initialize view on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the student is logged in/identifier is available
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            let displayStudentName = 'Student'; // Default fallback
+
+            if (!studentIdentifier) {
+                // *** ENFORCED LOGIN REDIRECT ***
+                // If no identifier is found, redirect to the login page immediately.
+                window.location.href = 'index.html'; 
+                return; // Stop execution of the rest of the script
+            } 
+
+            // If we reach this point, the studentIdentifier exists.
+            displayStudentName = formatStudentName(studentIdentifier);
+            state.studentName = displayStudentName; // Store the formatted name in the state
+            
+            autoStudentNameDisplay.textContent = displayStudentName; 
+            startButton.disabled = false;
+            startButton.textContent = `Start Practice for ${displayStudentName}`;
+
+            showScreen('setup');
+            
+            // Set default steps to 10
+            stepCountSelect.value = '10';
+            
+            // Setup Subtraction/Addition logic visualization
+            operationRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const startNumLabel = $('startNumber').previousElementSibling;
+                    const operation = document.querySelector('input[name="operation"]:checked').value;
+                    if (operation === 'subtraction') {
+                        // Hint for student that the entered number becomes the subtrahend
+                        startNumLabel.textContent = 'Number to Subtract in each step (1 - 99999)';
+                    } else {
+                        startNumLabel.textContent = 'Practice Number (1 - 99999)';
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
