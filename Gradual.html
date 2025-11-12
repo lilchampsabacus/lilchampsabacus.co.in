@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradual Practice - lilchampsabacus</title>
+    <style>
+        /* General Styling and Layout */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            /* Replace with your actual header styles */
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+        .footer {
+            /* Replace with your actual footer styles */
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            margin-top: auto; /* Pushes footer to the bottom */
+            font-size: 0.8em;
+        }
+        .container {
+            flex-grow: 1;
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Menu/Selection Screen */
+        #selection-screen button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #selection-screen button:hover {
+            background-color: #1e7e34;
+        }
+
+        /* Exercise Screen */
+        #exercise-screen, #report-screen {
+            display: none;
+            text-align: center;
+        }
+        #problem-container {
+            font-size: 2.5em;
+            margin: 30px 0;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #user-answer {
+            padding: 10px;
+            font-size: 1.5em;
+            width: 80%;
+            max-width: 200px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        #status-message {
+            min-height: 20px;
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #step-counter {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        /* Report Screen */
+        #report-screen p {
+            font-size: 1.2em;
+            line-height: 1.5;
+            text-align: left;
+            padding-left: 10%;
+        }
+        .report-links a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #17a2b8;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .report-links a:hover {
+            background-color: #117a8b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        **Lil Champs Abacus** - Gradual Practice
+    </div>
+
+    <div class="container">
+        <div id="selection-screen">
+            <h2>Select Practice Mode</h2>
+            <button onclick="startPractice('addition')">➕ Gradual Addition (1+2+3...)</button>
+            <button onclick="startPractice('subtraction')">➖ Gradual Subtraction (100-99-98...)</button>
+        </div>
+
+        <div id="exercise-screen">
+            <div id="step-counter">Step 1 of 100</div>
+            <div id="problem-container">0 + 1 = ?</div>
+            <input type="number" id="user-answer" placeholder="Enter Answer" autofocus>
+            <div id="status-message"></div>
+        </div>
+
+        <div id="report-screen">
+            <h2>🎉 Practice Completed!</h2>
+            <p><strong>Student Name:</strong> <span id="report-name"></span></p>
+            <p><strong>Mode:</strong> <span id="report-mode"></span></p>
+            <p><strong>Total Steps:</strong> 100</p>
+            <p><strong>Time Taken:</strong> <span id="report-time"></span></p>
+            
+            <p style="color: blue; font-size: 0.9em; margin-top: 20px;">
+                * Report has been logged and simulated to be sent to the teacher.
+            </p>
+
+            <div class="report-links">
+                <a href="plusminus.html">Back to Plus Minus</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2025 lilchampsabacus.co.in. All rights reserved.
+    </div>
+
+    <script>
+        // --- 1. Login/Student Data Check ---
+        let studentName = localStorage.getItem('studentName');
+        if (!studentName) {
+            alert('Please log in from the main index page.');
+            window.location.href = 'index.html';
+        } else {
+            // Display name on report if available
+            document.getElementById('report-name').textContent = studentName;
+        }
+
+        // --- 2. Global State Variables ---
+        const TOTAL_STEPS = 100;
+        let currentStep = 0;
+        let currentResult = 0; // The base number for the next calculation
+        let mode = ''; // 'addition' or 'subtraction'
+        let startTime = null;
+        let expectedAnswer = 0;
+        
+        const selectionScreen = document.getElementById('selection-screen');
+        const exerciseScreen = document.getElementById('exercise-screen');
+        const reportScreen = document.getElementById('report-screen');
+        const problemContainer = document.getElementById('problem-container');
+        const stepCounter = document.getElementById('step-counter');
+        const userAnswerInput = document.getElementById('user-answer');
+        const statusMessage = document.getElementById('status-message');
+
+        // --- 3. Core Logic Functions ---
+
+        /** Initializes the practice session based on the selected mode. */
+        function startPractice(selectedMode) {
+            mode = selectedMode;
+            currentStep = 0;
+            startTime = Date.now();
+            
+            // Set initial state based on mode
+            if (mode === 'addition') {
+                // Gradual Addition: 0+1, then (0+1)+2, then (0+1+2)+3, etc.
+                currentResult = 0; 
+                document.getElementById('report-mode').textContent = 'Gradual Addition';
+            } else if (mode === 'subtraction') {
+                // Gradual Subtraction: 5050-100, then (5050-100)-99, etc.
+                // The sum of 1 to 100 is 5050.
+                currentResult = 5050; 
+                document.getElementById('report-mode').textContent = 'Gradual Subtraction';
+            }
+
+            // Show screens
+            selectionScreen.style.display = 'none';
+            exerciseScreen.style.display = 'block';
+            
+            nextProblem(); // Start the first problem
+            userAnswerInput.focus(); // Focus on input for quick start
+        }
+
+        /** Generates and displays the next problem in the sequence. */
+        function nextProblem() {
+            currentStep++;
+
+            if (currentStep > TOTAL_STEPS) {
+                return generateReport(); // Session finished
+            }
+
+            let nextNumber = 0;
+            let operator = '';
+            let problemText = '';
+
+            if (mode === 'addition') {
+                // Step 1: 0 + 1. Step 2: 1 + 2. Step N: (Sum to N-1) + N
+                nextNumber = currentStep;
+                operator = '+';
+                problemText = `${currentResult} ${operator} ${nextNumber} = ?`;
+                expectedAnswer = currentResult + nextNumber;
+            } else if (mode === 'subtraction') {
+                // Step 1: 5050 - 100. Step 2: 4950 - 99. Step N: (Sum down from N-1) - (101-N)
+                nextNumber = TOTAL_STEPS - (currentStep - 1); // 100, 99, 98, ... 1
+                operator = '-';
+                problemText = `${currentResult} ${operator} ${nextNumber} = ?`;
+                expectedAnswer = currentResult - nextNumber;
+            }
+            
+            // Update UI
+            stepCounter.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
+            problemContainer.textContent = problemText;
+            userAnswerInput.value = ''; // Clear previous answer
+            userAnswerInput.disabled = false;
+            statusMessage.textContent = '';
+            userAnswerInput.focus();
+        }
+
+        /** Checks the user's input against the expected answer. */
+        function checkAnswer() {
+            const userAnswer = parseInt(userAnswerInput.value);
+
+            if (isNaN(userAnswer)) {
+                statusMessage.textContent = 'Please enter a number.';
+                return;
+            }
+
+            if (userAnswer === expectedAnswer) {
+                statusMessage.textContent = '✅ Correct! Loading next step...';
+                // Update the base result for the next problem
+                currentResult = expectedAnswer;
+                userAnswerInput.disabled = true;
+                
+                // Wait briefly before moving to the next problem
+                setTimeout(() => {
+                    if (currentStep < TOTAL_STEPS) {
+                        nextProblem();
+                    } else {
+                        generateReport();
+                    }
+                }, 500); // 0.5 second pause
+            } else {
+                statusMessage.textContent = '❌ Incorrect. Please try again.';
+                userAnswerInput.value = ''; // Clear input on incorrect answer
+                userAnswerInput.focus();
+            }
+        }
+
+        /** Handles keyboard input (Enter key to submit). */
+        userAnswerInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !userAnswerInput.disabled) {
+                checkAnswer();
+            }
+        });
+
+        /** Generates and displays the final report. */
+        function generateReport() {
+            const endTime = Date.now();
+            const timeDifference = endTime - startTime; // Time in milliseconds
+
+            const totalSeconds = Math.round(timeDifference / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            const timeString = `${minutes} minutes and ${seconds} seconds`;
+
+            // Update report screen
+            document.getElementById('report-time').textContent = timeString;
+            
+            // Log to console (simulated "screenshot and send")
+            console.log('--- FINAL REPORT ---');
+            console.log(`Student: ${studentName}`);
+            console.log(`Mode: ${mode}`);
+            console.log(`Time Taken: ${timeString}`);
+            console.log('--- END REPORT ---');
+            
+            // Show report screen
+            exerciseScreen.style.display = 'none';
+            reportScreen.style.display = 'block';
+        }
+
+        // --- 4. Simulation for Student Login (Index.html) ---
+        /*
+        * NOTE: You need to add JavaScript to your index.html to save the student's name:
+        *
+        * Example to run on successful login in index.html:
+        * * const loggedInName = "Student Name Here"; // Get this from your login form
+        * localStorage.setItem('studentName', loggedInName);
+        * window.location.href = 'gradual_math.html';
+        */
+        
+        // --- 5. Initial Check and Setup ---
+        // Ensure the exercise screen is hidden when the page loads
+        exerciseScreen.style.display = 'none';
+        reportScreen.style.display = 'none';
+
+    </script>
+</body>
+</html>
