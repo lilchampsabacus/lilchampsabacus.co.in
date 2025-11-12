@@ -165,15 +165,19 @@
     </div>
 
     <script>
-        // --- 1. Login/Student Data Check ---
-        let studentName = localStorage.getItem('studentName');
-        if (!studentName) {
-            alert('Please log in from the main index page.');
-            window.location.href = 'index.html';
-        } else {
-            // Display name on report if available
-            document.getElementById('report-name').textContent = studentName;
-        }
+        // --- 1. Login/Student Data Check (MODIFIED TO USE SESSION STORAGE) ---
+// Your index.html saves to sessionStorage using the key 'studentIdentifier'.
+let studentIdentifier = sessionStorage.getItem('studentIdentifier');
+let studentName = studentIdentifier; // Use the identifier as the student name for the report.
+
+if (!studentIdentifier) {
+    // If the identifier is not found in Session Storage, redirect to login.
+    alert('Please log in from the main index page.');
+    window.location.href = 'index.html';
+} else {
+    // Display name (identifier) on report if available
+    document.getElementById('report-name').textContent = studentName;
+}
 
         // --- 2. Global State Variables ---
         const TOTAL_STEPS = 100;
@@ -334,4 +338,5 @@
 
     </script>
 </body>
+
 </html>
