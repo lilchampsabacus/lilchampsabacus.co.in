@@ -9,30 +9,45 @@
         /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
         html { scroll-padding-top: 100px; }
         
-        /* Custom styles to ensure 20 numbers fit vertically (MAXIMUM SPACE USAGE) */
+        /* NEW: Style for the sum table container */
         .sum-list-container {
-            display: grid;
-            grid-template-columns: 1fr; /* Single column */
-            gap: 0.1rem; /* Tighter gap to fit 20 rows */
-            /* Set a maximum height relative to the viewport for no scrolling */
-            max-height: 72vh; /* Maximized vertical height */
+            /* max-height: 72vh; is REMOVED to allow table to fill space */
             overflow: hidden; 
             align-content: start; 
             padding-bottom: 0.5rem; 
         }
 
-        /* Style for each number row - FONT SIZE ADJUSTED FOR ALL DEVICES */
-        .number-row {
-            text-align: center;
-            /* clamp(min_size: 0.85rem, preferred_size: 4vw, max_size: 1.1rem) 
-               Aggressively scaled down minimum size to guarantee 20 rows fit. */
-            font-size: clamp(0.85rem, 4vw, 1.1rem); 
-            line-height: 1.05; /* Reduced line height for tighter fit */
-            font-weight: 700; /* All numbers should be bold */
-            padding: 0 0.5rem; 
+        /* Style for the table itself */
+        .sum-table {
+            width: 100%;
+            border-collapse: collapse; /* Ensure no gaps between cells */
+            margin: 0 auto;
+            /* Set a maximum height relative to the viewport for no scrolling */
+            max-height: 72vh; /* Maximized vertical height */
+            overflow: hidden; 
         }
 
-        /* Custom Colors */
+        /* Style for each number row/cell - FONT SIZE ADJUSTED FOR ALL DEVICES */
+        .number-cell {
+            text-align: center;
+            /* clamp(min_size: 0.85rem, preferred_size: 4vw, max_size: 1.1rem) */
+            font-size: clamp(0.85rem, 4vw, 1.1rem); 
+            line-height: 1.05; 
+            font-weight: 700; 
+            padding: 0.1rem 0.5rem; /* Slightly more vertical padding */
+            border: 1px solid #e5e7eb; /* Subtle border for separation (gray-200) */
+            
+            /* Optional: Ensure fixed height/width for better visual structure */
+            height: 1.5rem; 
+            vertical-align: middle;
+        }
+        
+        /* NEW: Highlight alternate rows with a faint color */
+        .sum-table tr:nth-child(even) {
+            background-color: #f3f4f6; /* Tailwind gray-100 for faint highlight */
+        }
+
+        /* Custom Colors (applied to the cell content) */
         .positive-number { color: black; } /* Plus numbers in black (no sign) */
         .negative-number { color: rgb(37, 99, 235); /* Tailwind blue-600 */ } /* Minus numbers in blue */
 
@@ -311,7 +326,7 @@ function formatStudentName(identifier) {
             }
         }
 
-        // --- RENDERING LOGIC ---
+        // --- RENDERING LOGIC (UPDATED FOR TABLE) ---
 
         function renderSum() {
             const sumContainer = document.getElementById('sum-grid');
@@ -322,10 +337,16 @@ function formatStudentName(identifier) {
 
             const currentSum = practiceData[currentSumIndex];
             
-            sumContainer.innerHTML = '';
+            sumContainer.innerHTML = ''; // Clear previous content
             
             document.getElementById('sum-title').textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
             
+            // START: NEW TABLE STRUCTURE GENERATION
+            
+            const table = document.createElement('table');
+            table.className = 'sum-table';
+            const tbody = document.createElement('tbody');
+
             currentSum.numbers.forEach((number, index) => {
                 const isNegative = number < 0;
                 const absNumber = Math.abs(number);
@@ -335,19 +356,27 @@ function formatStudentName(identifier) {
                 // Do not show plus sign for positive numbers
                 const displayString = isNegative ? `-${absNumber}` : `${absNumber}`;
                 
-                const row = document.createElement('div');
-                row.className = `number-row ${colorClass}`;
-                row.textContent = displayString;
+                // Create table row and cell
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
                 
-                sumContainer.appendChild(row);
+                cell.className = `number-cell ${colorClass}`;
+                cell.textContent = displayString;
+                
+                row.appendChild(cell);
+                tbody.appendChild(row);
             });
+            
+            table.appendChild(tbody);
+            sumContainer.appendChild(table); // Append the completed table
+            
+            // END: NEW TABLE STRUCTURE GENERATION
             
             // Reset input and feedback
 			const answerInput = document.getElementById('answer-input'); // <-- Grab the input element
     answerInput.value = '';
     // ✅ CRITICAL FIX: Re-enable the input field for the new sum
     answerInput.disabled = false;
-            document.getElementById('answer-input').value = '';
             document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('submit-button').disabled = false;
             document.getElementById('next-sum-button').disabled = true;
