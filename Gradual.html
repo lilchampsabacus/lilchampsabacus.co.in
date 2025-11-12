@@ -3,54 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gradual Practice - lilchampsabacus</title>
+    <title>Gradual Practice - Li'l Champs Abacus Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* General Styling and Layout */
+        /* Custom styles for appearance - Copied from ContAddSub.html */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
-        .header {
-            /* Replace with your actual header styles */
-            background-color: #007bff;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 1.5em;
-        }
-        .footer {
-            /* Replace with your actual footer styles */
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            margin-top: auto; /* Pushes footer to the bottom */
-            font-size: 0.8em;
-        }
-        .container {
+        main {
             flex-grow: 1;
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
         }
-        h2 {
-            color: #333;
-            text-align: center;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        .screen-container {
+            max-width: 480px;
+            margin: auto;
+            padding: 1.5rem;
+            width: 100%;
+        }
+        .card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Custom states for answer box feedback */
+        .feedback-correct {
+            border-color: #10B981 !important; /* Green 500 */
+            background-color: #ECFDF5; /* Green 50 */
+        }
+        .feedback-wrong {
+            border-color: #EF4444 !important; /* Red 500 */
+            background-color: #FEF2F2; /* Red 50 */
         }
 
-        /* Menu/Selection Screen */
+        /* Adapted Styles for Gradual Practice Elements */
         #selection-screen button {
             display: block;
             width: 100%;
@@ -58,132 +48,130 @@
             margin: 10px 0;
             font-size: 1.2em;
             cursor: pointer;
-            background-color: #28a745;
+            background-color: #4CAF50; /* Adjusted button color */
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             transition: background-color 0.3s;
+            font-weight: 600;
         }
         #selection-screen button:hover {
-            background-color: #1e7e34;
+            background-color: #45a049;
         }
 
-        /* Exercise Screen */
-        #exercise-screen, #report-screen {
-            display: none;
-            text-align: center;
-        }
         #problem-container {
-            font-size: 2.5em;
+            font-size: 3rem; /* Larger text */
             margin: 30px 0;
-            font-weight: bold;
-            color: #007bff;
+            font-weight: 800; /* Extra bold */
+            color: #1D4ED8; /* Blue 700 */
+            text-align: center; 
+            padding: 1rem;
+            background-color: #E0F2F1; /* Teal 50 */
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
         }
         #user-answer {
-            padding: 10px;
-            font-size: 1.5em;
-            width: 80%;
-            max-width: 200px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-        }
-        #status-message {
-            min-height: 20px;
-            color: red;
+            text-align: center !important;
+            font-size: 1.5em !important;
+            width: 100% !important;
+            max-width: none !important;
+            padding: 16px !important;
+            border: 4px solid #D1D5DB !important;
+            border-radius: 12px !important;
             font-weight: bold;
-            margin-top: 10px;
         }
         #step-counter {
             font-size: 1.1em;
-            color: #666;
+            color: #4B5563; /* Gray 600 */
             margin-bottom: 15px;
-        }
-
-        /* Report Screen */
-        #report-screen p {
-            font-size: 1.2em;
-            line-height: 1.5;
-            text-align: left;
-            padding-left: 10%;
-        }
-        .report-links a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #17a2b8;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .report-links a:hover {
-            background-color: #117a8b;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
+    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
+        <h1 class="text-2xl font-extrabold text-center tracking-wide">Li'l Champs Abacus Academy - Gradual Practice</h1>
+    </header>
 
-    <div class="header">
-        **Lil Champs Abacus** - Gradual Practice
-    </div>
+    <main class="flex items-center justify-center">
+        <div class="screen-container">
+            <div class="card">
+                
+                <div id="selection-screen">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Select Practice Mode</h2>
+                    <button onclick="startPractice('addition')">➕ Gradual Addition (1+2+3...)</button>
+                    <button onclick="startPractice('subtraction')">➖ Gradual Subtraction (100-99-98...)</button>
+                </div>
 
-    <div class="container">
-        <div id="selection-screen">
-            <h2>Select Practice Mode</h2>
-            <button onclick="startPractice('addition')">➕ Gradual Addition (1+2+3...)</button>
-            <button onclick="startPractice('subtraction')">➖ Gradual Subtraction (100-99-98...)</button>
-        </div>
+                <div id="exercise-screen" style="display: none;" class="text-center">
+                    <p class="text-lg font-medium text-indigo-600 mb-2">Start Practicing!</p>
+                    <div id="step-counter">Step 1 of 100</div>
+                    
+                    <div id="problem-container">0 + 1 = ?</div>
+                    
+                    <label for="user-answer" class="block text-sm font-medium text-gray-700 mb-2">Enter Your Total</label>
+                    <input type="number" id="user-answer" placeholder="Type your answer here" autofocus autocomplete="off">
+                    
+                    <p class="text-sm mt-2 text-gray-500">Press **Enter** to submit answer.</p>
+                    
+                    <div id="status-message" class="min-h-[2rem] font-bold mt-4"></div>
+                </div>
 
-        <div id="exercise-screen">
-            <div id="step-counter">Step 1 of 100</div>
-            <div id="problem-container">0 + 1 = ?</div>
-            <input type="number" id="user-answer" placeholder="Enter Answer" autofocus>
-            <div id="status-message"></div>
-        </div>
+                <div id="report-screen" style="display: none;">
+                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-800 mt-4 mb-2 text-center">🎉 Practice Completed!</h2>
+                    <p class="text-lg text-gray-600 mb-6 text-center">Your results are in!</p>
 
-        <div id="report-screen">
-            <h2>🎉 Practice Completed!</h2>
-            <p><strong>Student Name:</strong> <span id="report-name"></span></p>
-            <p><strong>Mode:</strong> <span id="report-mode"></span></p>
-            <p><strong>Total Steps:</strong> 100</p>
-            <p><strong>Time Taken:</strong> <span id="report-time"></span></p>
-            
-            <p style="color: blue; font-size: 0.9em; margin-top: 20px;">
-                * Report has been logged and simulated to be sent to the teacher.
-            </p>
+                    <div class="space-y-3 p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium text-gray-700"><strong>Student:</strong> <span id="report-name" class="font-semibold text-gray-900"></span></p>
+                        <p class="text-sm font-medium text-gray-700"><strong>Mode:</strong> <span id="report-mode" class="font-semibold text-gray-900"></span></p>
+                        <p class="text-sm font-medium text-gray-700"><strong>Total Steps:</strong> <span class="font-semibold text-gray-900">100</span></p>
+                        <p class="text-sm font-medium text-gray-700"><strong>Time Taken:</strong> <span id="report-time" class="font-semibold text-gray-900"></span></p>
+                    </div>
+                    
+                    <p class="text-sm text-indigo-600 mt-4 text-center">
+                        * Report has been logged and simulated to be sent to the teacher.
+                    </p>
 
-            <div class="report-links">
-                <a href="plus_minus.html">Back to Plus Minus</a>
+                    <button onclick="window.location.reload()" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg mt-6">
+                        Start New Practice
+                    </button>
+                </div>
+
             </div>
         </div>
-    </div>
+        </main>
 
-    <div class="footer">
-        &copy; 2025 lilchampsabacus.co.in. All rights reserved.
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Back to Plus Minus
+        </a>
     </div>
+    
+    <footer class="bg-gray-800 text-gray-300 text-center p-3 text-sm">
+        Contact: 9730482620
+    </footer>
 
     <script>
         // --- 1. Login/Student Data Check (MODIFIED TO USE SESSION STORAGE) ---
-// Your index.html saves to sessionStorage using the key 'studentIdentifier'.
-let studentIdentifier = sessionStorage.getItem('studentIdentifier');
-let studentName = studentIdentifier; // Use the identifier as the student name for the report.
+        let studentIdentifier = sessionStorage.getItem('studentIdentifier');
+        // Simple formatting for report name
+        let studentName = studentIdentifier ? studentIdentifier.split('@')[0].split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ') : 'Student'; 
 
-if (!studentIdentifier) {
-    // If the identifier is not found in Session Storage, redirect to login.
-    alert('Please log in from the main index page.');
-    window.location.href = 'index.html';
-} else {
-    // Display name (identifier) on report if available
-    document.getElementById('report-name').textContent = studentName;
-}
+        if (!studentIdentifier) {
+            alert('Please log in from the main index page.');
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('report-name').textContent = studentName;
+        }
 
         // --- 2. Global State Variables ---
         const TOTAL_STEPS = 100;
         let currentStep = 0;
-        let currentResult = 0; // The base number for the next calculation
-        let mode = ''; // 'addition' or 'subtraction'
+        let currentResult = 0; 
+        let mode = '';
         let startTime = null;
         let expectedAnswer = 0;
         
@@ -197,38 +185,31 @@ if (!studentIdentifier) {
 
         // --- 3. Core Logic Functions ---
 
-        /** Initializes the practice session based on the selected mode. */
         function startPractice(selectedMode) {
             mode = selectedMode;
             currentStep = 0;
             startTime = Date.now();
             
-            // Set initial state based on mode
             if (mode === 'addition') {
-                // Gradual Addition: 0+1, then (0+1)+2, then (0+1+2)+3, etc.
                 currentResult = 0; 
                 document.getElementById('report-mode').textContent = 'Gradual Addition';
             } else if (mode === 'subtraction') {
-                // Gradual Subtraction: 5050-100, then (5050-100)-99, etc.
-                // The sum of 1 to 100 is 5050.
                 currentResult = 5050; 
                 document.getElementById('report-mode').textContent = 'Gradual Subtraction';
             }
 
-            // Show screens
             selectionScreen.style.display = 'none';
             exerciseScreen.style.display = 'block';
             
-            nextProblem(); // Start the first problem
-            userAnswerInput.focus(); // Focus on input for quick start
+            nextProblem();
+            userAnswerInput.focus();
         }
 
-        /** Generates and displays the next problem in the sequence. */
         function nextProblem() {
             currentStep++;
 
             if (currentStep > TOTAL_STEPS) {
-                return generateReport(); // Session finished
+                return generateReport();
             }
 
             let nextNumber = 0;
@@ -236,44 +217,54 @@ if (!studentIdentifier) {
             let problemText = '';
 
             if (mode === 'addition') {
-                // Step 1: 0 + 1. Step 2: 1 + 2. Step N: (Sum to N-1) + N
                 nextNumber = currentStep;
                 operator = '+';
-                problemText = `${currentResult} ${operator} ${nextNumber} = ?`;
+                problemText = `${currentResult} ${operator} ${nextNumber}`;
                 expectedAnswer = currentResult + nextNumber;
             } else if (mode === 'subtraction') {
-                // Step 1: 5050 - 100. Step 2: 4950 - 99. Step N: (Sum down from N-1) - (101-N)
-                nextNumber = TOTAL_STEPS - (currentStep - 1); // 100, 99, 98, ... 1
+                nextNumber = TOTAL_STEPS - (currentStep - 1); 
                 operator = '-';
-                problemText = `${currentResult} ${operator} ${nextNumber} = ?`;
+                problemText = `${currentResult} ${operator} ${nextNumber}`;
                 expectedAnswer = currentResult - nextNumber;
             }
             
             // Update UI
             stepCounter.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
             problemContainer.textContent = problemText;
-            userAnswerInput.value = ''; // Clear previous answer
+            userAnswerInput.value = ''; 
             userAnswerInput.disabled = false;
             statusMessage.textContent = '';
+            statusMessage.style.color = '#4B5563'; // Reset status message color
+            userAnswerInput.classList.remove('feedback-correct', 'feedback-wrong');
             userAnswerInput.focus();
         }
 
-        /** Checks the user's input against the expected answer. */
+        /** Checks the user's input against the expected answer. (UPDATED FOR FEEDBACK) */
         function checkAnswer() {
             const userAnswer = parseInt(userAnswerInput.value);
 
+            // Motivational/Feedback messages
+            const correctMessages = ['Brilliant!', 'Excellent Work!', 'You Got It!', 'Keep up the speed!', 'Fantastic!', 'Superb!'];
+            const randomCorrectMessage = correctMessages[Math.floor(Math.random() * correctMessages.length)];
+            
+            // Clear previous feedback classes
+            userAnswerInput.classList.remove('feedback-correct', 'feedback-wrong');
+
             if (isNaN(userAnswer)) {
                 statusMessage.textContent = 'Please enter a number.';
+                statusMessage.style.color = '#EF4444'; // Red
                 return;
             }
 
             if (userAnswer === expectedAnswer) {
-                statusMessage.textContent = '✅ Correct! Loading next step...';
-                // Update the base result for the next problem
+                // Correct Answer Logic
+                statusMessage.textContent = `✅ ${randomCorrectMessage} Loading next step...`;
+                statusMessage.style.color = '#10B981'; // Green
+                userAnswerInput.classList.add('feedback-correct');
+                
                 currentResult = expectedAnswer;
                 userAnswerInput.disabled = true;
                 
-                // Wait briefly before moving to the next problem
                 setTimeout(() => {
                     if (currentStep < TOTAL_STEPS) {
                         nextProblem();
@@ -282,8 +273,11 @@ if (!studentIdentifier) {
                     }
                 }, 500); // 0.5 second pause
             } else {
+                // Wrong Answer Logic
                 statusMessage.textContent = '❌ Incorrect. Please try again.';
-                userAnswerInput.value = ''; // Clear input on incorrect answer
+                statusMessage.style.color = '#EF4444'; // Red
+                userAnswerInput.classList.add('feedback-wrong');
+                userAnswerInput.value = ''; 
                 userAnswerInput.focus();
             }
         }
@@ -291,14 +285,14 @@ if (!studentIdentifier) {
         /** Handles keyboard input (Enter key to submit). */
         userAnswerInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter' && !userAnswerInput.disabled) {
+                event.preventDefault(); // Prevent form submission
                 checkAnswer();
             }
         });
 
-        /** Generates and displays the final report. */
         function generateReport() {
             const endTime = Date.now();
-            const timeDifference = endTime - startTime; // Time in milliseconds
+            const timeDifference = endTime - startTime; 
 
             const totalSeconds = Math.round(timeDifference / 1000);
             const minutes = Math.floor(totalSeconds / 60);
@@ -306,38 +300,26 @@ if (!studentIdentifier) {
             
             const timeString = `${minutes} minutes and ${seconds} seconds`;
 
-            // Update report screen
             document.getElementById('report-time').textContent = timeString;
             
-            // Log to console (simulated "screenshot and send")
             console.log('--- FINAL REPORT ---');
             console.log(`Student: ${studentName}`);
             console.log(`Mode: ${mode}`);
             console.log(`Time Taken: ${timeString}`);
             console.log('--- END REPORT ---');
             
-            // Show report screen
             exerciseScreen.style.display = 'none';
             reportScreen.style.display = 'block';
         }
 
-        // --- 4. Simulation for Student Login (Index.html) ---
-        /*
-        * NOTE: You need to add JavaScript to your index.html to save the student's name:
-        *
-        * Example to run on successful login in index.html:
-        * * const loggedInName = "Student Name Here"; // Get this from your login form
-        * localStorage.setItem('studentName', loggedInName);
-        * window.location.href = 'gradual_math.html';
-        */
-        
-        // --- 5. Initial Check and Setup ---
-        // Ensure the exercise screen is hidden when the page loads
-        exerciseScreen.style.display = 'none';
-        reportScreen.style.display = 'none';
+        // --- 4. Initial Check and Setup ---
+        // Ensure the screens are hidden when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            exerciseScreen.style.display = 'none';
+            reportScreen.style.display = 'none';
+            selectionScreen.style.display = 'block';
+        });
 
     </script>
 </body>
-
 </html>
-
