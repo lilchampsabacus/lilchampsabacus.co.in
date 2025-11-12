@@ -53,6 +53,14 @@
                 Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
             </div>
 
+            <div class="mb-6 p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                <p class="text-sm font-bold text-yellow-800 mb-2">Note on Starting Numbers:</p>
+                <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                    <li>For **Horizontal Addition**, the initial number starts from the **leftmost 4th rod** on the abacus (assumed 0 here for easy calculation, which then adds the sequence number).</li>
+                    <li>For **Horizontal Subtraction**, the initial number starts from the **leftmost 3rd rod** on the abacus.</li>
+                </ul>
+            </div>
+            
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Select Operation:</label>
                 <div class="flex space-x-4">
@@ -174,7 +182,6 @@
         let targetNumber;
         let stepsCompleted = 0;
 
-        // --- UPDATED LOGIC ---
         // Define all sequences, starting numbers, and targets in a unified structure
         const SEQUENCE_DATA = {
             '123456789': {
@@ -220,6 +227,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // --- Login/Name Check ---
+            // NOTE: The student name is assumed to be stored in sessionStorage by index.html (e.g., login page)
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             const displayElement = document.getElementById('auto-student-name-display');
             const startButton = document.getElementById('start-button');
@@ -301,7 +309,7 @@
             
             const sequenceConfig = SEQUENCE_DATA[currentSequence][currentOperation];
             
-            // Set initial numbers and target based on new logic
+            // Set initial numbers and target based on logic
             currentNumber = sequenceConfig.start;
             targetNumber = sequenceConfig.target;
             stepsCompleted = 0;
@@ -378,7 +386,7 @@
                 const studentAnswerBigInt = BigInt(studentAnswerString);
                 isCorrect = studentAnswerBigInt === correctAnswer;
             } catch (e) {
-                isCorrect = false; // Invalid BigInt conversion (e.g., if user enters non-integer text)
+                isCorrect = false; // Invalid BigInt conversion
             }
             
             const feedbackArea = document.getElementById('feedback-area');
@@ -405,10 +413,9 @@
                     if (currentNumber === targetNumber) {
                         endTest(true); 
                     } else {
-                        // This case should ideally not happen if the target is designed correctly (multiples)
-                        answerDisplay.innerHTML = `Correct, but you passed the target of ${targetNumber}. Restarting the sum.`;
+                        // End test if target is overshot
+                        answerDisplay.innerHTML = `Correct, but you passed the target of ${targetNumber}. Ending practice.`;
                         answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
-                        // To avoid infinite attempts, end test on pass
                         endTest(true); 
                     }
                 } else {
@@ -419,8 +426,8 @@
                 }
                 
             } else {
-                // Wrong answer - Student must try again on the same problem
-                answerDisplay.innerHTML = `Wrong. The next correct answer is: <span class="text-green-700">${correctAnswer}</span>. Try again.`;
+                // 1. If answer is wrong do not show correct answer. Only say Try Again.
+                answerDisplay.innerHTML = `Wrong. Try again.`;
                 answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
                 
                 // Re-enable input and submit button
