@@ -56,8 +56,8 @@
             <div class="mb-6 p-4 border-l-4 border-yellow-500 bg-yellow-50">
                 <p class="text-sm font-bold text-yellow-800 mb-2">Note on Starting Numbers:</p>
                 <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
-                    <li>For **Horizontal Addition**, the initial number starts from the **leftmost 4th rod** on the abacus (assumed 0 here for easy calculation, which then adds the sequence number).</li>
-                    <li>For **Horizontal Subtraction**, the initial number starts from the **leftmost 3rd rod** on the abacus.</li>
+                    <li>For Horizontal Addition, the initial number starts from the leftmost 4th rod on the abacus (assumed 0 here for easy calculation, which then adds the sequence number).</li>
+                    <li>For Horizontal Subtraction, the initial number starts from the leftmost 3rd rod on the abacus.</li>
                 </ul>
             </div>
             
@@ -171,7 +171,12 @@
     </footer>
 
     <script>
-        // Use BigInt for large number calculations to prevent precision loss
+        if (!sessionStorage.getItem('studentIdentifier')) {
+            // Note: This assumes your login page is named index.html
+            window.location.replace("index.html"); 
+        }
+		
+		// Use BigInt for large number calculations to prevent precision loss
         
         let timerInterval;
         let totalTimeElapsedSeconds = 0;
@@ -464,3 +469,4 @@
     </script>
 </body>
 </html>
+
