@@ -281,9 +281,9 @@ function formatStudentName(identifier) {
 
         function generateRandomNumber(digits) {
             let min, max;
-            if (digits === 1) { min = 1; max = 9; } 
-            else if (digits === 2) { min = 10; max = 99; } 
-            else if (digits === 3) { min = 100; max = 999; } 
+            if (digits === 3) { min = 1; max = 9; } 
+            else if (digits === 1) { min = 10; max = 99; } 
+            else if (digits === 2) { min = 100; max = 999; } 
             else { min = 1; max = 9; } 
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
