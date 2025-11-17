@@ -18,8 +18,7 @@
         .math-grid {
             /* 1. Reduced width to 50% */
             display: grid;
-            /* Using a single column, as the sign will now be part of the number's text/cell, 
-               which is easier to manage when numbers are centrally aligned. */
+            /* Using a single column */
             grid-template-columns: 1fr; 
             gap: 4px;
             /* Set max-width to 50% of parent container */
@@ -32,11 +31,7 @@
             font-family: 'Roboto Mono', monospace;
             font-size: 2.5rem; /* Large text for easy reading */
             font-weight: 700;
-            /* All numbers are centrally aligned, including the sign when present */
             text-align: center; 
-            padding: 0;
-            /* Added padding-right to account for potential minus sign width, 
-               but rely mostly on monospace font and central alignment */
             padding: 0 5px; 
             color: #1f2937; /* Default dark gray text */
         }
@@ -89,7 +84,7 @@
 
     <main class="flex-grow flex items-center justify-center p-4">
         <div id="app-container" class="w-full max-w-xl bg-white p-6 md:p-10 rounded-3xl shadow-2xl border border-gray-100">
-            <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Addition/Subtraction Practice</h1>
+            <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Vertical Addition/Subtraction Practice</h1>
             
             <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2 text-center">
                 Student: <span id="student-name-display" class="text-blue-900">...</span>
@@ -97,11 +92,11 @@
             
             <p class="text-sm text-center text-gray-500 mb-6">Numbers are restricted to +/- 11, 22, 33, ... 99 based on rules.</p>
 
-            <div class="flex justify-between items-center mb-6">
-                <div class="text-xl font-semibold text-gray-600">
+            <div class="flex justify-center items-center mb-6">
+                <div class="text-2xl font-bold text-indigo-700 bg-indigo-100 px-4 py-2 rounded-lg shadow-md">
                     Question <span id="current-question-number">1</span> of <span id="total-questions">20</span>
                 </div>
-            </div>
+                </div>
 
             <div id="question-area" class="flex flex-col items-center justify-center p-8 bg-indigo-50 rounded-2xl mb-6 shadow-inner">
                 </div>
@@ -121,7 +116,7 @@
             <section id="report-area" class="hidden flex justify-center mt-8">
                 <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
 
-                    <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Quiz Completion Report</h3>
+                    <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Conditional Vertical Addition Quiz Report</h3>
 
                     <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
                         Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
@@ -146,8 +141,8 @@
                     <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300" onclick="location.reload()">
                         Practice again
                     </button>
-                    <button class="mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300" onclick="window.location.href = 'plus_minus.html'">
-                    Back to Plus minus
+                    <button class="mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300" onclick="window.location.href = 'index.html'">
+                        Back to Plus minus
                     </button>
                 </div>
             </section>
@@ -172,13 +167,11 @@
         let correctAnswersCount = 0;
 
         // --- DOM Elements ---
-        const appContainer = document.getElementById('app-container');
         const questionArea = document.getElementById('question-area');
         const submitButton = document.getElementById('submit-button');
         const nextButton = document.getElementById('next-button');
         const feedbackArea = document.getElementById('feedback-area');
         const currentQNumSpan = document.getElementById('current-question-number');
-        /*const scoreDisplay = document.getElementById('score-display');*/
         const studentNameDisplay = document.getElementById('student-name-display');
         const controlButtons = document.getElementById('control-buttons');
         const reportArea = document.getElementById('report-area');
@@ -261,13 +254,11 @@
 
         /**
          * Helper to format a single number row for display, handling the sign.
-         * MODIFIED: Includes the sign directly in the number cell if negative.
          */
         function formatNumberRow(number, isFirst = false) {
             
             if (isFirst) {
                 // First number (N1) is always positive, and we don't display a leading sign.
-                // It just uses the magnitude.
                 return `<div class="number-cell">${Math.abs(number)}</div>`;
             }
 
@@ -306,16 +297,14 @@
                     quizData.push(generateQuestion());
                 }
                 renderQuestion();
-               
             } catch (e) {
                 console.error("Error during quiz initialization:", e);
                 feedbackArea.textContent = "Error loading quiz data. Check console for details.";
             }
         }
 
-        
         /**
-         * Renders the current question to the UI.
+         * Renders the current question to the UI, and updates the question number.
          */
         function renderQuestion() {
             if (currentQuestionIndex >= TOTAL_QUESTIONS) {
@@ -327,6 +316,9 @@
             
             questionArea.innerHTML = '';
             feedbackArea.textContent = '';
+            
+            // FIX: Update Question Number Display Here
+            currentQNumSpan.textContent = currentQuestionIndex + 1;
 
             const grid = document.createElement('div');
             grid.className = 'math-grid';
@@ -376,30 +368,30 @@
                 return;
             }
 
-            currentQ.userAnswer = userAnswer;
-            const isCorrect = (userAnswer === currentQ.correctAnswer);
-            currentQ.isCorrect = isCorrect;
-            
-            if (isCorrect) {
-                correctAnswersCount++;
-                feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-green-700';
-                feedbackArea.textContent = "✅ Correct! Well done.";
-                inputElement.classList.remove('border-4', 'border-red-500');
-            } else {
-                feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-red-700';
-                feedbackArea.innerHTML = `❌ Incorrect. The correct answer is: <span class="text-blue-600">${currentQ.correctAnswer}</span>`;
-                inputElement.classList.add('border-4', 'border-red-500');
+            // Only update correct count if the question hasn't been checked yet (i.e., submit is enabled)
+            if (!submitButton.disabled) {
+                currentQ.userAnswer = userAnswer;
+                const isCorrect = (userAnswer === currentQ.correctAnswer);
+                currentQ.isCorrect = isCorrect;
+                
+                if (isCorrect) {
+                    correctAnswersCount++;
+                    feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-green-700';
+                    feedbackArea.textContent = "✅ Correct! Well done.";
+                    inputElement.classList.remove('border-4', 'border-red-500');
+                } else {
+                    feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-red-700';
+                    feedbackArea.innerHTML = `❌ Incorrect. The correct answer is: <span class="text-blue-600">${currentQ.correctAnswer}</span>`;
+                    inputElement.classList.add('border-4', 'border-red-500');
+                }
+                
+                submitButton.disabled = true;
+                submitButton.classList.replace('bg-indigo-600', 'bg-gray-400');
+                
+                nextButton.disabled = false;
+                nextButton.classList.remove('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
+                nextButton.classList.add('bg-indigo-600', 'text-white', 'highlight-next');
             }
-
-            submitButton.disabled = true;
-            submitButton.classList.replace('bg-indigo-600', 'bg-gray-400');
-            
-            nextButton.disabled = false;
-            nextButton.classList.remove('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
-            nextButton.classList.add('bg-indigo-600', 'text-white', 'highlight-next');
-            
-            // Only update score if the current question hasn't been attempted/checked yet (which is implicit since submit is now disabled)
-           
         }
 
         /**
@@ -418,14 +410,14 @@
         }
         
         /**
-         * Displays the final score report.
+         * Displays the final score report (similar to 2D20R).
          */
         function showCompletionReport() {
             // Hide quiz elements
             questionArea.classList.add('hidden');
             controlButtons.classList.add('hidden');
             feedbackArea.classList.add('hidden');
-            document.getElementById('score-display').parentElement.classList.add('hidden');
+            document.querySelector('.flex.justify-center.items-center.mb-6').classList.add('hidden'); // Hide Q status
             
             // Show report area
             reportArea.classList.remove('hidden');
@@ -450,7 +442,7 @@
             document.getElementById('report-attempted').textContent = attemptedCount; 
             document.getElementById('report-correct').textContent = correctCount; 
             
-            document.getElementById('report-title').textContent = "Addition/Subtraction Report";
+            document.getElementById('report-title').textContent = "Conditional Vertical Addition Quiz Report";
         }
 
         // Initialize the quiz when the page loads
