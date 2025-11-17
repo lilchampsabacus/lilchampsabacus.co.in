@@ -83,18 +83,18 @@
         #number-display {
             font-weight: bold;
             /* Default: Very Large Font for numbers */
-            font-size: 20vw; 
+            font-size: 10vw; 
             padding: 20px 0;
             line-height: 1; 
             color: #333;
-            max-font-size: 150px; 
+            max-font-size: 100px; 
             flex-grow: 1; 
             display: flex;
             align-items: center;
             justify-content: center;
             word-break: break-all;
             overflow: hidden;
-            transition: font-size 0.2s; /* Smooth transition for text size change */
+            /*transition: font-size 0.2s;*/ /* Smooth transition for text size change */
         }
         
         /* Style for the initial, smaller text ("Get Ready...", "Tap Start") */
@@ -165,7 +165,7 @@
 
             <label for="speed">Speed</label>
             <select id="speed" name="speed" required>
-                <option value="2000">Slow (2.0 seconds)</option>
+                <option value="3000">Slow (3.0 seconds)</option>
                 <option value="1000">Fast (1.0 second)</option>
                 <option value="700">Fastest (0.7 seconds)</option>
             </select>
