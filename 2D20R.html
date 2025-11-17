@@ -11,7 +11,6 @@
         
         /* NEW: Style for the sum table container */
         .sum-list-container {
-            /* max-height: 72vh; is REMOVED to allow table to fill space */
             overflow: hidden; 
             align-content: start; 
             padding-bottom: 0.5rem; 
@@ -22,9 +21,10 @@
             width: 100%;
             border-collapse: collapse; /* Ensure no gaps between cells */
             margin: 0 auto;
-            /* Set a maximum height relative to the viewport for no scrolling */
             max-height: 72vh; /* Maximized vertical height */
             overflow: hidden; 
+            /* NEW: Set fixed width for the table columns */
+            table-layout: fixed; 
         }
 
         /* Style for each number row/cell - FONT SIZE ADJUSTED FOR ALL DEVICES */
@@ -34,7 +34,7 @@
             font-size: clamp(0.85rem, 4vw, 1.1rem); 
             line-height: 1.05; 
             font-weight: 700; 
-            padding: 0.1rem 0.5rem; /* Slightly more vertical padding */
+            padding: 0.1rem 0.5rem; 
             border: 1px solid #e5e7eb; /* Subtle border for separation (gray-200) */
             
             /* Optional: Ensure fixed height/width for better visual structure */
@@ -42,9 +42,26 @@
             vertical-align: middle;
         }
         
+        /* NEW: Define widths for the two table columns */
+        .sum-table tr td:first-child {
+            /* Row Number Column */
+            width: 30%; 
+            background-color: #f7f7f7; /* Slight background for the row number column */
+            color: #4b5563; /* Tailwind gray-600 */
+        }
+        
+        .sum-table tr td:last-child {
+            /* Number Value Column */
+            width: 70%;
+        }
+
         /* NEW: Highlight alternate rows with a faint color */
         .sum-table tr:nth-child(even) {
             background-color: #f3f4f6; /* Tailwind gray-100 for faint highlight */
+        }
+        /* Keep the row number column background consistent even on alternate rows */
+        .sum-table tr:nth-child(even) td:first-child {
+             background-color: #f7f7f7; 
         }
 
         /* Custom Colors (applied to the cell content) */
@@ -329,22 +346,18 @@ function formatStudentName(identifier) {
             }
         }
 
-        // --- RENDERING LOGIC (UPDATED FOR TABLE) ---
+        // --- RENDERING LOGIC (UPDATED FOR TABLE WITH ROW NUMBERS) ---
 
         function renderSum() {
             const sumContainer = document.getElementById('sum-grid');
-            const digits = parseInt(document.getElementById('practice-type').value);
             
-            // Check if the practiceData is empty (which it will be if the user hasn't logged in and is blocked)
-            if (practiceData.length === 0) return;
+            if (practiceData.length === 0) return; // Safety check
 
             const currentSum = practiceData[currentSumIndex];
             
             sumContainer.innerHTML = ''; // Clear previous content
             
             document.getElementById('sum-title').textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
-            
-            // START: NEW TABLE STRUCTURE GENERATION
             
             const table = document.createElement('table');
             table.className = 'sum-table';
@@ -355,30 +368,32 @@ function formatStudentName(identifier) {
                 const absNumber = Math.abs(number);
                 
                 const colorClass = isNegative ? 'negative-number' : 'positive-number';
-                
-                // Do not show plus sign for positive numbers
                 const displayString = isNegative ? `-${absNumber}` : `${absNumber}`;
                 
-                // Create table row and cell
                 const row = document.createElement('tr');
-                const cell = document.createElement('td');
                 
-                cell.className = `number-cell ${colorClass}`;
-                cell.textContent = displayString;
+                // NEW: Add cell for row number (index + 1)
+                const rowNumberCell = document.createElement('td');
+                // The styling is primarily in the CSS block, but we ensure it uses number-cell class
+                rowNumberCell.className = 'number-cell text-gray-700 font-bold'; 
+                rowNumberCell.textContent = index + 1; // 1-based row number
+                row.appendChild(rowNumberCell); 
+
+                // Existing: Add cell for the actual number
+                const numberCell = document.createElement('td');
+                numberCell.className = `number-cell ${colorClass}`;
+                numberCell.textContent = displayString;
+                row.appendChild(numberCell);
                 
-                row.appendChild(cell);
                 tbody.appendChild(row);
             });
             
             table.appendChild(tbody);
-            sumContainer.appendChild(table); // Append the completed table
-            
-            // END: NEW TABLE STRUCTURE GENERATION
+            sumContainer.appendChild(table);
             
             // Reset input and feedback
 			const answerInput = document.getElementById('answer-input'); // <-- Grab the input element
             answerInput.value = '';
-            // ✅ CRITICAL FIX: Re-enable the input field for the new sum
             answerInput.disabled = false;
             document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('submit-button').disabled = false;
@@ -522,7 +537,7 @@ function setupInputFocus() {
             document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
 
             let correctCount = practiceData.filter(s => s.isCorrect === true).length;
-            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; // This is always 20 for this type of practice
+            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; // This is now 10
             
             let avgTimeDisplay = 'N/A';
             if (attemptedCount > 0) {
@@ -547,9 +562,9 @@ function setupInputFocus() {
             
             document.getElementById('report-datetime').textContent = formattedDateTime;
             document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
-            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted; // Now works
-            document.getElementById('report-attempted').textContent = attemptedCount; // Now works
-            document.getElementById('report-correct').textContent = correctCount; // Now works
+            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted; 
+            document.getElementById('report-attempted').textContent = attemptedCount; 
+            document.getElementById('report-correct').textContent = correctCount; 
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
             document.getElementById('report-title').textContent = `${practiceTitleText} Report`;
         }
