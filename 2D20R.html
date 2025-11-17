@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Addition/Subtraction Practice (20 Rows)</title>
+    <title>Addition/Subtraction Practice (10 Rows)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
@@ -71,7 +71,7 @@
     </header>
 
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Addition Subtraction Practice (20 Rows)</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Addition Subtraction Practice (10 Rows)</h2>
 
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
             <h3 class="text-xl font-semibold mb-4 text-gray-700">Abacus Practice Settings</h3>			
@@ -82,13 +82,13 @@
             <div class="mb-6">
                 <label for="practice-type" class="block text-sm font-medium text-gray-700 mb-2">Select Sum Type:</label>
                 <select id="practice-type" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-white text-lg font-semibold">
-                    <option value="1">2 Digit - 20 Rows</option>
-                    <option value="2">3 Digits - 20 Rows</option>
-                    <option value="3">1 Digits - 20 Rows</option>
+                    <option value="1">2 Digit - 10 Rows</option>
+                    <option value="2">3 Digits - 10 Rows</option>
+                    <option value="3">1 Digits - 10 Rows</option>
                 </select>
             </div>
 
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 20 unique sums, each with a 20-row calculation. All final answers are <strong>positive</strong>.</p>
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 20 unique sums, each with a 10-row calculation. All final answers are <strong>positive</strong>.</p>
 
             <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50">
                 Start Practice
@@ -107,7 +107,7 @@
 
             <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center">
                 <div class="w-full max-w-xs mx-auto"> 
-                    <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">2 Digit - 20 Rows</h4>
+                    <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">2 Digit - 10 Rows</h4>
                     
                     <div id="sum-grid" class="sum-list-container mb-2">
                         </div>
@@ -194,8 +194,10 @@
 
     <script>
         
-        const TOTAL_SUMS_PER_PRACTICE = 20;
-        const NEGATIVE_INDICES = [3, 6, 9, 12, 15, 18]; 
+        // JAVASCRIPT CHANGE 1: Change total sums per practice to 10
+        const TOTAL_SUMS_PER_PRACTICE = 10;
+        // JAVASCRIPT CHANGE 2: Change negative indices for 10 rows (3rd, 6th, 9th number is minus)
+        const NEGATIVE_INDICES = [3, 6, 9]; 
         
         let timerInterval;
         let currentSumIndex = 0;
@@ -292,7 +294,8 @@ function formatStudentName(identifier) {
             let sumSet = [];
             let total = 0;
 
-            for (let i = 1; i <= 20; i++) {
+            // JAVASCRIPT CHANGE 3: Change loop limit from 20 to 10
+            for (let i = 1; i <= 10; i++) {
                 let number = generateRandomNumber(digits);
                 let isNegative = NEGATIVE_INDICES.includes(i);
                 
@@ -374,9 +377,9 @@ function formatStudentName(identifier) {
             
             // Reset input and feedback
 			const answerInput = document.getElementById('answer-input'); // <-- Grab the input element
-    answerInput.value = '';
-    // ✅ CRITICAL FIX: Re-enable the input field for the new sum
-    answerInput.disabled = false;
+            answerInput.value = '';
+            // ✅ CRITICAL FIX: Re-enable the input field for the new sum
+            answerInput.disabled = false;
             document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('submit-button').disabled = false;
             document.getElementById('next-sum-button').disabled = true;
@@ -419,8 +422,8 @@ function setupInputFocus() {
 			const displayStudentName = formatStudentName(studentIdentifier);
 
 			// ✅ CAPTURE THE FULL PRACTICE TITLE HERE
-    const practiceTypeSelect = document.getElementById('practice-type');
-    practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
+            const practiceTypeSelect = document.getElementById('practice-type');
+            practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
 			
 			generateAllPracticeSums();
             currentSumIndex = 0; 
