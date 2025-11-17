@@ -101,9 +101,6 @@
                 <div class="text-xl font-semibold text-gray-600">
                     Question <span id="current-question-number">1</span> of <span id="total-questions">20</span>
                 </div>
-                <div id="score-display" class="text-xl font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                    Score: 0 / 0
-                </div>
             </div>
 
             <div id="question-area" class="flex flex-col items-center justify-center p-8 bg-indigo-50 rounded-2xl mb-6 shadow-inner">
@@ -181,7 +178,7 @@
         const nextButton = document.getElementById('next-button');
         const feedbackArea = document.getElementById('feedback-area');
         const currentQNumSpan = document.getElementById('current-question-number');
-        const scoreDisplay = document.getElementById('score-display');
+        /*const scoreDisplay = document.getElementById('score-display');*/
         const studentNameDisplay = document.getElementById('student-name-display');
         const controlButtons = document.getElementById('control-buttons');
         const reportArea = document.getElementById('report-area');
@@ -309,32 +306,14 @@
                     quizData.push(generateQuestion());
                 }
                 renderQuestion();
-                updateScoreDisplay();
+               
             } catch (e) {
                 console.error("Error during quiz initialization:", e);
                 feedbackArea.textContent = "Error loading quiz data. Check console for details.";
             }
         }
 
-        /**
-         * Updates the score and question number displays.
-         */
-        function updateScoreDisplay() {
-            const attemptedQuestions = currentQuestionIndex; // Questions for which an answer was checked
-            const currentQuestion = currentQuestionIndex < TOTAL_QUESTIONS ? currentQuestionIndex + 1 : TOTAL_QUESTIONS;
-
-            currentQNumSpan.textContent = currentQuestion;
-            scoreDisplay.textContent = `Score: ${correctAnswersCount} / ${attemptedQuestions}`;
-            
-            scoreDisplay.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-500');
-            
-            if (attemptedQuestions > 0) {
-                scoreDisplay.classList.add('bg-green-100', 'text-green-700');
-            } else {
-                scoreDisplay.classList.add('bg-gray-100', 'text-gray-500');
-            }
-        }
-
+        
         /**
          * Renders the current question to the UI.
          */
@@ -420,7 +399,7 @@
             nextButton.classList.add('bg-indigo-600', 'text-white', 'highlight-next');
             
             // Only update score if the current question hasn't been attempted/checked yet (which is implicit since submit is now disabled)
-            updateScoreDisplay(); 
+           
         }
 
         /**
