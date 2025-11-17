@@ -317,9 +317,12 @@ function formatStudentName(identifier) {
                 settingsSubmitBtn.disabled = false;
                 settingsSubmitBtn.textContent = 'Submit';
             } else {
+                // REDIRECTION LOGIC ADDED HERE
+                // The user is not logged in, redirect them to index.html
+                alert('You must be logged in to access this page. Redirecting to login page.');
+                window.location.href = 'index.html';
                 isUserLoggedIn = false;
-                loginStatusDisplay.textContent = 'Login Required: Go to Main Menu to log in.';
-                loginStatusDisplay.style.color = 'red';
+                loginStatusDisplay.textContent = 'Login Required: Redirecting...';
                 settingsSubmitBtn.disabled = true;
                 settingsSubmitBtn.textContent = 'Login Required';
             }
