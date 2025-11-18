@@ -137,18 +137,18 @@
                 </div>
             </div>
             
-            <div class="mt-6 flex flex-col items-center max-w-md mx-auto">
-                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+            <div class="mt-6 flex flex-row justify-between gap-4 max-w-md mx-auto">
+                <button id="submit-button" onclick="checkAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
                     Submit Answer
                 </button>
 
-                <div id="feedback-area" class="mt-4 w-full text-center hidden">
-                    <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
-                </div>
-
-                <button id="next-sum-button" onclick="nextSum()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
+                <button id="next-sum-button" onclick="nextSum()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
                     Next Sum (1/20)
                 </button>
+            </div>
+            
+            <div id="feedback-area" class="mt-4 w-full max-w-md mx-auto text-center hidden">
+                <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
             </div>
         </section>
 
