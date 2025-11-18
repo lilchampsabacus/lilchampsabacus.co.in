@@ -132,7 +132,7 @@
         
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+    <div id="back-link-wrapper" class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
         <a href="practice_options.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
             &larr; Go back to Practice Options
         </a>
@@ -196,6 +196,7 @@
         const problemDisplay = document.getElementById('problem-display');
         const answerInput = document.getElementById('answer-input');
         const timerDisplay = document.getElementById('timer-display');
+        const backLinkWrapper = document.getElementById('back-link-wrapper'); // NEW: Get the back link wrapper
         
         // Initial setup for student name display (UPDATED: removed initial display, kept login check)
         document.addEventListener('DOMContentLoaded', () => {
@@ -370,7 +371,7 @@
 
                 if (solvedCount >= MAX_PROBLEMS) {
                     // Pass the original reason, which is now ignored in endGame
-                    endGame("You solved 100 problems!"); 
+                    endGame("You solved 100 problems!");
                 } else {
                     // Immediately generate next problem without feedback
                     generateProblem();
@@ -411,6 +412,7 @@
             configPanel.classList.add('hidden');
             resultsPanel.classList.add('hidden');
             gamePanel.classList.remove('hidden');
+            backLinkWrapper.classList.add('hidden'); // NEW: Hide back link
 
             answerInput.disabled = false;
             answerInput.focus();
@@ -467,6 +469,7 @@
             // Hide game, show results
             gamePanel.classList.add('hidden');
             resultsPanel.classList.remove('hidden');
+            backLinkWrapper.classList.remove('hidden'); // NEW: Show back link
             resultsPanel.scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -479,6 +482,7 @@
             configPanel.classList.remove('hidden');
             gamePanel.classList.add('hidden');
             resultsPanel.classList.add('hidden');
+            backLinkWrapper.classList.remove('hidden'); // NEW: Show back link
             
             // Clear displays
             problemDisplay.textContent = "Select options and start!";
