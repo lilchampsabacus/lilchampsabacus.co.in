@@ -196,18 +196,15 @@
         const problemDisplay = document.getElementById('problem-display');
         const answerInput = document.getElementById('answer-input');
         const timerDisplay = document.getElementById('timer-display');
-        const backLinkWrapper = document.getElementById('back-link-wrapper'); // NEW: Get the back link wrapper
+        const backLinkWrapper = document.getElementById('back-link-wrapper'); // Get the back link wrapper
         
         // Initial setup for student name display (UPDATED: removed initial display, kept login check)
         document.addEventListener('DOMContentLoaded', () => {
-            // document.getElementById('auto-student-name-display').textContent = formattedStudentName; // Removed initial display
             
             if (studentIdentifier) {
                 startButton.disabled = false;
                 startButton.textContent = `Start 3-Minute Challenge for ${formattedStudentName}`;
-            } else {
-                // document.getElementById('auto-student-name-display').textContent = 'Error: Name not found. Please log in.'; // Removed initial display
-            }
+            } 
         });
 
 
@@ -290,36 +287,51 @@
 
                 } else if (mode === 'division') {
                     const parts = level.split('÷').map(Number);
-                    const maxDigitsA = parts[0];
+                    const requiredDigitsA = parts[0]; // NOW THE EXACT required number of digits for A
                     const digitsB = parts[1];
                     
                     b = getDivisor(digitsB); // Divisor (1, 2, or 3 digits, non-zero ending for 2/3)
 
-                    let maxQuotient, minQuotient;
-                    
-                    if (digitsB === 1) { // 1-digit divisor (3÷1, 4÷1, 5÷1)
-                        if (level === '3÷1') maxQuotient = 111; else if (level === '4÷1') maxQuotient = 1111; else maxQuotient = 11111;
-                        minQuotient = 11; // Ensure the dividend (A) is large enough
-                    } else if (digitsB === 2) { // 2-digit divisor (4÷2, 5÷2)
-                        if (level === '4÷2') maxQuotient = 90; else maxQuotient = 999;
-                        minQuotient = 11;
+                    let originalMaxQuotient;
+                    // Define the original arbitrary max quotient bounds
+                    if (digitsB === 1) { 
+                        if (level === '3÷1') originalMaxQuotient = 111; 
+                        else if (level === '4÷1') originalMaxQuotient = 1111; 
+                        else originalMaxQuotient = 11111;
+                    } else if (digitsB === 2) { 
+                        if (level === '4÷2') originalMaxQuotient = 90; 
+                        else originalMaxQuotient = 999;
                     } else { // 3-digit divisor (5÷3)
-                        maxQuotient = 99;
-                        minQuotient = 11;
+                        originalMaxQuotient = 99;
                     }
                     
-                    // Ensure dividend (A) does not exceed maxDigitsA (e.g., 5-digit for 5÷X)
-                    let maxA = Math.pow(10, maxDigitsA) - 1;
-                    let maxPossibleQ = Math.floor(maxA / b);
+                    const minQuotientFloor = 11; // Retain the arbitrary minimum quotient floor
                     
-                    let Q = getRandomInt(Math.min(minQuotient, maxPossibleQ), maxPossibleQ);
+                    // 1. Define the required range for dividend A
+                    const minA = Math.pow(10, requiredDigitsA - 1); 
+                    const maxA = Math.pow(10, requiredDigitsA) - 1;
+
+                    // 2. Calculate the corresponding quotient range Q = A / B
+                    // Minimum quotient Q required to ensure A >= minA
+                    const minRequiredQ = Math.ceil(minA / b); 
                     
-                    // If Q is too small, the generated 'b' was too large or maxA was too small, so we must retry the generation.
-                    if (Q < minQuotient) {
+                    // Maximum quotient Q required to ensure A <= maxA
+                    const maxPossibleQ = Math.floor(maxA / b); 
+
+                    // 3. Determine the final valid range for Q
+                    let finalMinQ = Math.max(minQuotientFloor, minRequiredQ);
+                    let finalMaxQ = Math.min(originalMaxQuotient, maxPossibleQ);
+                    
+                    // 4. Check for impossible scenario (range is inverted/empty)
+                    if (finalMinQ > finalMaxQ) {
                         maxAttempts--;
-                        continue; // Skip current iteration, retry the whole loop to find a better (A, B) pair
+                        continue; // Retry the do...while loop with a new divisor 'b'
                     }
 
+                    // 5. Generate the quotient Q
+                    let Q = getRandomInt(finalMinQ, finalMaxQ);
+                    
+                    // 6. Calculate problem and answer
                     a = Q * b;
                     answer = Q;
                     problemString = `${a} ÷ ${b}`;
@@ -412,7 +424,7 @@
             configPanel.classList.add('hidden');
             resultsPanel.classList.add('hidden');
             gamePanel.classList.remove('hidden');
-            backLinkWrapper.classList.add('hidden'); // NEW: Hide back link
+            backLinkWrapper.classList.add('hidden'); // Hide back link
 
             answerInput.disabled = false;
             answerInput.focus();
@@ -469,7 +481,7 @@
             // Hide game, show results
             gamePanel.classList.add('hidden');
             resultsPanel.classList.remove('hidden');
-            backLinkWrapper.classList.remove('hidden'); // NEW: Show back link
+            backLinkWrapper.classList.remove('hidden'); // Show back link
             resultsPanel.scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -482,7 +494,7 @@
             configPanel.classList.remove('hidden');
             gamePanel.classList.add('hidden');
             resultsPanel.classList.add('hidden');
-            backLinkWrapper.classList.remove('hidden'); // NEW: Show back link
+            backLinkWrapper.classList.remove('hidden'); // Show back link
             
             // Clear displays
             problemDisplay.textContent = "Select options and start!";
