@@ -212,7 +212,7 @@
     <script>
         
         // JAVASCRIPT CHANGE 1: Change total sums per practice to 10
-        const TOTAL_SUMS_PER_PRACTICE = 10;
+        const TOTAL_SUMS_PER_PRACTICE = 20;
         // JAVASCRIPT CHANGE 2: Change negative indices for 10 rows (3rd, 6th, 9th number is minus)
         const NEGATIVE_INDICES = [3, 6, 9]; 
         
@@ -312,7 +312,7 @@ function formatStudentName(identifier) {
             let total = 0;
 
             // JAVASCRIPT CHANGE 3: Change loop limit from 20 to 10
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 20; i++) {
                 let number = generateRandomNumber(digits);
                 let isNegative = NEGATIVE_INDICES.includes(i);
                 
