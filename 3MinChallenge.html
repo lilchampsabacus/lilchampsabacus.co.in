@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Minute Speed Check Mental Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
+        html { scroll-padding-top: 100px; }
+        
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+        .math-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* ring-blue-500 equivalent */
+        }
+        .start-button {
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .start-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .start-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+    
+    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6 flex justify-center">
+
+        <div id="challenge-app-wrapper" class="max-w-lg w-full"> 
+            
+            <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">3-Minute Mental Math Speed Check</h2>
+            
+            <div class="text-lg font-bold text-blue-700 mb-6 border-b pb-2 bg-white p-3 rounded-lg shadow-md">
+                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
+            </div>
+
+            <div id="config-panel" class="space-y-4 bg-white p-6 rounded-xl shadow-2xl">
+                <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">Solve as many problems as you can in 3 minutes. This is a mental math challenge.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="operation-select" class="block text-sm font-medium text-gray-700 mb-1">Select Operation</label>
+                        <select id="operation-select" class="w-full p-3 border border-gray-300 rounded-lg bg-white transition duration-150 ease-in-out focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="multiplication">Multiplication </option>
+                            <option value="division">Division </option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="difficulty-select" class="block text-sm font-medium text-gray-700 mb-1">Select Difficulty</label>
+                        <select id="difficulty-select" class="w-full p-3 border border-gray-300 rounded-lg bg-white transition duration-150 ease-in-out focus:ring-indigo-500 focus:border-indigo-500">
+                            </select>
+                    </div>
+                </div>
+
+                <button id="start-button" class="start-button w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50" disabled>
+                    Start 3-Minute Challenge
+                </button>
+            </div>
+
+            <div id="game-panel" class="hidden space-y-6 text-center bg-white p-6 rounded-xl shadow-2xl mt-6">
+                <div class="flex justify-between items-center text-lg font-medium sticky top-20 z-10 bg-blue-100 p-4 rounded-xl shadow-md">
+                    <div class="text-lg font-semibold text-blue-800">
+                        Student: <span id="display-student-name" class="font-bold"></span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-red-600 bg-red-100 p-2 rounded-lg shadow-inner min-w-[120px]">
+                        Time Left: <span id="timer-display">3:00</span>
+                    </div>
+                </div>
+
+                <div id="problem-display" class="text-6xl sm:text-7xl font-mono font-extrabold text-gray-800 bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center select-none">
+                    Select options and start!
+                </div>
+
+                <div class="mt-8">
+                    <input type="number" id="answer-input" placeholder="Your Answer (Press Enter)" class="math-input w-full p-4 text-3xl text-center border-2 border-indigo-300 rounded-lg font-mono focus:border-indigo-500" disabled>
+                </div>
+                
+                <div class="h-6"></div> <div class="text-xl font-bold text-gray-600">
+                    Sums Solved: <span id="solved-count" class="font-bold text-indigo-600">0</span>
+                </div>
+                
+                </div>
+
+            <section id="results-panel" class="hidden flex justify-center mt-6">
+                <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+                    
+                    <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">3-Minute Mental Challenge Report</h3>
+                    
+                    <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
+                        Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
+                    </p>
+                    <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
+                    
+                    <p id="completion-reason" class="text-lg text-gray-700 font-bold mb-4 bg-yellow-100 p-2 rounded-lg"></p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
+                            <p class="text-xs text-gray-500">No. of Sums Solved</p>
+                            <p class="text-xl font-bold text-purple-900" id="final-solved">0</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-yellow-500">
+                            <p class="text-xs text-gray-500">Total Time Spent</p>
+                            <p class="text-xl font-bold text-yellow-800" id="final-time-elapsed">3:00</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
+                            <p class="text-xs text-gray-500">No. of Correct Sums</p>
+                            <p class="text-xl font-bold text-green-600" id="final-correct">0</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-red-500">
+                            <p class="text-xs text-gray-500">No. of Wrong Sums</p>
+                            <p class="text-xl font-bold text-red-600" id="final-wrong">0</p>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
+                        📸 Take screenshot of this report and send to your Abacus teacher.
+                    </p>
+                    
+                    <button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                        Practice again
+                    </button>
+                </div>
+            </section>
+        </div>
+        
+    </main>
+
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Go back to Plus Minus Options
+        </a>
+    </div>
+
+    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">For any queries call 9730482620</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Login Check (from 2x1.html) ---
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
+
+        // --- Utility Functions (from 2x1.html) ---
+        /** Function to extract First Name and Last Name from an email-like identifier. */
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') {
+                return 'Student';
+            }
+            const namePart = identifier.split('@')[0];
+            const parts = namePart.split('.');
+            
+            let formattedName = parts.map(part => {
+                if (part.length > 0) {
+                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                }
+                return '';
+            }).filter(p => p.length > 0)
+              .join(' ');
+              
+            return formattedName || identifier; 
+        }
+
+        // --- State Variables ---
+        let timerInterval;
+        let TOTAL_TIME = 180; // 3 minutes in seconds
+        let timeRemaining = TOTAL_TIME; 
+        let isGameActive = false;
+        let correctAnswer = 0;
+        let solvedCount = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        const MAX_PROBLEMS = 100;
+        let problemHistory = new Set(); // Stores generated problems to prevent repetition
+        let startTime = 0; // To capture the true start time
+
+        // --- DOM Elements ---
+        const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+        const formattedStudentName = formatStudentName(studentIdentifier); // Store formatted name globally
+        
+        const configPanel = document.getElementById('config-panel');
+        const gamePanel = document.getElementById('game-panel');
+        const resultsPanel = document.getElementById('results-panel');
+        const startButton = document.getElementById('start-button');
+        const operationSelect = document.getElementById('operation-select');
+        const difficultySelect = document.getElementById('difficulty-select');
+        const problemDisplay = document.getElementById('problem-display');
+        const answerInput = document.getElementById('answer-input');
+        const timerDisplay = document.getElementById('timer-display');
+        
+        // Initial setup for student name display
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('auto-student-name-display').textContent = formattedStudentName;
+            
+            if (studentIdentifier) {
+                startButton.disabled = false;
+                startButton.textContent = `Start 3-Minute Challenge for ${formattedStudentName}`;
+            } else {
+                document.getElementById('auto-student-name-display').textContent = 'Error: Name not found. Please log in.';
+            }
+        });
+
+
+        // --- Configuration Mapping ---
+        const difficultyOptions = {
+            multiplication: [
+                { value: '1x1', label: '1-Digit × 1-Digit' },
+                { value: '2x1', label: '2-Digit × 1-Digit' },
+                { value: '3x1', label: '3-Digit × 1-Digit' },
+                { value: '4x1', label: '4-Digit × 1-Digit' },
+                { value: '5x1', label: '5-Digit × 1-Digit' },
+                { value: '2x2', label: '2-Digit × 2-Digit' },
+                { value: '3x2', label: '3-Digit × 2-Digit' },
+            ],
+            division: [
+                { value: '3÷1', label: 'Up to 3-Digit ÷ 1-Digit' },
+                { value: '4÷1', label: 'Up to 4-Digit ÷ 1-Digit' },
+                { value: '5÷1', label: 'Up to 5-Digit ÷ 1-Digit' },
+                { value: '4÷2', label: 'Up to 4-Digit ÷ 2-Digit' },
+                { value: '5÷2', label: 'Up to 5-Digit ÷ 2-Digit' },
+                { value: '5÷3', label: 'Up to 5-Digit ÷ 3-Digit' },
+            ]
+        };
+
+        // --- Utility Functions ---
+
+        /** Generates a random integer between min (inclusive) and max (inclusive) */
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        /** Generates a random number with a specific number of digits */
+        function getRandomNumberByDigits(digits) {
+            if (digits === 1) return getRandomInt(2, 9); // Ensure minimum is 2 for single digits
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return getRandomInt(min, max);
+        }
+
+        /** Generates a divisor based on rules (not ending in 0 if digits > 1) */
+        function getDivisor(digits) {
+            if (digits === 1) return getRandomInt(2, 9);
+            
+            let divisor;
+            do {
+                divisor = getRandomNumberByDigits(digits);
+            } while (divisor % 10 === 0); // Exclude numbers ending in 0
+
+            return divisor;
+        }
+
+        // --- Problem Generation Logic ---
+
+        function generateProblem() {
+            const mode = operationSelect.value;
+            const level = difficultySelect.value;
+            let a, b, problemString, answer;
+            let maxAttempts = 1000; // Failsafe to prevent infinite loop
+
+            do {
+                a = null; b = null; problemString = null; answer = null; 
+                
+                if (mode === 'multiplication') {
+                    const parts = level.split('x').map(Number);
+                    const digitsA = parts[0];
+                    const digitsB = parts[1];
+
+                    a = getRandomNumberByDigits(digitsA);
+
+                    if (['1x1', '2x1', '3x1', '4x1', '5x1'].includes(level)) {
+                        // Constraint: multiplier (b) must be between 2 and 9
+                        b = getRandomInt(2, 9); 
+                    } else if (['2x2', '3x2'].includes(level)) {
+                        // Use the digit count for b
+                        b = getRandomNumberByDigits(digitsB);
+                    }
+
+                    answer = a * b;
+                    problemString = `${a} × ${b}`;
+
+                } else if (mode === 'division') {
+                    const parts = level.split('÷').map(Number);
+                    const maxDigitsA = parts[0];
+                    const digitsB = parts[1];
+                    
+                    b = getDivisor(digitsB); // Divisor (1, 2, or 3 digits, non-zero ending for 2/3)
+
+                    let maxQuotient, minQuotient;
+                    
+                    if (digitsB === 1) { // 1-digit divisor (3÷1, 4÷1, 5÷1)
+                        if (level === '3÷1') maxQuotient = 111; else if (level === '4÷1') maxQuotient = 1111; else maxQuotient = 11111;
+                        minQuotient = 11; // Ensure the dividend (A) is large enough
+                    } else if (digitsB === 2) { // 2-digit divisor (4÷2, 5÷2)
+                        if (level === '4÷2') maxQuotient = 90; else maxQuotient = 999;
+                        minQuotient = 11;
+                    } else { // 3-digit divisor (5÷3)
+                        maxQuotient = 99;
+                        minQuotient = 11;
+                    }
+                    
+                    // Ensure dividend (A) does not exceed maxDigitsA (e.g., 5-digit for 5÷X)
+                    let maxA = Math.pow(10, maxDigitsA) - 1;
+                    let maxPossibleQ = Math.floor(maxA / b);
+                    
+                    let Q = getRandomInt(Math.min(minQuotient, maxPossibleQ), maxPossibleQ);
+                    
+                    // If Q is too small, the generated 'b' was too large or maxA was too small, so we must retry the generation.
+                    if (Q < minQuotient) {
+                        maxAttempts--;
+                        continue; // Skip current iteration, retry the whole loop to find a better (A, B) pair
+                    }
+
+                    a = Q * b;
+                    answer = Q;
+                    problemString = `${a} ÷ ${b}`;
+                }
+
+                maxAttempts--;
+
+            } while (problemHistory.has(problemString) && maxAttempts > 0);
+            
+            if (problemString && maxAttempts > 0) {
+                problemHistory.add(problemString); // Add the unique problem to history
+                problemDisplay.textContent = problemString;
+                correctAnswer = answer;
+                answerInput.value = '';
+            } else {
+                problemDisplay.textContent = "Error: Challenge exhausted all unique problems.";
+                console.error("Failed to generate unique problem after max attempts.");
+                // Immediately end the game if no new unique problem can be found
+                endGame("All available unique problems solved!");
+            }
+        }
+
+        // --- Game Flow Functions ---
+
+        function updateScoreDisplay() {
+            document.getElementById('solved-count').textContent = solvedCount;
+            // The counts for correct/wrong are still updated internally (below)
+            // but the element updates here are now for the hidden elements.
+        }
+
+        function checkAnswer(event) {
+            if (event.key === 'Enter' && isGameActive) {
+                const userAnswer = parseInt(answerInput.value.trim());
+
+                // Ignore empty or non-numeric input
+                if (isNaN(userAnswer)) {
+                    return;
+                }
+                
+                solvedCount++;
+                
+                if (userAnswer === correctAnswer) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+
+                updateScoreDisplay();
+
+                if (solvedCount >= MAX_PROBLEMS) {
+                    endGame("You solved 100 problems!");
+                } else {
+                    // Immediately generate next problem without feedback
+                    generateProblem();
+                }
+
+                // Clear input after processing
+                answerInput.value = '';
+            }
+        }
+
+        function updateTimer() {
+            if (!isGameActive) return;
+
+            timeRemaining--;
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeRemaining <= 0) {
+                endGame("Time's up!");
+            }
+        }
+
+        function startGame() {
+            isGameActive = true;
+            timeRemaining = TOTAL_TIME; // Reset to 3 minutes
+            solvedCount = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            problemHistory.clear(); // Clear problem history for the new game
+            startTime = Date.now(); // Start tracking time
+
+            // Display student name in game panel
+            document.getElementById('display-student-name').textContent = formattedStudentName; 
+
+            // Hide config, show game
+            configPanel.classList.add('hidden');
+            resultsPanel.classList.add('hidden');
+            gamePanel.classList.remove('hidden');
+
+            answerInput.disabled = false;
+            answerInput.focus();
+            updateScoreDisplay();
+            
+            // Start the timer
+            timerDisplay.textContent = "3:00";
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Generate the first problem
+            generateProblem();
+            gamePanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function endGame(reason) {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            answerInput.disabled = true;
+            
+            const endTime = Date.now();
+            // The time elapsed is the actual time from start to end of the test (max 180s)
+            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+            
+            const minutes = Math.floor(timeElapsedSeconds / 60);
+            const seconds = timeElapsedSeconds % 60;
+            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            const now = new Date();
+            const date = ('0' + now.getDate()).slice(-2);
+            const month = ('0' + (now.getMonth() + 1)).slice(-2);
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = ('0' + now.getHours()).slice(-2);
+            const mins = ('0' + now.getMinutes()).slice(-2);            
+            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
+
+
+            // Display results in the final report
+            document.getElementById('completion-reason').textContent = reason;
+            document.getElementById('final-solved').textContent = solvedCount;
+            document.getElementById('final-correct').textContent = correctCount;
+            document.getElementById('final-wrong').textContent = wrongCount;
+            
+            // NEW Report fields
+            document.getElementById('report-datetime').textContent = formattedDateTime;
+            document.getElementById('report-student-name').textContent = formattedStudentName;
+            document.getElementById('final-time-elapsed').textContent = timeElapsedFormatted;
+
+
+            // Hide game, show results
+            gamePanel.classList.add('hidden');
+            resultsPanel.classList.remove('hidden');
+            resultsPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetGame() {
+            // Reset state
+            isGameActive = false;
+            clearInterval(timerInterval);
+            
+            // Show config
+            configPanel.classList.remove('hidden');
+            gamePanel.classList.add('hidden');
+            resultsPanel.classList.add('hidden');
+            
+            // Clear displays
+            problemDisplay.textContent = "Select options and start!";
+            answerInput.value = '';
+        }
+
+        // --- Event Handlers and Initialization ---
+
+        function updateDifficultyOptions() {
+            const selectedMode = operationSelect.value;
+            const options = difficultyOptions[selectedMode];
+            
+            difficultySelect.innerHTML = options.map(opt => 
+                `<option value="${opt.value}">${opt.label}</option>`
+            ).join('');
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDifficultyOptions();
+        });
+
+        operationSelect.addEventListener('change', updateDifficultyOptions);
+        startButton.addEventListener('click', startGame);
+        answerInput.addEventListener('keydown', checkAnswer);
+
+    </script>
+</body>
+</html>
