@@ -182,6 +182,8 @@
                 <h2 class="text-2xl font-bold text-gray-800 mt-4 mb-2">Practice Complete!</h2>
                 <p id="completionMessage" class="text-lg text-gray-600 mb-6">Great job, [Name]! You finished all the steps.</p>
                 
+                <p id="dateTimeDisplay" class="text-sm text-gray-500 mb-8 font-medium"></p>
+                
                 <button id="mainPageButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg">
                     Go to Main Page
                 </button>
@@ -238,6 +240,7 @@
         const answerInput = $('answerInput');
         const answerFeedback = $('answerFeedback');
         const completionMessage = $('completionMessage');
+        const dateTimeDisplay = $('dateTimeDisplay');
 
 
         /**
@@ -366,9 +369,22 @@
             // Check for completion
             if (state.currentStep > state.totalSteps) {
                 // Game over
+
+                // 1. Get current date and time
+        const now = new Date();
+        const dateString = now.toLocaleDateString('en-US', { 
+            year: 'numeric', month: 'long', day: 'numeric' 
+        });
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+        });
                 // MODIFIED: Added selected practice number to the message
                 completionMessage.textContent = `Excellent work, ${state.studentName}! You completed all ${state.totalSteps} steps of Continuous ${state.operation} with the number ${state.studentNumber}.`;
-                showScreen('complete');
+
+                // 3. Display the date and time
+        dateTimeDisplay.textContent = `Completed on: ${dateString} at ${timeString}`;
+        
+        showScreen('complete');
                 return;
             }
 
@@ -496,4 +512,5 @@
 </body>
 
 </html>
+
 
