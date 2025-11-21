@@ -4,101 +4,210 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Division Practice</title>
+    
+    <link rel="stylesheet" href="elegant-theme.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        /* Reusing common styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #FFFFE0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc; /* Soft slate background */
         }
-        header {
-            background-color: #ffff94;
-            color: black;
-            padding: 15px 10px;
-            text-align: center;
+
+        /* --- ANIMATIONS --- */
+
+        /* 1. The Spring/Bounce Effect on Hover (Card Body) */
+        .practice-card {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        box-shadow 0.3s ease, 
+                        border-color 0.3s ease;
+            border: 2px solid transparent;
+            opacity: 0; /* Hidden initially for entrance animation */
+            animation: slideUpFade 0.6s ease-out forwards;
         }
-        main {
-            flex-grow: 1;
-            padding: 20px;
-            text-align: center;
+        
+        .practice-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            border-color: #818cf8;
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2), 0 10px 10px -5px rgba(99, 102, 241, 0.1);
         }
-        footer {
-            background-color: #ffff94;
-            color: black;
-            padding: 10px;
-            text-align: center;
-            font-size: 0.9em;
+
+        /* 2. THE EMOJI SHAKE (New Code) */
+        @keyframes shake-icon {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
         }
-        h1 {
-            font-size: 1.5em;
-            margin: 0;
+
+        /* Target the emoji (inside class .text-2xl) when the card is hovered */
+        .practice-card:hover .text-2xl {
+            display: inline-block; /* Required for transform to work on text */
+            animation: shake-icon 0.4s ease-in-out infinite;
         }
-        h2 {
-            font-size: 1.1em;
-            margin-top: 5px;
-            margin-bottom: 20px;
+
+        /* 3. Page Load Entrance Animation */
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .button-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 300px;
-            margin: 20px auto;
-        }
-        .practice-button {
-            padding: 10px;
-            font-size: 1em;
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .practice-button:hover {
-            background-color: #138496;
-        }
+
+        /* Stagger the animation delays */
+        .card-delay-1 { animation-delay: 0.1s; }
+        .card-delay-2 { animation-delay: 0.2s; }
+        .card-delay-3 { animation-delay: 0.3s; }
+        .card-delay-4 { animation-delay: 0.4s; }
+        .card-delay-5 { animation-delay: 0.5s; }
+        .card-delay-6 { animation-delay: 0.6s; }
+        .card-delay-7 { animation-delay: 0.7s; }
+
+        /* Level Badge Colors */
+        .badge-level-5 { background-color: #d1fae5; color: #065f46; } /* Green */
+        .badge-level-6 { background-color: #fef3c7; color: #92400e; } /* Amber */
+        .badge-level-7 { background-color: #fee2e2; color: #991b1b; } /* Red */
+        .badge-level-8 { background-color: #e0e7ff; color: #3730a3; } /* Indigo */
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-<script>
-    // Security check: If 'isLoggedIn' is NOT in sessionStorage, redirect to login page.
-    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-        // Redirect to the login page
-        window.location.href = 'index.html'; 
-    }
-</script>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
 
-    <header>
-        <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
-        <h2>Daily Practice App - Division</h2>
+        document.addEventListener('DOMContentLoaded', function() {
+            const name = sessionStorage.getItem('studentName') || sessionStorage.getItem('username') || 'Champ';
+            const greetingEl = document.getElementById('student-greeting');
+            if (greetingEl) {
+                greetingEl.innerHTML = `Welcome, <span class="text-yellow-300 underline decoration-wavy decoration-2">${name}</span>! Ready to Divide?`;
+            }
+        });
+    </script>
+
+    <header class="bg-indigo-600 text-white p-6 shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full translate-x-1/3 translate-y-1/3"></div>
+
+        <div class="max-w-6xl mx-auto text-center relative z-10">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">Li'l Champs Abacus Academy</h1>
+            <h2 id="student-greeting" class="text-indigo-100 text-xl md:text-2xl font-semibold">
+                Welcome, Champ! Ready to Divide?
+            </h2>
+        </div>
     </header>
 
-    <main>
-        <h3>Do Practice on Abacus</h3>
-        <div class="button-grid">
-            <a href="3by1.html" class="practice-button">3 digits ÷ 1 digit (5th Level)</a>
-            <a href="4by1.html" class="practice-button">4 digits ÷ 1 digit (6th Level)</a>
-            <a href="4by2.html" class="practice-button">4 digits ÷ 2 digits (7th Level)</a>
-            <a href="4by3.html" class="practice-button">4 digits ÷ 3 digit (8th Level)</a>
-            <a href="5by1.html" class="practice-button">5 digits ÷ 1 digit (6th Level)</a>
-            <a href="5by2.html" class="practice-button">5 digits ÷ 2 digits (7th Level)</a>
-			<a href="5by3.html" class="practice-button">5 digits ÷ 3 digits (8th Level)</a>
+    <main class="flex-grow p-6 md:p-10">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="text-center mb-10">
+                <h3 class="text-3xl font-bold text-gray-800">Choose Your Challenge</h3>
+                <p class="text-gray-500 mt-2 text-lg">Select a difficulty level to begin practicing.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <a href="3by1.html" class="practice-card card-delay-1 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition">
+                        <span class="text-2xl">➗</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">3 Digits &divide; 1 Digit</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-5 mb-4">5th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="4by1.html" class="practice-card card-delay-2 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-200 transition">
+                        <span class="text-2xl">🚀</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &divide; 1 Digit</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="4by2.html" class="practice-card card-delay-3 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-red-200 transition">
+                        <span class="text-2xl">🔥</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &divide; 2 Digits</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="4by3.html" class="practice-card card-delay-4 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition">
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &divide; 3 Digits</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-8 mb-4">8th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="5by1.html" class="practice-card card-delay-5 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-200 transition">
+                        <span class="text-2xl">⭐</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">5 Digits &divide; 1 Digit</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="5by2.html" class="practice-card card-delay-6 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-red-200 transition">
+                        <span class="text-2xl">👑</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">5 Digits &divide; 2 Digits</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+                <a href="5by3.html" class="practice-card card-delay-7 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition">
+                        <span class="text-2xl">🏆</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">5 Digits &divide; 3 Digits</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-8 mb-4">8th Level</span>
+                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
+                        Start Practice &rarr;
+                    </span>
+                </a>
+
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="practice_options.html" class="text-gray-500 hover:text-indigo-600 font-bold transition duration-200 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Back to Main Menu
+                </a>
+            </div>
+
         </div>
-        <p><a href="practice_options.html">← Back to Options</a></p>
     </main>
 
-    <footer>
-        For any queries call 9730482620
+    <footer class="bg-gray-100 text-gray-600 p-4 text-center border-t border-gray-200">
+        <p class="text-sm">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
+
 </body>
-
 </html>
-
-
-
