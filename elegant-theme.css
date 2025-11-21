@@ -1,0 +1,84 @@
+/* IMPORT GOOGLE FONTS (Nunito for roundness/fun) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+:root {
+    --primary-blue: #4f46e5; /* Indigo 600 */
+    --primary-light: #818cf8; /* Indigo 400 */
+    --accent-coral: #ff7e67; /* Soft Coral */
+    --bg-soft: #f8fafc;      /* Very light blue-grey */
+    --card-white: #ffffff;
+    --success-green: #10b981;
+}
+
+body {
+    font-family: 'Nunito', sans-serif !important;
+    background-color: var(--bg-soft) !important;
+}
+
+/* --- ELEGANT HEADER --- */
+/* Overrides the old bg-yellow-200 */
+header {
+    background: linear-gradient(135deg, var(--primary-blue), #4338ca) !important;
+    color: white !important;
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.2) !important;
+}
+header h1 {
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+}
+
+/* --- MODERN CARDS --- */
+/* Makes the white sections pop */
+#start-screen, #test-area, #report-area, #wrong-answer-area, .bg-white {
+    border-radius: 24px !important;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* --- BUTTONS (Juicy & Clickable) --- */
+button {
+    border-radius: 12px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 800 !important;
+}
+button:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+button:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* --- INPUT FIELDS --- */
+input[type="number"], input[type="text"] {
+    border-radius: 12px !important;
+    border: 2px solid #e2e8f0 !important;
+    transition: all 0.3s ease;
+    font-family: 'Nunito', monospace; /* Monospace numbers align better */
+    font-weight: 700;
+}
+input:focus {
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+    outline: none;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.sum-item, .wrong-sum-row {
+    animation: popIn 0.3s ease-out forwards;
+}
+
+/* Correct Answer Flash */
+.flash-success {
+    animation: flashGreen 0.5s ease-out;
+}
+@keyframes flashGreen {
+    0% { background-color: #d1fae5; transform: scale(1.05); }
+    100% { background-color: transparent; transform: scale(1); }
+}
