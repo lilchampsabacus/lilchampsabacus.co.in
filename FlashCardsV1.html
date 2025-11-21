@@ -128,8 +128,19 @@
             50% { transform: translateY(-8px); }
         }
 
+        @keyframes shine {
+            0% { background-position: -100px; }
+            100% { background-position: 200px; }
+        }
+
         .card-enter { animation: popIn 0.4s ease-out forwards; }
         .floating-title { animation: float 3s ease-in-out infinite; }
+
+        .highscore-badge {
+            background: linear-gradient(90deg, #FFF 0%, #fef3c7 50%, #FFF 100%);
+            background-size: 200px;
+            animation: shine 3s infinite linear;
+        }
 
         .confetti {
             position: absolute;
@@ -170,7 +181,15 @@
         <!-- SCREEN: SETUP -->
         <div id="setup-screen" class="bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-lg text-center border-b-8 border-yellow-400 card-enter mt-4 md:mt-0">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-700 mb-2 floating-title">Let's Practice!</h2>
-            <p class="text-gray-500 mb-6">Configure your flash cards</p>
+            
+            <!-- High Score Badge -->
+            <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-300 text-yellow-700 font-bold text-sm md:text-base highscore-badge shadow-sm">
+                <i class="fa-solid fa-trophy text-yellow-500"></i>
+                Personal Best (<span id="hs-digit-label">3</span> digits): 
+                <span id="highscore-display" class="text-lg ml-1 text-yellow-800">0</span>/20
+            </div>
+
+            <p class="text-gray-500 mb-6 hidden">Configure your flash cards</p>
 
             <!-- Digits Selection -->
             <div class="mb-4 md:mb-6">
@@ -275,6 +294,12 @@
 
         <!-- SCREEN: RESULTS -->
         <div id="result-screen" class="hidden bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-lg text-center border-b-8 border-green-400 card-enter mt-4">
+            <div id="new-record-msg" class="hidden mb-4">
+                <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-bold border border-yellow-400 animate-bounce inline-block">
+                    <i class="fa-solid fa-crown mr-1"></i> New High Score!
+                </span>
+            </div>
+
             <i class="fa-solid fa-trophy text-5xl md:text-6xl text-yellow-400 mb-4 floating-title"></i>
             <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Great Job!</h2>
             <p class="text-gray-500 mb-6">Session Complete</p>
@@ -298,7 +323,7 @@
             <i class="fa-solid fa-arrow-left"></i> Back to Options
         </a>
     </footer>
-    
+
     <!-- SCRIPTS -->
     <script>
         // --- Game State ---
@@ -319,6 +344,35 @@
             fast: 3000,
             fastest: 1500
         };
+
+        // --- High Score Logic ---
+        function getHighScore(digits) {
+            // Key is e.g. "abacus_hs_3"
+            const key = `abacus_hs_${digits}`;
+            return parseInt(localStorage.getItem(key)) || 0;
+        }
+
+        function saveHighScore(digits, score) {
+            const key = `abacus_hs_${digits}`;
+            const currentBest = getHighScore(digits);
+            if (score > currentBest) {
+                localStorage.setItem(key, score);
+                return true; // New record!
+            }
+            return false;
+        }
+
+        function updateHighScoreDisplay(digits) {
+            const best = getHighScore(digits);
+            document.getElementById('hs-digit-label').innerText = digits;
+            document.getElementById('highscore-display').innerText = best;
+        }
+
+        // Initialize High Score on Load
+        window.addEventListener('load', () => {
+            updateHighScoreDisplay(state.digits);
+        });
+
 
         // --- Screen Size Handling ---
         let dimensions = {
@@ -345,6 +399,9 @@
         // --- Setup Functions ---
         function selectDigits(n) {
             state.digits = n;
+            // Update high score display when digits change
+            updateHighScoreDisplay(n);
+
             document.querySelectorAll('.digit-btn').forEach(btn => {
                 const val = parseInt(btn.dataset.val);
                 if(val === n) {
@@ -615,6 +672,17 @@
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-score').innerText = state.score;
             
+            // Check and Save High Score (Only in Quiz mode usually, but logic works for both)
+            if (state.mode === 'quiz') {
+                const isNewRecord = saveHighScore(state.digits, state.score);
+                if(isNewRecord) {
+                    document.getElementById('new-record-msg').classList.remove('hidden');
+                    createConfetti(); // Extra confetti for high score
+                } else {
+                    document.getElementById('new-record-msg').classList.add('hidden');
+                }
+            }
+
             const msg = document.getElementById('feedback-text');
             const pct = state.score / state.totalCards;
             if(pct === 1) msg.innerText = "Perfect Score! You are a Soroban Master! 🏆";
@@ -637,4 +705,3 @@
     </script>
 </body>
 </html>
-
