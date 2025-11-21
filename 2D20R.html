@@ -4,78 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Addition/Subtraction Practice (10 Rows)</title>
+    
+    <link rel="stylesheet" href="elegant-theme.css">
+    <script src="gamify.js" defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
         /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
         html { scroll-padding-top: 100px; }
         
-        /* NEW: Style for the sum table container */
+        /* Sum Table Container */
         .sum-list-container {
             overflow: hidden; 
             align-content: start; 
             padding-bottom: 0.5rem; 
         }
 
-        /* Style for the table itself */
+        /* Table Styles */
         .sum-table {
             width: 100%;
-            border-collapse: collapse; /* Ensure no gaps between cells */
+            border-collapse: collapse; 
             margin: 0 auto;
-            max-height: 72vh; /* Maximized vertical height */
+            max-height: 72vh; 
             overflow: hidden; 
-            /* NEW: Set fixed width for the table columns */
             table-layout: fixed; 
         }
 
-        /* Style for each number row/cell - FONT SIZE ADJUSTED FOR ALL DEVICES */
+        /* Number Cell Styles */
         .number-cell {
             text-align: center;
-            /* clamp(min_size: 0.85rem, preferred_size: 4vw, max_size: 1.1rem) */
-            font-size: clamp(0.85rem, 4vw, 1.1rem); 
-            line-height: 1.05; 
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            line-height: 1.1; 
             font-weight: 700; 
-            padding: 0.1rem 0.5rem; 
-            border: 1px solid #e5e7eb; /* Subtle border for separation (gray-200) */
-            
-            /* Optional: Ensure fixed height/width for better visual structure */
-            height: 1.5rem; 
+            padding: 0.2rem 0.5rem; 
+            border: 1px solid #e5e7eb; 
+            height: 2rem; 
             vertical-align: middle;
         }
         
-        /* NEW: Define widths for the two table columns */
+        /* Column Widths */
         .sum-table tr td:first-child {
-            /* Row Number Column */
-            width: 10%; 
-            background-color: #f7f7f7; /* Slight background for the row number column */
-            color: #4b5563; /* Tailwind gray-600 */
+            width: 15%; 
+            background-color: rgba(0,0,0,0.05); /* Adaptive gray */
+            color: #4b5563; 
         }
         
         .sum-table tr td:last-child {
-            /* Number Value Column */
-            width: 30%;
+            width: 85%;
         }
 
-        /* NEW: Highlight alternate rows with a faint color */
+        /* Zebra Striping - Adjusted for Warmth */
         .sum-table tr:nth-child(even) {
-            background-color: #f3f4f6; /* Tailwind gray-100 for faint highlight */
+            background-color: rgba(0,0,0,0.03); 
         }
-        /* Keep the row number column background consistent even on alternate rows */
         .sum-table tr:nth-child(even) td:first-child {
-             background-color: #f7f7f7; 
+             background-color: rgba(0,0,0,0.06); 
         }
 
-        /* Custom Colors (applied to the cell content) */
-        .positive-number { color: black; } /* Plus numbers in black (no sign) */
-        .negative-number { color: rgb(37, 99, 235); /* Tailwind blue-600 */ } /* Minus numbers in blue */
+        /* Number Colors */
+        .positive-number { color: inherit; } 
+        .negative-number { color: rgb(37, 99, 235); } 
 
-        /* Report area styles inherited from 2x1.html */
-        .wrong-sum-row {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr;
-            gap: 1rem;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e5e7eb;
+        /* --- FOCUS MODE STYLES (Kindle/Sepia Theme) --- */
+        body.focus-mode {
+            background-color: #fbf0d9 !important; /* KINDLE SEPIA BACKGROUND */
+            color: #433422; /* Dark Coffee Text */
+            height: 100vh;
+            overflow-y: auto; 
+        }
+
+        /* Hide distractions in Focus Mode */
+        body.focus-mode header, 
+        body.focus-mode footer, 
+        body.focus-mode .back-link,
+        body.focus-mode #student-name-container { 
+            display: none !important;
+        }
+
+        /* Center the Test Area perfectly in Focus Mode */
+        body.focus-mode main {
+            min-height: 100vh; 
+            display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 1rem; 
+            max-width: 100%;
+        }
+
+        /* Clean up the test card for Focus Mode */
+        body.focus-mode #test-area {
+            margin: 0;
+            width: 100%;
+            max-width: 500px; 
+            background-color: #fffdf5 !important; /* Pearl White Card */
+            box-shadow: 0 20px 25px -5px rgba(67, 52, 34, 0.1), 0 10px 10px -5px rgba(67, 52, 34, 0.04);
+            position: relative; 
+        }
+        
+        /* Softer row numbers in Focus Mode */
+        body.focus-mode .sum-table tr td:first-child {
+            background-color: transparent;
+            color: #8c7b66; /* Warm gray */
+            border-right: 2px solid #ebdcc4;
+        }
+        
+        body.focus-mode .number-cell {
+            border-color: #ebdcc4; 
+        }
+
+        /* --- UPDATED TIMER POSITIONING --- */
+        body.focus-mode #test-header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: transparent !important; 
+            box-shadow: none !important;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: flex-end !important; 
+            align-items: flex-start;
+            z-index: 50; 
+            pointer-events: none; 
+        }
+
+        body.focus-mode #timer-container {
+            pointer-events: auto; 
+            background-color: #ece0c6; 
+            color: #433422;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        body.focus-mode #timer-display {
+             color: #5d4037 !important;
         }
     </style>
 </head>
@@ -88,7 +154,7 @@
     </header>
 
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Addition Subtraction Practice (10 Rows)</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Addition Subtraction Practice (10 Rows)</h2>
 
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
             <h3 class="text-xl font-semibold mb-4 text-gray-700">Abacus Practice Settings</h3>			
@@ -113,47 +179,49 @@
         </section>
 
         <section id="test-area" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-20 z-10">
-                <div class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
+            <div id="test-header-bar" class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-4 sticky top-0 z-10">
+                
+                <div id="student-name-container" class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
                     Student: <span id="display-student-name" class="font-bold"></span>
                 </div>
-                <div class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
-                    Time Elapsed: <span id="timer-display">0:00</span>
+
+                <div id="timer-container" class="text-2xl font-extrabold text-green-600">
+                    <span id="timer-display" class="">0:00</span>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center">
-                <div class="w-full max-w-[150px] mx-auto"> 
-                    <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">2 Digit - 10 Rows</h4>
-                    
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center flex-col">
+                 <h4 class="text-xl font-bold text-gray-400 mb-2 text-center text-sm uppercase tracking-widest" id="sum-title">Question 1 / 20</h4>
+                
+                <div class="w-full max-w-[200px] mx-auto"> 
                     <div id="sum-grid" class="sum-list-container mb-2">
                         </div>
                     
-                    <div class="w-full h-0.5 bg-gray-700 mb-4"></div> 
+                    <div class="w-full h-1 bg-gray-800 mb-4 rounded"></div> 
 
                     <div class="flex flex-col items-center mx-auto">
-                        <input type="number" id="answer-input" class="w-40 p-2 border-2 border-gray-400 rounded-lg text-center text-2xl font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500" placeholder="Enter Answer">
+                        <input type="number" id="answer-input" class="w-full p-3 border-2 border-gray-400 rounded-lg text-center text-3xl font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all" placeholder="?">
                     </div>
                 </div>
-            </div>
+                
+                <div id="feedback-area" class="mt-4 w-full max-w-md mx-auto text-center hidden">
+                    <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
+                </div>
             
-            <div class="mt-6 flex flex-row justify-between gap-4 max-w-md mx-auto">
-                <button id="submit-button" onclick="checkAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
-                    Submit Answer
-                </button>
+                <div class="mt-4 flex flex-row justify-between gap-4 max-w-md mx-auto w-full">
+                    <button id="submit-button" onclick="checkAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                        Submit
+                    </button>
 
-                <button id="next-sum-button" onclick="nextSum()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
-                    Next Sum (1/20)
-                </button>
-            </div>
-            
-            <div id="feedback-area" class="mt-4 w-full max-w-md mx-auto text-center hidden">
-                <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
+                    <button id="next-sum-button" onclick="nextSum()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
+                        Next
+                    </button>
+                </div>
             </div>
         </section>
 
         <section id="report-area" class="hidden flex justify-center">
-            <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+            <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
 
                 <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Addition Subtraction Report</h3>
 
@@ -181,9 +249,12 @@
                     </div>
                 </div>
 
-                <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
-                    📸 Take screenshot of this report and send to your Abacus teacher.
-                </p>
+                <button onclick="downloadReport()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Report
+                </button>
                 
 				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
                     Practice again
@@ -197,7 +268,7 @@
         </div>
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center back-link">
         <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
             &larr; Back to Plus Minus
         </a>
@@ -210,112 +281,135 @@
     </footer>
 
     <script>
-        
-        // JAVASCRIPT CHANGE 1: Change total sums per practice to 10
+        // --- CONFIGURATION ---
         const TOTAL_SUMS_PER_PRACTICE = 20;
-        // JAVASCRIPT CHANGE 2: Change negative indices for 10 rows (3rd, 6th, 9th number is minus)
-        const NEGATIVE_INDICES = [3, 6, 9]; 
+        const NEGATIVE_INDICES = [3, 6, 9]; // Rows that are negative
         
         let timerInterval;
         let currentSumIndex = 0;
         let practiceData = []; 
         let startTime;
         let totalTimeElapsedSeconds = 0;
-		let practiceTitleText = "";
+        let practiceTitleText = "";
 
-		/**
- * Extracts a formatted name (First Name Last Name) from a student identifier 
- * which is expected to be an email-like string (e.g., "first.last@domain.com").
- * @param {string} identifier - The student identifier string.
- * @returns {string} The formatted name or the original identifier if extraction fails.
- */
-function formatStudentName(identifier) {
-    if (!identifier || typeof identifier !== 'string') {
-        return 'Student';
-    }
-    
-    // 1. Remove the domain part (everything after the first '@')
-    const namePart = identifier.split('@')[0];
-    
-    // 2. Split by '.' (or any common name separator)
-    const parts = namePart.split('.');
-    
-    // 3. Capitalize the first letter of each part and join them with a space
-    let formattedName = parts.map(part => {
-        if (part.length > 0) {
-            // Capitalize first letter, lowercase the rest
-            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        // --- UTILITY FUNCTIONS ---
+        function getStudentNameSafe() {
+            try { return sessionStorage.getItem('studentIdentifier'); } catch (e) { return null; }
         }
-        return '';
-    }).filter(p => p.length > 0) // Remove empty strings
-      .join(' ');
-      
-    // 4. Return the formatted name, or a fallback if the result is empty
-    return formattedName || identifier; 
-}
+
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') return 'Student';
+            try {
+                const namePart = identifier.split('@')[0];
+                const parts = namePart.split('.');
+                let formattedName = parts.map(part => {
+                    if (part.length > 0) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                    return '';
+                }).filter(p => p.length > 0).join(' ');
+                return formattedName || identifier;
+            } catch (e) { return identifier; }
+        }
+
+        function showMessage(text) {
+            const box = document.getElementById('message-box');
+            if (box) {
+                document.getElementById('message-text').textContent = text;
+                box.classList.remove('hidden');
+                box.style.opacity = '1';
+            } else { alert(text); }
+        }
         
+        // NEW: FUNCTION TO DOWNLOAD REPORT
+        function downloadReport() {
+            const reportElement = document.getElementById('report-card');
+            const studentName = document.getElementById('report-student-name').textContent || "Student";
+            
+            if (!reportElement) {
+                showMessage("Error finding report card to download.");
+                return;
+            }
+
+            // Use html2canvas to take the snapshot
+            html2canvas(reportElement, {
+                scale: 2, // Higher quality image
+                backgroundColor: null // Transparent background if possible
+            }).then(canvas => {
+                // Create a fake link to trigger download
+                const link = document.createElement('a');
+                link.download = `Abacus_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            }).catch(err => {
+                console.error("Report generation failed:", err);
+                showMessage("Could not download report. Please take a screenshot manually.");
+            });
+        }
+        
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Check for student identifier. No 'Guest User' fallback allowed.
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            const studentIdentifier = getStudentNameSafe();
             const displayElement = document.getElementById('auto-student-name-display');
             const startButton = document.getElementById('start-button');
-            const displayStudentName = formatStudentName(studentIdentifier); // <-- NEW LINE
+            const displayStudentName = formatStudentName(studentIdentifier);
+            
             if (studentIdentifier) {
-                //nameInput.value = studentIdentifier;
-                document.getElementById('auto-student-name-display').textContent = displayStudentName; // <--- MODIFIED
-                startButton.disabled = false;
-                startButton.textContent = "Start Practice for " + displayStudentName;
+                if(displayElement) displayElement.textContent = displayStudentName;
+                if(startButton) {
+                    startButton.disabled = false;
+                    startButton.textContent = "Start Practice for " + displayStudentName;
+                }
             } else {
-                // If not logged in, block access
-                displayElement.textContent = 'Login Required (Go to Main Menu)';
-                displayElement.classList.add('text-red-600', 'font-extrabold'); 
-                startButton.textContent = "Log In on Main Menu to Start";
-                startButton.disabled = true; // Block practice start
-                
-                // Alert the user
-                showMessage("Access Denied. Please log in with your username on the main menu page (index.html) to start your practice.");
+                if(displayElement) {
+                    displayElement.textContent = 'Guest User (Login Required for Reports)';
+                    displayElement.classList.add('text-orange-600'); 
+                }
+                if(startButton) {
+                    startButton.textContent = "Start Practice (Guest)";
+                    startButton.disabled = false; 
+                }
             }
 
             generateAllPracticeSums(); 
             renderSum();
             
-            document.getElementById('practice-type').addEventListener('change', () => {
-                // Only generate new sums if the button is not disabled (i.e., user is logged in)
-                if (!startButton.disabled) {
-                    generateAllPracticeSums();
-                    currentSumIndex = 0;
-                    renderSum();
-                }
-            });
+            const typeSelect = document.getElementById('practice-type');
+            if(typeSelect) {
+                typeSelect.addEventListener('change', () => {
+                    if (!startButton.disabled) {
+                        generateAllPracticeSums();
+                        currentSumIndex = 0;
+                        renderSum();
+                    }
+                });
+            }
         });
 
-        function showMessage(text) {
-            const box = document.getElementById('message-box');
-            document.getElementById('message-text').textContent = text;
-            box.classList.remove('hidden');
-            box.style.opacity = '1';
-        }
-
-        // --- SUM GENERATION LOGIC ---
-
-        function generateRandomNumber(digits) {
-            let min, max;
-            if (digits === 3) { min = 1; max = 9; } 
-            else if (digits === 1) { min = 10; max = 99; } 
-            else if (digits === 2) { min = 100; max = 999; } 
-            else { min = 1; max = 9; } 
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
-        function generateSingleSum(digits) {
+        // --- SUM GENERATION ---
+        function generateSingleSum(optionValue) {
             let sumSet = [];
             let total = 0;
-
-            // JAVASCRIPT CHANGE 3: Change loop limit from 20 to 10
+            
             for (let i = 1; i <= 10; i++) {
-                let number = generateRandomNumber(digits);
-                let isNegative = NEGATIVE_INDICES.includes(i);
+                let min, max;
                 
+                if (optionValue === 3) { // 1 Digit Sums
+                    if (i <= 2) { min = 5; max = 9; }
+                    else        { min = 1; max = 9; }
+                } 
+                else if (optionValue === 1) { // 2 Digit Sums
+                    if (i <= 2) { min = 55; max = 99; }
+                    else        { min = 10; max = 99; }
+                } 
+                else if (optionValue === 2) { // 3 Digit Sums
+                    if (i <= 2) { min = 555; max = 999; }
+                    else        { min = 100; max = 999; }
+                } else {
+                    min = 1; max = 9; 
+                }
+
+                let number = Math.floor(Math.random() * (max - min + 1)) + min;
+                
+                let isNegative = NEGATIVE_INDICES.includes(i);
                 if (isNegative) {
                     number = -number;
                 }
@@ -324,40 +418,36 @@ function formatStudentName(identifier) {
                 total += number;
             }
 
-            // Ensure the final answer is positive
-            if (total <= 0) {
-                return generateSingleSum(digits);
-            }
-            
+            if (total <= 0) return generateSingleSum(optionValue);
             return { numbers: sumSet, correctTotal: total };
         }
         
         function generateAllPracticeSums() {
             practiceData = [];
-            const digits = parseInt(document.getElementById('practice-type').value);
+            const typeElement = document.getElementById('practice-type');
+            const optionValue = typeElement ? parseInt(typeElement.value) : 1;
+            
             for (let i = 0; i < TOTAL_SUMS_PER_PRACTICE; i++) {
                 practiceData.push({
-                    ...generateSingleSum(digits),
+                    ...generateSingleSum(optionValue),
                     studentAnswer: null,
                     isCorrect: null,
-                    timeTaken: 0,
-                    digits: digits 
+                    timeTaken: 0
                 });
             }
         }
 
-        // --- RENDERING LOGIC (UPDATED FOR TABLE WITH ROW NUMBERS) ---
-
+        // --- RENDERING ---
         function renderSum() {
             const sumContainer = document.getElementById('sum-grid');
+            if (!sumContainer) return;
+            if (practiceData.length === 0) generateAllPracticeSums();
             
-            if (practiceData.length === 0) return; // Safety check
-
             const currentSum = practiceData[currentSumIndex];
+            sumContainer.innerHTML = ''; 
             
-            sumContainer.innerHTML = ''; // Clear previous content
-            
-            document.getElementById('sum-title').textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
+            const titleElem = document.getElementById('sum-title');
+            if(titleElem) titleElem.textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
             
             const table = document.createElement('table');
             table.className = 'sum-table';
@@ -366,20 +456,15 @@ function formatStudentName(identifier) {
             currentSum.numbers.forEach((number, index) => {
                 const isNegative = number < 0;
                 const absNumber = Math.abs(number);
-                
                 const colorClass = isNegative ? 'negative-number' : 'positive-number';
                 const displayString = isNegative ? `-${absNumber}` : `${absNumber}`;
                 
                 const row = document.createElement('tr');
-                
-                // NEW: Add cell for row number (index + 1)
                 const rowNumberCell = document.createElement('td');
-                // The styling is primarily in the CSS block, but we ensure it uses number-cell class
                 rowNumberCell.className = 'number-cell text-gray-700 font-bold'; 
-                rowNumberCell.textContent = index + 1; // 1-based row number
+                rowNumberCell.textContent = index + 1;
                 row.appendChild(rowNumberCell); 
 
-                // Existing: Add cell for the actual number
                 const numberCell = document.createElement('td');
                 numberCell.className = `number-cell ${colorClass}`;
                 numberCell.textContent = displayString;
@@ -391,80 +476,85 @@ function formatStudentName(identifier) {
             table.appendChild(tbody);
             sumContainer.appendChild(table);
             
-            // Reset input and feedback
-			const answerInput = document.getElementById('answer-input'); // <-- Grab the input element
-            answerInput.value = '';
-            answerInput.disabled = false;
-            document.getElementById('feedback-area').classList.add('hidden');
-            document.getElementById('submit-button').disabled = false;
-            document.getElementById('next-sum-button').disabled = true;
-            document.getElementById('next-sum-button').textContent = `Next Sum (${currentSumIndex + 1}/${TOTAL_SUMS_PER_PRACTICE})`;
+            const answerInput = document.getElementById('answer-input');
+            if(answerInput) {
+                answerInput.value = '';
+                answerInput.disabled = false;
+            }
+            
+            const feedback = document.getElementById('feedback-area');
+            if(feedback) feedback.classList.add('hidden');
+            
+            const submitBtn = document.getElementById('submit-button');
+            if(submitBtn) submitBtn.disabled = false;
+            
+            const nextBtn = document.getElementById('next-sum-button');
+            if(nextBtn) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = "Next";
+            }
 
-            if (!document.getElementById('test-area').classList.contains('hidden')) {
-                document.getElementById('answer-input').focus();
+            if (document.getElementById('test-area') && !document.getElementById('test-area').classList.contains('hidden')) {
+                if(answerInput) answerInput.focus();
             }
         }
 
-		// --- PRACTICE FLOW LOGIC ---
-		// Add this function definition:
-function setupInputFocus() {
-    const input = document.getElementById('answer-input');
-    if (input) {
-        // Handle Enter key to simulate clicking Submit or Next
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!document.getElementById('submit-button').disabled) {
-                    checkAnswer();
-                } else if (!document.getElementById('next-sum-button').disabled) {
-                     nextSum();
-                }
+        function setupInputFocus() {
+            const input = document.getElementById('answer-input');
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const submitBtn = document.getElementById('submit-button');
+                        const nextBtn = document.getElementById('next-sum-button');
+                        if (submitBtn && !submitBtn.disabled) {
+                            checkAnswer();
+                        } else if (nextBtn && !nextBtn.disabled) {
+                             nextSum();
+                        }
+                    }
+                });
             }
-        });
+        }
         
-        // Ensure focus is kept on the input field when the test is active
-        setTimeout(() => input.focus(), 100); 
-    }
-}
-		
+        // --- TEST FLOW ---
         function startTest() {
-			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            if (!studentIdentifier) {
-                // Should not happen if button is disabled, but as a safety check
-                showMessage("Access Denied. Please log in again.");
-                return;
-            }
-			const displayStudentName = formatStudentName(studentIdentifier);
+            document.body.classList.add('focus-mode');
 
-			// ✅ CAPTURE THE FULL PRACTICE TITLE HERE
+            const studentIdentifier = getStudentNameSafe();
+            const displayStudentName = formatStudentName(studentIdentifier);
+
             const practiceTypeSelect = document.getElementById('practice-type');
-            practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
-			
-			generateAllPracticeSums();
+            if(practiceTypeSelect) {
+                practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
+            }
+            
+            generateAllPracticeSums();
             currentSumIndex = 0; 
             renderSum();
             
-            document.getElementById('display-student-name').textContent = displayStudentName;
+            const displayElement = document.getElementById('display-student-name');
+            if(displayElement) displayElement.textContent = displayStudentName;
+            
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
-            document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
             
-			setupInputFocus(); 
-   			
-			// ✅ FIX: Target the single answer input by ID, not a non-existent class
-    		const answerInput = document.getElementById('answer-input');
-    		answerInput.disabled = false;
-    		answerInput.focus();
-			
-			totalTimeElapsedSeconds = 0; 
+            setupInputFocus(); 
+            const answerInput = document.getElementById('answer-input');
+            if(answerInput) {
+                answerInput.disabled = false;
+                setTimeout(() => answerInput.focus(), 100);
+            }
+            
+            totalTimeElapsedSeconds = 0; 
             startTime = Date.now(); 
             startTimer(); 
         }
 
         function startTimer() {
             const display = document.getElementById('timer-display');
+            if(!display) return;
             let overallStartTime = Date.now() - totalTimeElapsedSeconds * 1000;
-            
             function updateTimer() {
                 const totalTime = Math.floor((Date.now() - overallStartTime) / 1000);
                 const minutes = Math.floor(totalTime / 60);
@@ -478,7 +568,6 @@ function setupInputFocus() {
         function checkAnswer() {
             const input = document.getElementById('answer-input');
             const studentAnswer = parseInt(input.value.trim());
-            
             if (isNaN(studentAnswer)) {
                 showMessage("Please enter a valid number.");
                 return;
@@ -497,19 +586,20 @@ function setupInputFocus() {
             currentSum.isCorrect = isCorrect;
             currentSum.studentAnswer = studentAnswer;
             
-            // Show Feedback
             if (isCorrect) {
                 answerDisplay.textContent = "Correct!";
                 answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-green-200 text-green-800";
+                if (typeof window.lilChampUtils !== 'undefined') window.lilChampUtils.playCorrect();
             } else {
-                // Show correct answer below submit button
                 answerDisplay.innerHTML = `Wrong. Correct Answer: <span class="text-green-700">${correctAnswer}</span>`;
                 answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
+                if (typeof window.lilChampUtils !== 'undefined') window.lilChampUtils.playWrong();
             }
             feedbackArea.classList.remove('hidden');
-            
             document.getElementById('submit-button').disabled = true;
-            document.getElementById('next-sum-button').disabled = false;
+            const nextBtn = document.getElementById('next-sum-button');
+            nextBtn.disabled = false;
+            nextBtn.focus(); 
         }
 
         function nextSum() {
@@ -517,9 +607,7 @@ function setupInputFocus() {
                  showMessage("Please submit your answer first.");
                 return;
             }
-
             currentSumIndex++;
-            
             if (currentSumIndex < TOTAL_SUMS_PER_PRACTICE) {
                 startTime = Date.now();
                 renderSum();
@@ -528,17 +616,16 @@ function setupInputFocus() {
             }
         }
 
-        // --- REPORT LOGIC ---
-
+        // --- END TEST & REPORT ---
         function endTest() {
+            document.body.classList.remove('focus-mode');
             clearInterval(timerInterval);
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
 
             let correctCount = practiceData.filter(s => s.isCorrect === true).length;
-            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; // This is now 10
-            
+            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; 
             let avgTimeDisplay = 'N/A';
             if (attemptedCount > 0) {
                 const avgTimeSeconds = totalTimeElapsedSeconds / attemptedCount;
@@ -548,7 +635,6 @@ function setupInputFocus() {
             const minutes = Math.floor(totalTimeElapsedSeconds / 60);
             const seconds = totalTimeElapsedSeconds % 60;
             const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
             const now = new Date();
             const date = ('0' + now.getDate()).slice(-2);
             const month = ('0' + (now.getMonth() + 1)).slice(-2);
@@ -557,9 +643,7 @@ function setupInputFocus() {
             const mins = ('0' + now.getMinutes()).slice(-2);            
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
             
-            // ✅ FIX: Retrieve studentIdentifier safely from sessionStorage
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier'); 
-            
+            const studentIdentifier = getStudentNameSafe();
             document.getElementById('report-datetime').textContent = formattedDateTime;
             document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
             document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted; 
@@ -567,6 +651,11 @@ function setupInputFocus() {
             document.getElementById('report-correct').textContent = correctCount; 
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
             document.getElementById('report-title').textContent = `${practiceTitleText} Report`;
+            
+            if (typeof window.lilChampUtils !== 'undefined' && correctCount > (attemptedCount * 0.7)) { 
+                setTimeout(() => window.lilChampUtils.celebrate(), 500); 
+                window.lilChampUtils.playCorrect(); 
+            }
         }
     </script>
 </body>
