@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3-digit ÷ 1-digit Practice</title>
+    <title>3-digit x 1-digit Practice</title>
     
     <!-- THEME & GAMIFICATION LINKS -->
     <link rel="stylesheet" href="elegant-theme.css">
@@ -62,7 +62,7 @@
         }
 
         /* Hide distractions in Focus Mode */
-        /* Included #test-header-bar to hide Timer & Name */
+        /* Added #test-header-bar to hide Timer & Name */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link,
@@ -115,7 +115,7 @@
     </header>
 
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">3-digit number divided by a 1-digit number</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">3-digit number multiplied by a 1-digit number</h2>
 
         <!-- START SCREEN -->
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
@@ -126,7 +126,7 @@
             <div class="text-lg font-bold text-blue-700 mb-6 border-b pb-2">
                 Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
             </div>
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 30 unique division sums (3-digit &divide; 1-digit, no remainder). The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
+            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 30 unique multiplication sums. The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
             <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50" disabled>
                 Start Practice
             </button>
@@ -167,7 +167,7 @@
         <section id="report-area" class="hidden flex justify-center">
             <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
                 
-                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">3 digits &divide; 1 digit Report</h3>
+                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">3 digits x 1 digit Report</h3>
                 
                 <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
                     Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
@@ -202,7 +202,7 @@
                 </button>
 				
                 <button id="see-wrong-button" onclick="showWrongAnswers()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 disabled:opacity-50 disabled:bg-gray-400">
-                    See Solved Wrong Sums (0)
+                    Review Incorrect Sums (0)
                 </button>
                 
 				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
@@ -237,10 +237,9 @@
         </div>
     </main>
 
-    <!-- BACK LINK (Hidden in Focus Mode) -->
     <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center back-link">
-        <a href="division.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Division Options
+        <a href="multiplication.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+            &larr; Back to Multiplication Options
         </a>
     </div>
 
@@ -258,7 +257,7 @@
         
         const TOTAL_SUMS = 30;
         let timerInterval;
-        let sumsData = []; // Stores {x: dividend, y: divisor, quotient: answer, studentAnswer, isCorrect}
+        let sumsData = [];
         let startTime;
 
         // --- UTILITY: Format Name ---
@@ -311,7 +310,7 @@
             const startButton = document.getElementById('start-button');
 			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
 			const displayStudentName = formatStudentName(studentIdentifier); 
-			
+            
 			if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
@@ -326,32 +325,21 @@
             renderSums();
         });
 
-        // --- SUM GENERATION (3-digit / 1-digit) ---
+        // --- SUM GENERATION (3-digit x 1-digit) ---
         function generateUniqueSums(count) {
             const allPossibilities = [];
-            const MIN_DIVIDEND = 100;
-            const MAX_DIVIDEND = 999;
-            const MIN_DIVISOR = 2; 
-            const MAX_DIVISOR = 9;
-
-            for (let y = MIN_DIVISOR; y <= MAX_DIVISOR; y++) {
-                const minQ = Math.ceil(MIN_DIVIDEND / y); 
-                const maxQ = Math.floor(MAX_DIVIDEND / y); 
-            
-                for (let q = minQ; q <= maxQ; q++) {
-                    const x = q * y; // Dividend
-                    if (x >= MIN_DIVIDEND && x <= MAX_DIVIDEND) {
-                        allPossibilities.push({ x: x, y: y, quotient: q, studentAnswer: null, isCorrect: null });
-                    }
+            // 100-999 x 2-9
+            for (let x = 100; x <= 999; x++) {
+                for (let y = 2; y <= 9; y++) { 
+                    allPossibilities.push({ x, y, product: x * y, studentAnswer: null });
                 }
             }
-            
+            // Fisher-Yates shuffle
             for (let i = allPossibilities.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [allPossibilities[i], allPossibilities[j]] = [allPossibilities[j], allPossibilities[i]];
             }
-
-            return allPossibilities.slice(0, Math.min(count, allPossibilities.length));
+            return allPossibilities.slice(0, count);
         }
 
         // --- RENDERING SUMS ---
@@ -362,15 +350,12 @@
             containerTwo.innerHTML = '';
             
             for (let index = 0; index < TOTAL_SUMS; index++) {
-                if (!sumsData[index]) break;
-
                 const data = sumsData[index];
-                const dividendFormatted = data.x.toLocaleString('en-IN'); 
                 
                 const sumHtml = `
                     <div class="sum-item">
                         <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
-                        <span class="text-lg font-semibold text-gray-800">${dividendFormatted} &divide; ${data.y} =</span>
+                        <span class="text-lg font-semibold text-gray-800">${data.x} &times; ${data.y} =</span>
                         <input type="number" data-index="${index}" class="answer-input w-24 p-1 border border-gray-300 rounded text-center text-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled>
                     </div>
                 `;
@@ -391,7 +376,7 @@
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault(); 
-                        const nextIndex = index + 1; 
+                        const nextIndex = index + 1;               
                         if (nextIndex < list.length) {
                             list[nextIndex].focus();
                         } else {
@@ -430,24 +415,19 @@
                 return;
             }
             
-            // 1. ACTIVATE FOCUS MODE
+            // 1. ACTIVATE FOCUS MODE (Kindle Theme)
             document.body.classList.add('focus-mode');
 
-			const displayStudentName = formatStudentName(studentIdentifier); 
+            const displayStudentName = formatStudentName(studentIdentifier);
             document.getElementById('display-student-name').textContent = displayStudentName;
-			document.getElementById('start-screen').classList.add('hidden');
+            
+            document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             
             setupInputFocus(); 
-            document.querySelectorAll('.answer-input').forEach(input => {
-                input.disabled = false;
-            });
-             
+            document.querySelectorAll('.answer-input').forEach(input => { input.disabled = false; });
             const firstInput = document.querySelector('.answer-input');
-            if (firstInput) {
-                firstInput.focus();
-            }
-
+            if (firstInput) { firstInput.focus(); }
             startTime = Date.now();
             startTimer(); 
         }
@@ -481,9 +461,9 @@
 
             inputElements.forEach((input, index) => {
                 const studentAnswer = parseInt(input.value.trim());
-                const correctAnswer = sumsData[index].quotient; 
-                const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== "";
-                
+                const correctAnswer = sumsData[index].product;
+                const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== ""; 
+        
                 if (isAttempted) {
                     attemptedCount++;
                     const isCorrect = studentAnswer === correctAnswer;
@@ -493,7 +473,7 @@
                         correctCount++;
                         input.classList.add('bg-green-100'); 
                     } else {
-                        solvedWrongCount++; 
+                        solvedWrongCount++;
                         input.classList.add('bg-red-100'); 
                         input.title = `Correct Answer: ${correctAnswer}`;
                     }
@@ -503,7 +483,7 @@
                 }
             });
 
-            sessionStorage.setItem('division3by1SumsData', JSON.stringify(sumsData));
+            sessionStorage.setItem('multiplication3x1SumsData', JSON.stringify(sumsData));
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -526,8 +506,9 @@
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
             document.getElementById('report-datetime').textContent = formattedDateTime;
             
-			const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
+            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
             document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
+            
             document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
             document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
@@ -547,11 +528,12 @@
                 window.lilChampUtils.playCorrect(); 
             }
         }
-        
+
         // --- TOGGLE VIEW FUNCTIONS ---
         function showWrongAnswers() {
-            const allSums = JSON.parse(sessionStorage.getItem('division3by1SumsData'));
+            const allSums = JSON.parse(sessionStorage.getItem('multiplication3x1SumsData'));
             const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
+
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
             
@@ -559,14 +541,12 @@
                 listContainer.innerHTML = '<p class="text-center py-4 text-green-600 font-bold">Great job! You made no mistakes on attempted sums!</p>';
             } else {
                 wrongSums.forEach((sum, index) => {
-                    // studentAnswer is guaranteed to be a number since it passed the filter
                     const studentAnswerText = sum.studentAnswer;
-                    
                     const row = `
                         <div class="wrong-sum-row hover:bg-red-50 transition duration-150">
-                            <span class="font-semibold text-gray-800">${index + 1}. ${sum.x.toLocaleString('en-IN')} &divide; ${sum.y}</span>
+                            <span class="font-semibold text-gray-800">${index + 1}. ${sum.x} &times; ${sum.y}</span>
                             <span class="text-red-600 font-bold font-mono">${studentAnswerText}</span>
-                            <span class="text-green-700 font-bold font-mono">${sum.quotient}</span>
+                            <span class="text-green-700 font-bold font-mono">${sum.product}</span>
                         </div>
                     `;
                     listContainer.innerHTML += row;
@@ -577,13 +557,12 @@
             document.getElementById('wrong-answer-area').classList.remove('hidden');
             document.getElementById('wrong-answer-area').scrollIntoView({ behavior: 'smooth' });
         }
-        
+
         function showReport() {
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });        
+            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
         }
-
     </script>
 </body>
 </html>
