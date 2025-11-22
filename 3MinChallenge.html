@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3-Minute Speed Check Mental Challenge</title>
+    
+    <!-- THEME & GAMIFICATION LINKS -->
+    <link rel="stylesheet" href="elegant-theme.css">
+    <script src="gamify.js" defer></script>
+    
+    <!-- html2canvas Library for downloading reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -91,11 +97,11 @@
                 <div class="h-6"></div> <div class="text-xl font-bold text-gray-600">
                     Sums Solved: <span id="solved-count" class="font-bold text-indigo-600">0</span>
                 </div>
-                
-                </div>
+            </div>
 
             <section id="results-panel" class="hidden flex justify-center mt-6">
-                <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+                <!-- Added ID report-card for html2canvas -->
+                <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
                     
                     <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">3-Minute Mental Challenge Report</h3>
                     
@@ -115,16 +121,20 @@
                             <p class="text-xs text-gray-500">No. of Correct Sums</p>
                             <p class="text-xl font-bold text-green-600" id="final-correct">0</p>
                         </div>
-                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-red-500">
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-red-500 col-span-2">
                             <p class="text-xs text-gray-500">No. of Wrong Sums</p>
                             <p class="text-xl font-bold text-red-600" id="final-wrong">0</p>
                         </div>
                     </div>
-                    
-                    <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
-                        📸 Take screenshot of this report and send to your Abacus teacher.
-                    </p>
-                    
+
+                    <!-- DOWNLOAD REPORT BUTTON -->
+                    <button onclick="downloadReport()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Report
+                    </button>
+                                    
                     <button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
                         Practice again
                     </button>
@@ -146,30 +156,59 @@
         </div>
     </footer>
 
+    <!-- Hidden Message Box for Errors -->
+    <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
+        <p id="message-text" class="font-semibold"></p>
+        <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
+    </div>
+
     <script>
-        // --- Login Check (from 2x1.html) ---
+        // --- Login Check ---
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
 
-        // --- Utility Functions (from 2x1.html) ---
-        /** Function to extract First Name and Last Name from an email-like identifier. */
+        // --- Utility Functions ---
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') {
-                return 'Student';
-            }
+            if (!identifier || typeof identifier !== 'string') return 'Student';
             const namePart = identifier.split('@')[0];
             const parts = namePart.split('.');
-            
             let formattedName = parts.map(part => {
-                if (part.length > 0) {
-                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                }
+                if (part.length > 0) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
                 return '';
-            }).filter(p => p.length > 0)
-              .join(' ');
-              
+            }).filter(p => p.length > 0).join(' ');
             return formattedName || identifier; 
+        }
+
+        function showMessage(text) {
+            const box = document.getElementById('message-box');
+            document.getElementById('message-text').textContent = text;
+            box.classList.remove('hidden');
+            box.style.opacity = '1';
+        }
+
+        // --- DOWNLOAD REPORT FUNCTION ---
+        function downloadReport() {
+            const reportElement = document.getElementById('report-card');
+            const studentName = document.getElementById('report-student-name').textContent || "Student";
+            
+            if (!reportElement) {
+                showMessage("Error finding report card to download.");
+                return;
+            }
+
+            html2canvas(reportElement, {
+                scale: 2, 
+                backgroundColor: null 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `3Min_Challenge_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            }).catch(err => {
+                console.error("Report generation failed:", err);
+                showMessage("Could not download report. Please take a screenshot.");
+            });
         }
 
         // --- State Variables ---
@@ -182,12 +221,12 @@
         let correctCount = 0;
         let wrongCount = 0;
         const MAX_PROBLEMS = 100;
-        let problemHistory = new Set(); // Stores generated problems to prevent repetition
-        let startTime = 0; // To capture the true start time
+        let problemHistory = new Set(); 
+        let startTime = 0; 
 
         // --- DOM Elements ---
         const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-        const formattedStudentName = formatStudentName(studentIdentifier); // Store formatted name globally
+        const formattedStudentName = formatStudentName(studentIdentifier);
         
         const configPanel = document.getElementById('config-panel');
         const gamePanel = document.getElementById('game-panel');
@@ -198,17 +237,14 @@
         const problemDisplay = document.getElementById('problem-display');
         const answerInput = document.getElementById('answer-input');
         const timerDisplay = document.getElementById('timer-display');
-        const backLinkWrapper = document.getElementById('back-link-wrapper'); // Get the back link wrapper
+        const backLinkWrapper = document.getElementById('back-link-wrapper');
         
-        // Initial setup for student name display (UPDATED: removed initial display, kept login check)
         document.addEventListener('DOMContentLoaded', () => {
-            
             if (studentIdentifier) {
                 startButton.disabled = false;
                 startButton.textContent = `Start 3-Minute Challenge for ${formattedStudentName}`;
             } 
         });
-
 
         // --- Configuration Mapping ---
         const difficultyOptions = {
@@ -232,39 +268,32 @@
         };
 
         // --- Utility Functions ---
-
-        /** Generates a random integer between min (inclusive) and max (inclusive) */
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        /** Generates a random number with a specific number of digits */
         function getRandomNumberByDigits(digits) {
-            if (digits === 1) return getRandomInt(2, 9); // Ensure minimum is 2 for single digits
+            if (digits === 1) return getRandomInt(2, 9); 
             const min = Math.pow(10, digits - 1);
             const max = Math.pow(10, digits) - 1;
             return getRandomInt(min, max);
         }
 
-        /** Generates a divisor based on rules (not ending in 0 if digits > 1) */
         function getDivisor(digits) {
             if (digits === 1) return getRandomInt(2, 9);
-            
             let divisor;
             do {
                 divisor = getRandomNumberByDigits(digits);
-            } while (divisor % 10 === 0); // Exclude numbers ending in 0
-
+            } while (divisor % 10 === 0); 
             return divisor;
         }
 
         // --- Problem Generation Logic ---
-
         function generateProblem() {
             const mode = operationSelect.value;
             const level = difficultySelect.value;
             let a, b, problemString, answer;
-            let maxAttempts = 1000; // Failsafe to prevent infinite loop
+            let maxAttempts = 1000; 
 
             do {
                 a = null; b = null; problemString = null; answer = null; 
@@ -273,29 +302,21 @@
                     const parts = level.split('x').map(Number);
                     const digitsA = parts[0];
                     const digitsB = parts[1];
-
                     a = getRandomNumberByDigits(digitsA);
-
                     if (['1x1', '2x1', '3x1', '4x1', '5x1'].includes(level)) {
-                        // Constraint: multiplier (b) must be between 2 and 9
                         b = getRandomInt(2, 9); 
                     } else if (['2x2', '3x2'].includes(level)) {
-                        // Use the digit count for b
                         b = getRandomNumberByDigits(digitsB);
                     }
-
                     answer = a * b;
                     problemString = `${a} × ${b}`;
 
                 } else if (mode === 'division') {
                     const parts = level.split('÷').map(Number);
-                    const requiredDigitsA = parts[0]; // NOW THE EXACT required number of digits for A
+                    const requiredDigitsA = parts[0]; 
                     const digitsB = parts[1];
-                    
-                    b = getDivisor(digitsB); // Divisor (1, 2, or 3 digits, non-zero ending for 2/3)
-
+                    b = getDivisor(digitsB); 
                     let originalMaxQuotient;
-                    // Define the original arbitrary max quotient bounds
                     if (digitsB === 1) { 
                         if (level === '3÷1') originalMaxQuotient = 111; 
                         else if (level === '4÷1') originalMaxQuotient = 1111; 
@@ -303,140 +324,89 @@
                     } else if (digitsB === 2) { 
                         if (level === '4÷2') originalMaxQuotient = 90; 
                         else originalMaxQuotient = 999;
-                    } else { // 3-digit divisor (5÷3)
+                    } else { 
                         originalMaxQuotient = 99;
                     }
-                    
-                    const minQuotientFloor = 11; // Retain the arbitrary minimum quotient floor
-                    
-                    // 1. Define the required range for dividend A
+                    const minQuotientFloor = 11; 
                     const minA = Math.pow(10, requiredDigitsA - 1); 
                     const maxA = Math.pow(10, requiredDigitsA) - 1;
-
-                    // 2. Calculate the corresponding quotient range Q = A / B
-                    // Minimum quotient Q required to ensure A >= minA
                     const minRequiredQ = Math.ceil(minA / b); 
-                    
-                    // Maximum quotient Q required to ensure A <= maxA
                     const maxPossibleQ = Math.floor(maxA / b); 
-
-                    // 3. Determine the final valid range for Q
                     let finalMinQ = Math.max(minQuotientFloor, minRequiredQ);
                     let finalMaxQ = Math.min(originalMaxQuotient, maxPossibleQ);
-                    
-                    // 4. Check for impossible scenario (range is inverted/empty)
                     if (finalMinQ > finalMaxQ) {
                         maxAttempts--;
-                        continue; // Retry the do...while loop with a new divisor 'b'
+                        continue; 
                     }
-
-                    // 5. Generate the quotient Q
                     let Q = getRandomInt(finalMinQ, finalMaxQ);
-                    
-                    // 6. Calculate problem and answer
                     a = Q * b;
                     answer = Q;
                     problemString = `${a} ÷ ${b}`;
                 }
-
                 maxAttempts--;
-
             } while (problemHistory.has(problemString) && maxAttempts > 0);
             
             if (problemString && maxAttempts > 0) {
-                problemHistory.add(problemString); // Add the unique problem to history
+                problemHistory.add(problemString); 
                 problemDisplay.textContent = problemString;
                 correctAnswer = answer;
                 answerInput.value = '';
             } else {
                 problemDisplay.textContent = "Error: Challenge exhausted all unique problems.";
-                console.error("Failed to generate unique problem after max attempts.");
-                // Immediately end the game if no new unique problem can be found
                 endGame("All available unique problems solved!");
             }
         }
 
         // --- Game Flow Functions ---
-
         function updateScoreDisplay() {
             document.getElementById('solved-count').textContent = solvedCount;
-            // The counts for correct/wrong are still updated internally (below)
-            // but the element updates here are now for the hidden elements.
         }
 
         function checkAnswer(event) {
             if (event.key === 'Enter' && isGameActive) {
                 const userAnswer = parseInt(answerInput.value.trim());
-
-                // Ignore empty or non-numeric input
-                if (isNaN(userAnswer)) {
-                    return;
-                }
+                if (isNaN(userAnswer)) return;
                 
                 solvedCount++;
-                
-                if (userAnswer === correctAnswer) {
-                    correctCount++;
-                } else {
-                    wrongCount++;
-                }
+                if (userAnswer === correctAnswer) correctCount++;
+                else wrongCount++;
 
                 updateScoreDisplay();
-
-                if (solvedCount >= MAX_PROBLEMS) {
-                    // Pass the original reason, which is now ignored in endGame
-                    endGame("You solved 100 problems!");
-                } else {
-                    // Immediately generate next problem without feedback
-                    generateProblem();
-                }
-
-                // Clear input after processing
+                if (solvedCount >= MAX_PROBLEMS) endGame("You solved 100 problems!");
+                else generateProblem();
                 answerInput.value = '';
             }
         }
 
         function updateTimer() {
             if (!isGameActive) return;
-
             timeRemaining--;
             const minutes = Math.floor(timeRemaining / 60);
             const seconds = timeRemaining % 60;
             timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-            if (timeRemaining <= 0) {
-                // Pass the original reason, which is now ignored in endGame
-                endGame("Time's up!");
-            }
+            if (timeRemaining <= 0) endGame("Time's up!");
         }
 
         function startGame() {
             isGameActive = true;
-            timeRemaining = TOTAL_TIME; // Reset to 3 minutes
+            timeRemaining = TOTAL_TIME; 
             solvedCount = 0;
             correctCount = 0;
             wrongCount = 0;
-            problemHistory.clear(); // Clear problem history for the new game
-            startTime = Date.now(); // Start tracking time
+            problemHistory.clear(); 
+            startTime = Date.now(); 
 
-            // Display student name in game panel
             document.getElementById('display-student-name').textContent = formattedStudentName; 
-
-            // Hide config, show game
             configPanel.classList.add('hidden');
             resultsPanel.classList.add('hidden');
             gamePanel.classList.remove('hidden');
-            backLinkWrapper.classList.add('hidden'); // Hide back link
+            backLinkWrapper.classList.add('hidden'); 
 
             answerInput.disabled = false;
             answerInput.focus();
             updateScoreDisplay();
-            
-            // Start the timer
             timerDisplay.textContent = "3:00";
             timerInterval = setInterval(updateTimer, 1000);
-
-            // Generate the first problem
             generateProblem();
             gamePanel.scrollIntoView({ behavior: 'smooth' });
         }
@@ -446,19 +416,10 @@
             clearInterval(timerInterval);
             answerInput.disabled = true;
             
-            // --- Logic for generating custom report reason ---
             const operationText = operationSelect.options[operationSelect.selectedIndex].text.trim();
             const difficultyText = difficultySelect.options[difficultySelect.selectedIndex].text.trim();
             const newReason = `${operationText} (${difficultyText}) Challenge Complete.`;
-            // --------------------------------------------------
             
-            // Time calculation (kept for consistency with other parts, though not displayed)
-            const endTime = Date.now();
-            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
-            const minutes = Math.floor(timeElapsedSeconds / 60);
-            const seconds = timeElapsedSeconds % 60;
-            // const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; // REMOVED: No longer needed for display
-
             const now = new Date();
             const date = ('0' + now.getDate()).slice(-2);
             const month = ('0' + (now.getMonth() + 1)).slice(-2);
@@ -467,54 +428,32 @@
             const mins = ('0' + now.getMinutes()).slice(-2);            
             const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
 
-
-            // Display results in the final report
-            document.getElementById('completion-reason').textContent = newReason; // Use custom reason
+            document.getElementById('completion-reason').textContent = newReason; 
             document.getElementById('final-solved').textContent = solvedCount;
             document.getElementById('final-correct').textContent = correctCount;
             document.getElementById('final-wrong').textContent = wrongCount;
             
-            // Report fields
             document.getElementById('report-datetime').textContent = formattedDateTime;
             document.getElementById('report-student-name').textContent = formattedStudentName;
-            // document.getElementById('final-time-elapsed').textContent = timeElapsedFormatted; // REMOVED: No longer needed
 
-
-            // Hide game, show results
             gamePanel.classList.add('hidden');
             resultsPanel.classList.remove('hidden');
-            backLinkWrapper.classList.remove('hidden'); // Show back link
+            backLinkWrapper.classList.remove('hidden'); 
             resultsPanel.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function resetGame() {
-            // Reset state
-            isGameActive = false;
-            clearInterval(timerInterval);
             
-            // Show config
-            configPanel.classList.remove('hidden');
-            gamePanel.classList.add('hidden');
-            resultsPanel.classList.add('hidden');
-            backLinkWrapper.classList.remove('hidden'); // Show back link
-            
-            // Clear displays
-            problemDisplay.textContent = "Select options and start!";
-            answerInput.value = '';
+            // Play sound effect if available
+            if (typeof window.lilChampUtils !== 'undefined') {
+                window.lilChampUtils.playCorrect();
+                setTimeout(() => window.lilChampUtils.celebrate(), 500);
+            }
         }
-
-        // --- Event Handlers and Initialization ---
 
         function updateDifficultyOptions() {
             const selectedMode = operationSelect.value;
             const options = difficultyOptions[selectedMode];
-            
-            difficultySelect.innerHTML = options.map(opt => 
-                `<option value="${opt.value}">${opt.label}</option>`
-            ).join('');
+            difficultySelect.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
         }
 
-        // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
             updateDifficultyOptions();
         });
