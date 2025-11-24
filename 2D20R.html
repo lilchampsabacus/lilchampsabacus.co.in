@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Addition/Subtraction Practice (10 Rows)</title>
+    <title>Addition/Subtraction (10 Rows)</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="gamify.js" defer></script>
@@ -13,374 +13,259 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
         html { scroll-padding-top: 100px; }
         
-        /* Sum Table Container */
-        .sum-list-container {
-            overflow: hidden; 
-            align-content: start; 
-            padding-bottom: 0.5rem; 
+        /* Slide Animations */
+        .slide-container {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .slide-container.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Table Styles */
+        /* Compact Table Styles for 10 Rows */
         .sum-table {
             width: 100%;
             border-collapse: collapse; 
             margin: 0 auto;
-            max-height: 72vh; 
-            overflow: hidden; 
-            table-layout: fixed; 
         }
 
-        /* Number Cell Styles */
         .number-cell {
             text-align: center;
-            font-size: clamp(1.2rem, 5vw, 1.8rem);
-            line-height: 1.1; 
+            font-size: 1.5rem; /* Large but not huge */
             font-weight: 700; 
-            padding: 0.2rem 0.5rem; 
-            border: 1px solid #e5e7eb; 
-            height: 2rem; 
-            vertical-align: middle;
+            padding: 0.25rem; /* Reduced padding */
+            border-bottom: 1px solid #e5e7eb; 
+            color: #374151;
         }
         
-        /* Column Widths */
-        .sum-table tr td:first-child {
-            width: 15%; 
-            background-color: rgba(0,0,0,0.05); /* Adaptive gray */
-            color: #4b5563; 
-        }
-        
-        .sum-table tr td:last-child {
-            width: 85%;
+        .sum-table tr:last-child .number-cell {
+            border-bottom: 4px solid #1f2937; /* Thick bottom line */
         }
 
-        /* Zebra Striping - Adjusted for Warmth */
-        .sum-table tr:nth-child(even) {
-            background-color: rgba(0,0,0,0.03); 
-        }
-        .sum-table tr:nth-child(even) td:first-child {
-             background-color: rgba(0,0,0,0.06); 
-        }
-
-        /* Number Colors */
-        .positive-number { color: inherit; } 
-        .negative-number { color: rgb(37, 99, 235); } 
-
-        /* --- FOCUS MODE STYLES (Kindle/Sepia Theme) --- */
-        body.focus-mode {
-            background-color: #fbf0d9 !important; /* KINDLE SEPIA BACKGROUND */
-            color: #433422; /* Dark Coffee Text */
-            height: 100vh;
-            overflow-y: auto; 
+        /* Row Number Column */
+        .row-index {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: right;
+            padding-right: 8px;
+            width: 20px;
+            border: none;
         }
 
-        /* Hide distractions in Focus Mode */
+        /* Negative Numbers */
+        .negative-number { color: #dc2626; } /* Red for negative */
+
+        /* Focus Mode Overrides */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link,
-        body.focus-mode #student-name-container { 
+        body.focus-mode #test-header-bar { 
             display: none !important;
         }
-
-        /* Center the Test Area perfectly in Focus Mode */
-        body.focus-mode main {
-            min-height: 100vh; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem; 
-            max-width: 100%;
-        }
-
-        /* Clean up the test card for Focus Mode */
-        body.focus-mode #test-area {
-            margin: 0;
-            width: 100%;
-            max-width: 500px; 
-            background-color: #fffdf5 !important; /* Pearl White Card */
-            box-shadow: 0 20px 25px -5px rgba(67, 52, 34, 0.1), 0 10px 10px -5px rgba(67, 52, 34, 0.04);
-            position: relative; 
-        }
         
-        /* Softer row numbers in Focus Mode */
-        body.focus-mode .sum-table tr td:first-child {
-            background-color: transparent;
-            color: #8c7b66; /* Warm gray */
-            border-right: 2px solid #ebdcc4;
-        }
-        
-        body.focus-mode .number-cell {
-            border-color: #ebdcc4; 
-        }
-
-        /* --- UPDATED TIMER POSITIONING --- */
-        body.focus-mode #test-header-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: transparent !important; 
-            box-shadow: none !important;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: flex-end !important; 
-            align-items: flex-start;
-            z-index: 50; 
-            pointer-events: none; 
-        }
-
-        body.focus-mode #timer-container {
-            pointer-events: auto; 
-            background-color: #ece0c6; 
+        body.focus-mode {
+            background-color: #fbf0d9; /* Kindle Sepia */
             color: #433422;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         
-        body.focus-mode #timer-display {
-             color: #5d4037 !important;
+        body.focus-mode #test-area {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+        
+        /* Input highlight */
+        .correct-answer {
+            background-color: #dcfce7 !important; 
+            border-color: #22c55e !important;
+            color: #15803d;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #b91c1c;
+            animation: shake 0.3s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
 
     <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Addition Subtraction Practice (10 Rows)</h2>
+    <main class="flex-grow max-w-4xl mx-auto w-full p-4 sm:p-6">
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Addition/Subtraction Mission (10 Rows)</h2>
 
-        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Abacus Practice Settings</h3>			
-            <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2">
-                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Configure Your Mission</h3>			
+            <div class="mb-6 hidden"> 
+                <input type="text" id="student-identifier-input" class="w-full" readonly>
+            </div>
+            
+            <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
+                Pilot: <span id="auto-student-name-display">... Loading ...</span>
             </div>
 
-            <div class="mb-6">
-                <label for="practice-type" class="block text-sm font-medium text-gray-700 mb-2">Select Sum Type:</label>
-                <select id="practice-type" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-white text-lg font-semibold">
-                    <option value="1">2 Digit - 10 Rows</option>
-                    <option value="2">3 Digits - 10 Rows</option>
-                    <option value="3">1 Digits - 10 Rows</option>
+            <div class="mb-8 max-w-md mx-auto text-left">
+                <label for="practice-type" class="block text-sm font-bold text-gray-700 mb-2">Select Difficulty Level:</label>
+                <select id="practice-type" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-gray-50 text-lg font-semibold focus:border-blue-500 focus:ring-blue-500">
+                    <option value="1">Level 1: 2-Digit Numbers</option>
+                    <option value="2">Level 2: 3-Digit Numbers</option>
+                    <option value="3">Level 3: 1-Digit Numbers (Speed)</option>
                 </select>
             </div>
-
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 20 unique sums, each with a 10-row calculation. All final answers are <strong>positive</strong>.</p>
-
-            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50">
-                Start Practice
+            
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-50 disabled:scale-100" disabled>
+                🚀 Launch Mission
             </button>
         </section>
 
-        <section id="test-area" class="hidden">
-            <div id="test-header-bar" class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-4 sticky top-0 z-10">
-                
-                <div id="student-name-container" class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
-                    Student: <span id="display-student-name" class="font-bold"></span>
+        <section id="test-area" class="hidden max-w-lg mx-auto">
+            
+            <div class="bg-white p-3 rounded-xl shadow-md mb-4 sticky top-2 z-20 border-b-4 border-blue-200">
+                <div class="flex justify-between items-center mb-1">
+                    <div class="text-gray-600 font-semibold text-sm">Progress</div>
+                    <div id="streak-display" class="font-bold text-orange-500 text-md hidden">
+                        🔥 Streak: <span id="streak-count">0</span>
+                    </div>
                 </div>
-
-                <div id="timer-container" class="text-2xl font-extrabold text-green-600">
-                    <span id="timer-display" class="">0:00</span>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div id="progress-bar" class="bg-green-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span id="progress-text">0/20 Solved</span>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center flex-col">
-                 <h4 class="text-xl font-bold text-gray-400 mb-2 text-center text-sm uppercase tracking-widest" id="sum-title">Question 1 / 20</h4>
-                
-                <div class="w-full max-w-[200px] mx-auto"> 
-                    <div id="sum-grid" class="sum-list-container mb-2">
-                        </div>
-                    
-                    <div class="w-full h-1 bg-gray-800 mb-4 rounded"></div> 
-
-                    <div class="flex flex-col items-center mx-auto">
-                        <input type="number" id="answer-input" class="w-full p-3 border-2 border-gray-400 rounded-lg text-center text-3xl font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all" placeholder="?">
-                    </div>
-                </div>
-                
-                <div id="feedback-area" class="mt-4 w-full max-w-md mx-auto text-center hidden">
-                    <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
+            <div id="question-carousel" class="mb-6">
                 </div>
             
-                <div class="mt-4 flex flex-row justify-between gap-4 max-w-md mx-auto w-full">
-                    <button id="submit-button" onclick="checkAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
-                        Submit
-                    </button>
-
-                    <button id="next-sum-button" onclick="nextSum()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300" disabled>
-                        Next
-                    </button>
-                </div>
+            <div class="flex flex-col gap-3">
+                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                    Check Answer (Enter)
+                </button>
+                <button id="next-btn" onclick="nextSum()" class="hidden w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                    Next Question &rarr;
+                </button>
+                <button id="finish-btn" onclick="endTest()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-lg animate-pulse">
+                    Finish Mission 🏁
+                </button>
             </div>
         </section>
 
         <section id="report-area" class="hidden flex justify-center">
-            <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
-
-                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Addition Subtraction Report</h3>
-
-                <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
-                    Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
-                </p>
-                <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
-                        <p class="text-xs text-gray-500">No. of Correct Sums</p>
-                        <p class="text-xl font-bold text-green-600" id="report-correct">0</p>
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                        Skill Mastery
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="report-level-title">Add/Sub 10 Rows</h2>
+                </div>
+
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                
+                <p class="text-center text-gray-500 mb-6 border-b pb-4">
+                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
+                </p>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/20</span></p>
                     </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
-                        <p class="text-xs text-gray-500">No. of Sums Attempted</p>
-                        <p class="text-xl font-bold text-purple-900" id="report-attempted">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500 col-span-2">
-                        <p class="text-xs text-gray-500">Avg. time taken to solve 1 sum</p>
-                        <p class="text-xl font-bold text-blue-900" id="report-avg-time">N/A</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-yellow-500 col-span-2">
-                        <p class="text-xs text-gray-500">Total Time Spent</p>
-                        <p class="text-xl font-bold text-yellow-800" id="report-time-elapsed">0:00</p>
+                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                        <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
+                        <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
                     </div>
                 </div>
 
-                <button onclick="downloadReport()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-sm text-gray-500">Avg Speed per 10-Row Sum</p>
+                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+                </div>
+
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Download Report
+                    Save Badge (Download)
                 </button>
                 
-				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
-                    Practice again
+				<button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
+                    🔄 Replay Mission
                 </button>
             </div>
         </section>
 
-        <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
-            <p id="message-text" class="font-semibold"></p>
-            <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
-        </div>
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center back-link">
-        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Plus Minus
-        </a>
-    </div>
-
-    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">For any queries call 9730482620</p>
-        </div>
+    <footer class="bg-yellow-200 text-center p-3 mt-auto">
+        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
     </footer>
 
     <script>
-        // --- CONFIGURATION ---
-        const TOTAL_SUMS_PER_PRACTICE = 20;
-        const NEGATIVE_INDICES = [3, 6, 9]; // Rows that are negative
+        // --- SESSION CHECK ---
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
         
-        let timerInterval;
-        let currentSumIndex = 0;
-        let practiceData = []; 
+        const TOTAL_SUMS = 20;
+        const NEGATIVE_INDICES = [3, 6, 9]; // Rows to be negative (1-based index logic used in generation)
+        
+        let sumsData = [];
         let startTime;
-        let totalTimeElapsedSeconds = 0;
-        let practiceTitleText = "";
+        let currentSlideIndex = 0;
+        let currentStreak = 0;
+        let timerInterval;
 
-        // --- UTILITY FUNCTIONS ---
-        function getStudentNameSafe() {
-            try { return sessionStorage.getItem('studentIdentifier'); } catch (e) { return null; }
-        }
-
+        // --- UTILITY: Format Name ---
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') return 'Student';
-            try {
-                const namePart = identifier.split('@')[0];
-                const parts = namePart.split('.');
-                let formattedName = parts.map(part => {
-                    if (part.length > 0) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                    return '';
-                }).filter(p => p.length > 0).join(' ');
-                return formattedName || identifier;
-            } catch (e) { return identifier; }
+            if (!identifier || typeof identifier !== 'string') return 'Pilot';
+            const namePart = identifier.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
         }
 
-        function showMessage(text) {
-            const box = document.getElementById('message-box');
-            if (box) {
-                document.getElementById('message-text').textContent = text;
-                box.classList.remove('hidden');
-                box.style.opacity = '1';
-            } else { alert(text); }
-        }
-        
-        // NEW: FUNCTION TO DOWNLOAD REPORT
+        // --- UTILITY: Download Report ---
         function downloadReport() {
             const reportElement = document.getElementById('report-card');
             const studentName = document.getElementById('report-student-name').textContent || "Student";
             
-            if (!reportElement) {
-                showMessage("Error finding report card to download.");
-                return;
-            }
-
-            // Use html2canvas to take the snapshot
-            html2canvas(reportElement, {
-                scale: 2, // Higher quality image
-                backgroundColor: null // Transparent background if possible
-            }).then(canvas => {
-                // Create a fake link to trigger download
+            html2canvas(reportElement, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Abacus_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.download = `Mission_Report_AddSub_${studentName.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
-            }).catch(err => {
-                console.error("Report generation failed:", err);
-                showMessage("Could not download report. Please take a screenshot manually.");
             });
         }
         
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            const studentIdentifier = getStudentNameSafe();
-            const displayElement = document.getElementById('auto-student-name-display');
+            const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
-            const displayStudentName = formatStudentName(studentIdentifier);
+			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+			const displayStudentName = formatStudentName(studentIdentifier); 
             
-            if (studentIdentifier) {
-                if(displayElement) displayElement.textContent = displayStudentName;
-                if(startButton) {
-                    startButton.disabled = false;
-                    startButton.textContent = "Start Practice for " + displayStudentName;
-                }
+			if (studentIdentifier) {
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+                startButton.disabled = false;
             } else {
-                if(displayElement) {
-                    displayElement.textContent = 'Guest User (Login Required for Reports)';
-                    displayElement.classList.add('text-orange-600'); 
-                }
-                if(startButton) {
-                    startButton.textContent = "Start Practice (Guest)";
-                    startButton.disabled = false; 
-                }
-            }
-
-            generateAllPracticeSums(); 
-            renderSum();
-            
-            const typeSelect = document.getElementById('practice-type');
-            if(typeSelect) {
-                typeSelect.addEventListener('change', () => {
-                    if (!startButton.disabled) {
-                        generateAllPracticeSums();
-                        currentSumIndex = 0;
-                        renderSum();
-                    }
-                });
+                startButton.disabled = true;
             }
         });
 
@@ -392,15 +277,15 @@
             for (let i = 1; i <= 10; i++) {
                 let min, max;
                 
-                if (optionValue === 3) { // 1 Digit Sums
+                if (optionValue === 3) { // 1 Digit
                     if (i <= 2) { min = 5; max = 9; }
                     else        { min = 1; max = 9; }
                 } 
-                else if (optionValue === 1) { // 2 Digit Sums
+                else if (optionValue === 1) { // 2 Digit
                     if (i <= 2) { min = 55; max = 99; }
                     else        { min = 10; max = 99; }
                 } 
-                else if (optionValue === 2) { // 3 Digit Sums
+                else if (optionValue === 2) { // 3 Digit
                     if (i <= 2) { min = 555; max = 999; }
                     else        { min = 100; max = 999; }
                 } else {
@@ -409,8 +294,8 @@
 
                 let number = Math.floor(Math.random() * (max - min + 1)) + min;
                 
-                let isNegative = NEGATIVE_INDICES.includes(i);
-                if (isNegative) {
+                // Apply negative logic
+                if (NEGATIVE_INDICES.includes(i)) {
                     number = -number;
                 }
                 
@@ -418,244 +303,264 @@
                 total += number;
             }
 
+            // Recursion to ensure positive total
             if (total <= 0) return generateSingleSum(optionValue);
             return { numbers: sumSet, correctTotal: total };
         }
-        
+
         function generateAllPracticeSums() {
-            practiceData = [];
+            sumsData = [];
             const typeElement = document.getElementById('practice-type');
             const optionValue = typeElement ? parseInt(typeElement.value) : 1;
             
-            for (let i = 0; i < TOTAL_SUMS_PER_PRACTICE; i++) {
-                practiceData.push({
-                    ...generateSingleSum(optionValue),
+            // Set Report Title based on selection
+            const levelText = typeElement.options[typeElement.selectedIndex].text;
+            document.getElementById('report-level-title').textContent = levelText;
+
+            for (let i = 0; i < TOTAL_SUMS; i++) {
+                const sumObj = generateSingleSum(optionValue);
+                sumsData.push({
+                    numbers: sumObj.numbers,
+                    correctTotal: sumObj.correctTotal,
                     studentAnswer: null,
-                    isCorrect: null,
-                    timeTaken: 0
+                    isCorrect: null
                 });
             }
         }
 
-        // --- RENDERING ---
-        function renderSum() {
-            const sumContainer = document.getElementById('sum-grid');
-            if (!sumContainer) return;
-            if (practiceData.length === 0) generateAllPracticeSums();
+        // --- RENDERING LOGIC (CARD VIEW) ---
+        function renderCards() {
+            const carousel = document.getElementById('question-carousel');
+            carousel.innerHTML = '';
             
-            const currentSum = practiceData[currentSumIndex];
-            sumContainer.innerHTML = ''; 
-            
-            const titleElem = document.getElementById('sum-title');
-            if(titleElem) titleElem.textContent = `Question ${currentSumIndex + 1} / ${TOTAL_SUMS_PER_PRACTICE}`;
-            
-            const table = document.createElement('table');
-            table.className = 'sum-table';
-            const tbody = document.createElement('tbody');
-
-            currentSum.numbers.forEach((number, index) => {
-                const isNegative = number < 0;
-                const absNumber = Math.abs(number);
-                const colorClass = isNegative ? 'negative-number' : 'positive-number';
-                const displayString = isNegative ? `-${absNumber}` : `${absNumber}`;
+            sumsData.forEach((data, index) => {
+                const slideDiv = document.createElement('div');
+                slideDiv.className = `slide-container ${index === 0 ? 'active' : ''}`;
+                slideDiv.id = `slide-${index}`;
                 
-                const row = document.createElement('tr');
-                const rowNumberCell = document.createElement('td');
-                rowNumberCell.className = 'number-cell text-gray-700 font-bold'; 
-                rowNumberCell.textContent = index + 1;
-                row.appendChild(rowNumberCell); 
+                // Build the Table
+                let tableHtml = '<table class="sum-table bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">';
+                data.numbers.forEach((num, rIndex) => {
+                    const isNeg = num < 0;
+                    const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
+                    const colorClass = isNeg ? 'negative-number' : 'text-gray-800';
+                    
+                    tableHtml += `
+                        <tr class="${rIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">
+                            <td class="row-index">${rIndex + 1}</td>
+                            <td class="number-cell ${colorClass}">${displayNum}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += '</table>';
 
-                const numberCell = document.createElement('td');
-                numberCell.className = `number-cell ${colorClass}`;
-                numberCell.textContent = displayString;
-                row.appendChild(numberCell);
-                
-                tbody.appendChild(row);
+                slideDiv.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <div class="w-full max-w-[200px] mb-4">
+                            ${tableHtml}
+                            <div class="border-t-4 border-gray-800 mt-1 mb-3"></div>
+                            <input type="number" 
+                                data-index="${index}"
+                                id="input-${index}"
+                                class="answer-input w-full p-3 border-2 border-gray-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" 
+                                placeholder="?">
+                        </div>
+                        <div id="feedback-${index}" class="h-8 font-bold text-lg"></div>
+                    </div>
+                `;
+                carousel.appendChild(slideDiv);
             });
             
-            table.appendChild(tbody);
-            sumContainer.appendChild(table);
-            
-            const answerInput = document.getElementById('answer-input');
-            if(answerInput) {
-                answerInput.value = '';
-                answerInput.disabled = false;
-            }
-            
-            const feedback = document.getElementById('feedback-area');
-            if(feedback) feedback.classList.add('hidden');
-            
-            const submitBtn = document.getElementById('submit-button');
-            if(submitBtn) submitBtn.disabled = false;
-            
-            const nextBtn = document.getElementById('next-sum-button');
-            if(nextBtn) {
-                nextBtn.disabled = true;
-                nextBtn.textContent = "Next";
-            }
-
-            if (document.getElementById('test-area') && !document.getElementById('test-area').classList.contains('hidden')) {
-                if(answerInput) answerInput.focus();
-            }
+            setupInputInteraction();
         }
 
-        function setupInputFocus() {
-            const input = document.getElementById('answer-input');
-            if (input) {
+        function setupInputInteraction() {
+            const inputs = document.querySelectorAll('.answer-input');
+            inputs.forEach(input => {
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        const submitBtn = document.getElementById('submit-button');
-                        const nextBtn = document.getElementById('next-sum-button');
-                        if (submitBtn && !submitBtn.disabled) {
+                        const btn = document.getElementById('submit-button');
+                        const nextBtn = document.getElementById('next-btn');
+                        
+                        // If submit button is visible, trigger check
+                        if (!btn.classList.contains('hidden')) {
                             checkAnswer();
-                        } else if (nextBtn && !nextBtn.disabled) {
-                             nextSum();
+                        } 
+                        // If next button is visible, trigger next
+                        else if (!nextBtn.classList.contains('hidden')) {
+                            nextSum();
                         }
                     }
                 });
+            });
+        }
+
+        // --- GAME LOGIC ---
+        function checkAnswer() {
+            const input = document.getElementById(`input-${currentSlideIndex}`);
+            const val = parseInt(input.value);
+            
+            if (isNaN(val)) return; // Do nothing if empty
+
+            const currentData = sumsData[currentSlideIndex];
+            currentData.studentAnswer = val;
+            input.disabled = true;
+
+            const feedbackDiv = document.getElementById(`feedback-${currentSlideIndex}`);
+            
+            if (val === currentData.correctTotal) {
+                currentData.isCorrect = true;
+                input.classList.add('correct-answer');
+                feedbackDiv.textContent = "Correct! 🎉";
+                feedbackDiv.classList.add('text-green-600');
+                
+                updateStreak(true);
+                
+                // AUTO ADVANCE on Correct
+                setTimeout(() => {
+                    if (currentSlideIndex < TOTAL_SUMS - 1) {
+                        nextSum();
+                    } else {
+                        updateButtonsForEnd();
+                    }
+                }, 1000);
+
+            } else {
+                currentData.isCorrect = false;
+                input.classList.add('wrong-answer');
+                feedbackDiv.innerHTML = `Wrong. Answer: ${currentData.correctTotal}`;
+                feedbackDiv.classList.add('text-red-500');
+                updateStreak(false);
+                updateButtonsForEnd(); // Manual advance needed for wrong answers to let them see result
+            }
+            
+            updateProgress();
+        }
+
+        function updateButtonsForEnd() {
+            const submitBtn = document.getElementById('submit-button');
+            const nextBtn = document.getElementById('next-btn');
+            const finishBtn = document.getElementById('finish-btn');
+
+            submitBtn.classList.add('hidden');
+            
+            if (currentSlideIndex < TOTAL_SUMS - 1) {
+                nextBtn.classList.remove('hidden');
+                nextBtn.focus();
+            } else {
+                finishBtn.classList.remove('hidden');
+                finishBtn.focus();
             }
         }
-        
-        // --- TEST FLOW ---
-        function startTest() {
-            document.body.classList.add('focus-mode');
 
-            const studentIdentifier = getStudentNameSafe();
-            const displayStudentName = formatStudentName(studentIdentifier);
-
-            const practiceTypeSelect = document.getElementById('practice-type');
-            if(practiceTypeSelect) {
-                practiceTitleText = practiceTypeSelect.options[practiceTypeSelect.selectedIndex].text;
+        function nextSum() {
+            // Hide current
+            document.getElementById(`slide-${currentSlideIndex}`).classList.remove('active');
+            
+            // Show next
+            currentSlideIndex++;
+            document.getElementById(`slide-${currentSlideIndex}`).classList.add('active');
+            
+            // Reset Buttons
+            document.getElementById('submit-button').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            // Focus new input
+            const nextInput = document.getElementById(`input-${currentSlideIndex}`);
+            if (nextInput) {
+                nextInput.focus();
+                // Scroll to top of test area to keep table in view on mobile
+                document.getElementById('test-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+        }
+
+        function updateStreak(isCorrect) {
+            const streakDisplay = document.getElementById('streak-display');
+            const streakCount = document.getElementById('streak-count');
+            
+            if (isCorrect) {
+                currentStreak++;
+                if (currentStreak > 1) {
+                    streakDisplay.classList.remove('hidden');
+                    streakDisplay.classList.add('animate-bounce');
+                    setTimeout(() => streakDisplay.classList.remove('animate-bounce'), 1000);
+                }
+            } else {
+                currentStreak = 0;
+                streakDisplay.classList.add('hidden');
+            }
+            streakCount.textContent = currentStreak;
+        }
+
+        function updateProgress() {
+            const totalAnswered = sumsData.filter(s => s.studentAnswer !== null).length;
+            const percentage = (totalAnswered / TOTAL_SUMS) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_SUMS} Solved`;
+        }
+
+        // --- TEST FLOW CONTROL ---
+        function startTest() {
+            document.body.classList.add('focus-mode'); // Enable Kindle Mode
             
             generateAllPracticeSums();
-            currentSumIndex = 0; 
-            renderSum();
-            
-            const displayElement = document.getElementById('display-student-name');
-            if(displayElement) displayElement.textContent = displayStudentName;
+            renderCards();
             
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             
-            setupInputFocus(); 
-            const answerInput = document.getElementById('answer-input');
-            if(answerInput) {
-                answerInput.disabled = false;
-                setTimeout(() => answerInput.focus(), 100);
-            }
-            
-            totalTimeElapsedSeconds = 0; 
-            startTime = Date.now(); 
+            const firstInput = document.getElementById('input-0');
+            if (firstInput) firstInput.focus();
+
+            startTime = Date.now();
             startTimer(); 
         }
 
         function startTimer() {
-            const display = document.getElementById('timer-display');
-            if(!display) return;
-            let overallStartTime = Date.now() - totalTimeElapsedSeconds * 1000;
-            function updateTimer() {
-                const totalTime = Math.floor((Date.now() - overallStartTime) / 1000);
-                const minutes = Math.floor(totalTime / 60);
-                const seconds = totalTime % 60;
-                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            }
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(() => {}, 1000);
         }
 
-        function checkAnswer() {
-            const input = document.getElementById('answer-input');
-            const studentAnswer = parseInt(input.value.trim());
-            if (isNaN(studentAnswer)) {
-                showMessage("Please enter a valid number.");
-                return;
-            }
-            input.disabled = true;
-            const currentSum = practiceData[currentSumIndex];
-            const correctAnswer = currentSum.correctTotal;
-            const feedbackArea = document.getElementById('feedback-area');
-            const answerDisplay = document.getElementById('correct-answer-display');
-            
-            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-            totalTimeElapsedSeconds += timeTaken;
-            currentSum.timeTaken = timeTaken;
-            
-            const isCorrect = studentAnswer === correctAnswer;
-            currentSum.isCorrect = isCorrect;
-            currentSum.studentAnswer = studentAnswer;
-            
-            if (isCorrect) {
-                answerDisplay.textContent = "Correct!";
-                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-green-200 text-green-800";
-                if (typeof window.lilChampUtils !== 'undefined') window.lilChampUtils.playCorrect();
-            } else {
-                answerDisplay.innerHTML = `Wrong. Correct Answer: <span class="text-green-700">${correctAnswer}</span>`;
-                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
-                if (typeof window.lilChampUtils !== 'undefined') window.lilChampUtils.playWrong();
-            }
-            feedbackArea.classList.remove('hidden');
-            document.getElementById('submit-button').disabled = true;
-            const nextBtn = document.getElementById('next-sum-button');
-            nextBtn.disabled = false;
-            nextBtn.focus(); 
-        }
-
-        function nextSum() {
-            if (document.getElementById('submit-button').disabled === false) {
-                 showMessage("Please submit your answer first.");
-                return;
-            }
-            currentSumIndex++;
-            if (currentSumIndex < TOTAL_SUMS_PER_PRACTICE) {
-                startTime = Date.now();
-                renderSum();
-            } else {
-                endTest();
-            }
-        }
-
-        // --- END TEST & REPORT ---
         function endTest() {
             document.body.classList.remove('focus-mode');
             clearInterval(timerInterval);
+            
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
+            
+            let correctCount = 0;
+            let attemptedCount = 0;
+            
+            sumsData.forEach(data => {
+                if (data.studentAnswer !== null) {
+                    attemptedCount++;
+                    if (data.isCorrect) correctCount++;
+                }
+            });
 
-            let correctCount = practiceData.filter(s => s.isCorrect === true).length;
-            let attemptedCount = TOTAL_SUMS_PER_PRACTICE; 
+            // Save Data
+            sessionStorage.setItem('addSub20RowsData', JSON.stringify(sumsData));
+
+            // Time Calc
+            const endTime = Date.now();
+            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeElapsedSeconds / 60);
+            const seconds = timeElapsedSeconds % 60;
+            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
             let avgTimeDisplay = 'N/A';
             if (attemptedCount > 0) {
-                const avgTimeSeconds = totalTimeElapsedSeconds / attemptedCount;
-                avgTimeDisplay = `${avgTimeSeconds.toFixed(2)}s`;
+                avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
             }
-            
-            const minutes = Math.floor(totalTimeElapsedSeconds / 60);
-            const seconds = totalTimeElapsedSeconds % 60;
-            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // Report DOM Updates
             const now = new Date();
-            const date = ('0' + now.getDate()).slice(-2);
-            const month = ('0' + (now.getMonth() + 1)).slice(-2);
-            const year = String(now.getFullYear()).slice(-2);
-            const hours = ('0' + now.getHours()).slice(-2);
-            const mins = ('0' + now.getMinutes()).slice(-2);            
-            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('report-student-name').textContent = formatStudentName(document.getElementById('student-identifier-input').value);
             
-            const studentIdentifier = getStudentNameSafe();
-            document.getElementById('report-datetime').textContent = formattedDateTime;
-            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
-            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted; 
-            document.getElementById('report-attempted').textContent = attemptedCount; 
-            document.getElementById('report-correct').textContent = correctCount; 
+            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-            document.getElementById('report-title').textContent = `${practiceTitleText} Report`;
-            
-            if (typeof window.lilChampUtils !== 'undefined' && correctCount > (attemptedCount * 0.7)) { 
-                setTimeout(() => window.lilChampUtils.celebrate(), 500); 
-                window.lilChampUtils.playCorrect(); 
-            }
         }
     </script>
 </body>
