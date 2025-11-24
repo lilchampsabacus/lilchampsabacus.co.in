@@ -3,279 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3-digit x 2-digit Practice</title>
+    <title>3-digit x 2-digit Challenge</title>
     
-    <!-- THEME & GAMIFICATION LINKS -->
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="gamify.js" defer></script>
     
-    <!-- html2canvas Library for downloading reports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
-    <!-- TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Ensures smooth scrolling and prevents fixed elements from obscuring content */
         html { scroll-padding-top: 100px; }
         
-        /* Vertical Grid for Sums */
-        .vertical-grid {
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 0.5rem; 
+        /* Slide Animations */
+        .slide-container {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .slide-container.active {
+            display: block;
         }
         
-        /* Style for each sum container */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input Styling */
         .sum-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px dotted #d1d5db;
-            border-radius: 0.25rem;
-            transition: background-color 0.2s;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
         }
-        .sum-item:hover {
-            background-color: rgba(0,0,0,0.02);
-        }
-
-        /* Wrong Answer Rows */
-        .wrong-sum-row {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr; 
-            gap: 1rem;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e5e7eb;
-            align-items: center;
-        }
-        .wrong-sum-row:last-child {
-            border-bottom: none;
+        .sum-item:focus-within {
+            transform: scale(1.02);
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
         }
 
-        /* --- FOCUS MODE STYLES (Kindle/Sepia Theme) --- */
-        body.focus-mode {
-            background-color: #fbf0d9 !important; /* KINDLE SEPIA BACKGROUND */
-            color: #433422; /* Dark Coffee Text */
-            height: 100vh;
-            overflow-y: auto; /* Enable scrolling */
+        /* Feedback Colors */
+        .correct-answer {
+            background-color: #dcfce7 !important; /* Green-100 */
+            border-color: #22c55e !important;
+            color: #15803d;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important; /* Red-100 */
+            border-color: #ef4444 !important;
+            color: #b91c1c;
+            animation: shake 0.3s;
         }
 
-        /* Hide distractions in Focus Mode */
-        /* Added #test-header-bar to hide Timer & Name */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Focus Mode Overrides */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link,
         body.focus-mode #test-header-bar { 
             display: none !important;
         }
-
-        /* Center the Main Content - FIXED SCROLLING ISSUE */
-        body.focus-mode main {
-            min-height: 100vh; 
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            /* Ensure content starts at top with padding, preventing cut-off */
-            justify-content: flex-start; 
-            padding: 2rem 1rem; 
-            max-width: 100%;
-        }
-
-        /* Clean up the test card for Focus Mode */
-        body.focus-mode #test-area {
-            margin: 0 auto; 
-            width: 100%;
-            max-width: 900px; 
-            background-color: #fffdf5 !important; /* Pearl White Card */
-            box-shadow: 0 20px 25px -5px rgba(67, 52, 34, 0.1), 0 10px 10px -5px rgba(67, 52, 34, 0.04);
-            position: relative; 
-            border: 1px solid #ebdcc4;
-        }
         
-        /* Warm inputs in Focus Mode */
-        body.focus-mode input {
-            background-color: #fffdf5;
-            border-color: #d6cbb6;
+        body.focus-mode {
+            background-color: #fbf0d9; /* Kindle Sepia */
             color: #433422;
         }
-        body.focus-mode input:focus {
-            border-color: #a69b8a;
-            box-shadow: 0 0 0 3px rgba(166, 155, 138, 0.2);
-        }
-
-        /* --- UPDATED TIMER POSITIONING (Top Right & Fixed) --- */
-        body.focus-mode #test-header-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: transparent !important; 
-            box-shadow: none !important;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: flex-end !important; /* Push timer to right */
-            align-items: flex-start;
-            z-index: 50; 
-            pointer-events: none; /* Allow clicking through empty space */
-        }
-
-        body.focus-mode #timer-container {
-            pointer-events: auto; 
-            background-color: #ece0c6; /* Warm timer bg */
-            color: #5d4037;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            font-weight: bold;
-        }
         
-        body.focus-mode #timer-display {
-             color: #5d4037 !important;
+        body.focus-mode #test-area {
+            background-color: transparent !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER (Hidden in Focus Mode) -->
     <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">3-digit number multiplied by a 2-digit number</h2>
+    <main class="flex-grow max-w-4xl mx-auto w-full p-4 sm:p-6">
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">3-digit x 2-digit Mission</h2>
 
-        <!-- START SCREEN -->
-        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Practice on Abacus</h3>			
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Ready for your Mission?</h3>			
             <div class="mb-6 hidden"> 
-                <input type="text" id="student-identifier-input" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-gray-100" readonly>
-            </div>
-            <div class="text-lg font-bold text-blue-700 mb-6 border-b pb-2">
-                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
-            </div>
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">The practice consists of 30 unique multiplication sums. The stopwatch will begin immediately upon pressing 'Start Practice'.</p>
-            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50" disabled>
-                Start Practice
-            </button>
-        </section>
-
-        <!-- TEST AREA -->
-        <section id="test-area" class="hidden">
-            <!-- Header Bar (Hidden in Focus Mode) -->
-            <div id="test-header-bar" class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-20 z-10">
-                <!-- Student Name -->
-                <div id="student-name-container" class="text-lg font-semibold text-blue-800 mb-2 sm:mb-0">
-                    Student: <span id="display-student-name" class="font-bold"></span>
-                </div>
-                <!-- Timer -->
-                <div id="timer-container" class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
-                    Time Elapsed: <span id="timer-display">0:00</span>
-                </div>
-            </div>
-
-            <!-- Two Columns for Questions -->
-            <div class="bg-white p-6 rounded-xl shadow-2xl grid md:grid-cols-2 gap-6">
-                <div class="mb-4 md:mb-0 border-b md:border-b-0 md:border-r pb-4 md:pr-6">
-                    <h4 class="text-xl font-bold text-gray-700 mb-4">Questions 1 - 15</h4>
-                    <div id="grid-one" class="vertical-grid"></div>
-                </div>
-                <div class="md:pl-6">
-                    <h4 class="text-xl font-bold text-gray-700 mb-4">Questions 16 - 30</h4>
-                    <div id="grid-two" class="vertical-grid"></div>
-                </div>
+                <input type="text" id="student-identifier-input" class="w-full" readonly>
             </div>
             
-            <button id="submit-button" onclick="endTest()" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
-                End Practice & Get Report
+            <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
+                Pilot: <span id="auto-student-name-display">... Loading ...</span>
+            </div>
+            
+            <p class="text-lg text-gray-600 mb-8">You have 30 targets to hit. <br> Solve them in sets of 5.</p>
+            
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-50 disabled:scale-100" disabled>
+                🚀 Launch Mission
             </button>
         </section>
 
-        <!-- REPORT AREA -->
+        <section id="test-area" class="hidden max-w-2xl mx-auto">
+            
+            <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-gray-600 font-semibold">Progress</div>
+                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden">
+                        🔥 Streak: <span id="streak-count">0</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Start</span>
+                    <span id="progress-text">0/30 Solved</span>
+                </div>
+            </div>
+
+            <div id="question-carousel" class="mb-6">
+                </div>
+            
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="changeSlide(-1)" class="hidden px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-bold">Back</button>
+                
+                <button id="next-btn" onclick="changeSlide(1)" class="hidden ml-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all">
+                    Next Set &rarr;
+                </button>
+                
+                <button id="submit-button" onclick="endTest()" class="hidden ml-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-lg animate-pulse">
+                    Finish Mission 🏁
+                </button>
+            </div>
+        </section>
+
         <section id="report-area" class="hidden flex justify-center">
-            <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
                 
-                <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1">3 digits x 2 digits Report</h3>
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                        Skill Mastery
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2">3 Digits x 2 Digits</h2>
+                </div>
+
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
                 
-                <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
-                    Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
+                <p class="text-center text-gray-500 mb-6 border-b pb-4">
+                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
                 </p>
-                <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
-                        <p class="text-xs text-gray-500">No. of Correct Sums</p>
-                        <p class="text-xl font-bold text-green-600" id="report-correct">0</p>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/30</span></p>
                     </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
-                        <p class="text-xs text-gray-500">No. of Sums Attempted</p>
-                        <p class="text-xl font-bold text-purple-900" id="report-attempted">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500 col-span-2">
-                        <p class="text-xs text-gray-500">Avg. time taken to solve 1 sum</p>
-                        <p class="text-xl font-bold text-blue-900" id="report-avg-time">N/A</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-yellow-500 col-span-2">
-                        <p class="text-xs text-gray-500">Total Time Spent</p>
-                        <p class="text-xl font-bold text-yellow-800" id="report-time-elapsed">0:00</p>
+                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                        <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
+                        <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
                     </div>
                 </div>
 
-                <!-- DOWNLOAD REPORT BUTTON -->
-                <button onclick="downloadReport()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-sm text-gray-500">Speed per Question</p>
+                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+                </div>
+
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Download Report
-                </button>
-				
-                <button id="see-wrong-button" onclick="showWrongAnswers()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 disabled:opacity-50 disabled:bg-gray-400">Review Incorrect Sums (0)
+                    Save Badge (Download)
                 </button>
                 
-				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
-                    Practice again
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
+                    Review Mistakes
+                </button>
+                
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
+                    🔄 Replay Mission
                 </button>
             </div>
         </section>
         
-        <!-- WRONG ANSWERS SECTION -->
-        <section id="wrong-answer-area" class="hidden">
-            <h3 class="text-3xl font-extrabold text-red-700 mb-6 text-center border-b pb-2">Review Incorrect Sums</h3>
-
-            <div class="bg-white p-4 rounded-xl shadow-2xl">
-                <div class="wrong-sum-row font-bold text-gray-700 bg-gray-100 p-3 rounded-t-lg">
+        <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center">
                     <span>Problem</span>
-                    <span>Your Answer</span>
-                    <span>Correct Answer</span>
+                    <span>You Said</span>
+                    <span>Correct</span>
                 </div>
-
-                <div id="wrong-sums-list"></div>
+                <div id="wrong-sums-list" class="space-y-2"></div>
             </div>
-    
-            <button onclick="showReport()" class="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
-                &larr; Back to Report Summary
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
+                &larr; Back to Scoreboard
             </button>
         </section>
 
-        <!-- MESSAGE BOX -->
-        <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
-            <p id="message-text" class="font-semibold"></p>
-            <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
-        </div>
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center back-link">
-        <a href="multiplication.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Multiplication Options
-        </a>
-    </div>
-
-    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">For any queries call 9730482620</p>
-        </div>
+    <footer class="bg-yellow-200 text-center p-3 mt-auto">
+        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
     </footer>
 
     <script>
@@ -285,51 +227,32 @@
         }
         
         const TOTAL_SUMS = 30;
+        const SUMS_PER_SLIDE = 5; // Chunking Size
+        const TOTAL_SLIDES = TOTAL_SUMS / SUMS_PER_SLIDE;
+        
         let timerInterval;
         let sumsData = [];
         let startTime;
+        let currentSlideIndex = 0;
+        let currentStreak = 0;
 
         // --- UTILITY: Format Name ---
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') return 'Student';
+            if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
-            const parts = namePart.split('.');
-            let formattedName = parts.map(part => {
-                if (part.length > 0) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                return '';
-            }).filter(p => p.length > 0).join(' ');
-            return formattedName || identifier; 
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
         }
 
-        // --- UTILITY: Show Message ---
-        function showMessage(text) {
-            const box = document.getElementById('message-box');
-            document.getElementById('message-text').textContent = text;
-            box.classList.remove('hidden');
-            box.style.opacity = '1';
-        }
-
-        // --- NEW: Download Report Function ---
+        // --- UTILITY: Download Report ---
         function downloadReport() {
             const reportElement = document.getElementById('report-card');
             const studentName = document.getElementById('report-student-name').textContent || "Student";
             
-            if (!reportElement) {
-                showMessage("Error finding report card to download.");
-                return;
-            }
-
-            html2canvas(reportElement, {
-                scale: 2, // Higher quality
-                backgroundColor: null 
-            }).then(canvas => {
+            html2canvas(reportElement, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Abacus_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.download = `Mission_Report_3x2_${studentName.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
-            }).catch(err => {
-                console.error("Report generation failed:", err);
-                showMessage("Could not download report. Please take a screenshot.");
             });
         }
         
@@ -344,26 +267,24 @@
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
                 startButton.disabled = false;
-                startButton.textContent = "Start Practice for " + displayStudentName;
             } else {
-                document.getElementById('auto-student-name-display').textContent = 'Error: Name not found. Please log in.';
                 startButton.disabled = true;
             }
             
             sumsData = generateUniqueSums(TOTAL_SUMS);
-            renderSums();
+            renderChunks(); 
         });
 
-        // --- SUM GENERATION (3-digit x 2-digit) ---
+        // --- SUM GENERATION (3x2 Logic Preserved) ---
         function generateUniqueSums(count) {
             const allPossibilities = [];
-            // 100-999 x 10-99
+            // Logic: 3-digit x 2-digit
             for (let x = 100; x <= 999; x++) {
                 for (let y = 10; y <= 99; y++) { 
                     allPossibilities.push({ x, y, product: x * y, studentAnswer: null });
                 }
             }
-            // Fisher-Yates shuffle
+            // Shuffle
             for (let i = allPossibilities.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [allPossibilities[i], allPossibilities[j]] = [allPossibilities[j], allPossibilities[i]];
@@ -371,226 +292,254 @@
             return allPossibilities.slice(0, count);
         }
 
-        // --- RENDERING SUMS ---
-        function renderSums() {
-            const containerOne = document.getElementById('grid-one');
-            const containerTwo = document.getElementById('grid-two');
-            containerOne.innerHTML = '';
-            containerTwo.innerHTML = '';
+        // --- RENDERING LOGIC (CHUNKING) ---
+        function renderChunks() {
+            const carousel = document.getElementById('question-carousel');
+            carousel.innerHTML = '';
             
-            for (let index = 0; index < TOTAL_SUMS; index++) {
-                const data = sumsData[index];
+            let questionCount = 0;
+
+            for (let slide = 0; slide < TOTAL_SLIDES; slide++) {
+                // Create Slide Container
+                const slideDiv = document.createElement('div');
+                slideDiv.className = `slide-container ${slide === 0 ? 'active' : ''}`;
+                slideDiv.id = `slide-${slide}`;
                 
-                const sumHtml = `
-                    <div class="sum-item">
-                        <span class="text-base font-medium text-gray-700 w-8 text-right">${index + 1}.</span>
-                        <span class="text-lg font-semibold text-gray-800">${data.x} &times; ${data.y} =</span>
-                        <input type="number" data-index="${index}" class="answer-input w-24 p-1 border border-gray-300 rounded text-center text-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500" disabled>
-                    </div>
-                `;
-                
-                if (index < 15) {
-                    containerOne.innerHTML += sumHtml;
-                } else {
-                    containerTwo.innerHTML += sumHtml;
+                // Add header for the chunk
+                slideDiv.innerHTML = `<h4 class="text-xl font-bold text-blue-800 mb-4 text-center">Set ${slide + 1} of ${TOTAL_SLIDES}</h4>`;
+
+                // Add 5 Questions
+                for (let i = 0; i < SUMS_PER_SLIDE; i++) {
+                    const data = sumsData[questionCount];
+                    const index = questionCount;
+                    
+                    const sumHtml = `
+                        <div class="sum-item">
+                            <span class="text-xl font-bold text-gray-600 w-8">${index + 1}.</span>
+                            <span class="text-2xl font-bold text-gray-800 tracking-wider">${data.x} &times; ${data.y} = </span>
+                            <input type="number" 
+                                data-index="${index}" 
+                                class="answer-input w-24 p-2 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold focus:outline-none focus:border-blue-500" 
+                                placeholder="?" 
+                                disabled>
+                        </div>
+                    `;
+                    slideDiv.innerHTML += sumHtml;
+                    questionCount++;
                 }
+                carousel.appendChild(slideDiv);
             }
+            
+            setupInputInteraction();
         }
 
-        // --- INPUT FOCUS LOGIC ---
-        function setupInputFocus() {
-            const inputElements = document.querySelectorAll('.answer-input');
+        // --- INTERACTION LOGIC (IMMEDIATE FEEDBACK) ---
+        function setupInputInteraction() {
+            const inputs = document.querySelectorAll('.answer-input');
             
-            inputElements.forEach((input, index, list) => {
+            inputs.forEach((input) => {
+                input.addEventListener('input', (e) => {
+                    const idx = parseInt(input.getAttribute('data-index'));
+                    const val = parseInt(input.value);
+                    const correctVal = sumsData[idx].product;
+                    
+                    // Immediate Feedback
+                    if (!isNaN(val)) {
+                        sumsData[idx].studentAnswer = val;
+                        
+                        if (String(val).length >= String(correctVal).length) {
+                             if (val === correctVal) {
+                                input.classList.add('correct-answer');
+                                input.classList.remove('wrong-answer');
+                                updateStreak(true);
+                             } else {
+                                input.classList.add('wrong-answer');
+                                input.classList.remove('correct-answer');
+                                updateStreak(false);
+                             }
+                             updateProgress();
+                        }
+                    } else {
+                        // Empty
+                        input.classList.remove('correct-answer', 'wrong-answer');
+                        sumsData[idx].studentAnswer = null;
+                    }
+                });
+
+                // Enter Key Navigation
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
-                        e.preventDefault(); 
-                        const nextIndex = index + 1;               
-                        if (nextIndex < list.length) {
-                            list[nextIndex].focus();
+                        e.preventDefault();
+                        const nextInput = inputs[parseInt(input.getAttribute('data-index')) + 1];
+                        if (nextInput) {
+                            if (nextInput.closest('.slide-container').classList.contains('active')) {
+                                nextInput.focus();
+                            } else {
+                                changeSlide(1);
+                            }
                         } else {
                             document.getElementById('submit-button').focus();
                         }
                     }
                 });
-                input.addEventListener('input', () => {
-                    const idx = parseInt(input.getAttribute('data-index'));
-                    const value = input.value.trim();
-                    sumsData[idx].studentAnswer = value === "" ? null : parseInt(value);
-                });
             });
+        }
+
+        function updateStreak(isCorrect) {
+            const streakDisplay = document.getElementById('streak-display');
+            const streakCount = document.getElementById('streak-count');
             
-            let lastActiveInput = inputElements[0];
-            document.addEventListener('focusin', (e) => {
-                if (e.target && e.target.classList.contains('answer-input')) {
-                    lastActiveInput = e.target;
+            if (isCorrect) {
+                currentStreak++;
+                if (currentStreak > 2) {
+                    streakDisplay.classList.remove('hidden');
+                    streakDisplay.classList.add('animate-bounce');
+                    setTimeout(() => streakDisplay.classList.remove('animate-bounce'), 1000);
                 }
-            });
-            setInterval(() => {
-                if (!document.getElementById('test-area').classList.contains('hidden') && 
-                    document.activeElement !== document.getElementById('submit-button') && 
-                    document.activeElement !== lastActiveInput && 
-                    lastActiveInput) {
-                    lastActiveInput.focus();
-                }
-            }, 50);
+            } else {
+                currentStreak = 0;
+                streakDisplay.classList.add('hidden');
+            }
+            streakCount.textContent = currentStreak;
+        }
+
+        function updateProgress() {
+            const totalAnswered = sumsData.filter(s => s.studentAnswer !== null).length;
+            const percentage = (totalAnswered / TOTAL_SUMS) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_SUMS} Solved`;
+        }
+
+        // --- NAVIGATION CONTROL ---
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.slide-container');
+            slides[currentSlideIndex].classList.remove('active');
+            currentSlideIndex += direction;
+            slides[currentSlideIndex].classList.add('active');
+            
+            const firstInput = slides[currentSlideIndex].querySelector('input');
+            if (firstInput) firstInput.focus();
+            
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-button');
+            
+            prevBtn.classList.toggle('hidden', currentSlideIndex === 0);
+            
+            if (currentSlideIndex === TOTAL_SLIDES - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+            
+            window.scrollTo(0,0);
         }
 
         // --- TEST CONTROL FLOW ---
         function startTest() {
-            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
-            if (!studentIdentifier) {
-                showMessage("Student details not loaded. Please log in again.");
-                return;
-            }
-            
-            // 1. ACTIVATE FOCUS MODE (Kindle Theme)
-            document.body.classList.add('focus-mode');
-
-            const displayStudentName = formatStudentName(studentIdentifier);
-            document.getElementById('display-student-name').textContent = displayStudentName;
-            
+            document.body.classList.add('focus-mode'); // Enable Kindle Mode
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             
-            setupInputFocus(); 
-            document.querySelectorAll('.answer-input').forEach(input => { input.disabled = false; });
-            const firstInput = document.querySelector('.answer-input');
-            if (firstInput) { firstInput.focus(); }
+            const displayStudentName = formatStudentName(document.getElementById('student-identifier-input').value);
+            
+            document.querySelectorAll('.answer-input').forEach(input => input.disabled = false);
+            document.querySelector('.answer-input').focus();
+            document.getElementById('next-btn').classList.remove('hidden');
+
             startTime = Date.now();
             startTimer(); 
         }
 
         function startTimer() {
-            const display = document.getElementById('timer-display');
-            let timeElapsed = 0;
-            function updateTimer() {
-                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(timeElapsed / 60);
-                const seconds = timeElapsed % 60;
-                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            }
-            timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(() => {}, 1000);
         }
 
         function endTest() {
-            // 2. DEACTIVATE FOCUS MODE
             document.body.classList.remove('focus-mode');
-
             clearInterval(timerInterval);
+            
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
-            document.querySelectorAll('.answer-input').forEach(input => { input.disabled = true; });
-
+            
             let correctCount = 0;
             let attemptedCount = 0;
             let solvedWrongCount = 0;
-            const inputElements = document.querySelectorAll('.answer-input');
-
-            inputElements.forEach((input, index) => {
-                const studentAnswer = parseInt(input.value.trim());
-                const correctAnswer = sumsData[index].product;
-                const isAttempted = !isNaN(studentAnswer) && input.value.trim() !== ""; 
-        
+            
+            sumsData.forEach((data, index) => {
+                const isAttempted = data.studentAnswer !== null;
                 if (isAttempted) {
                     attemptedCount++;
-                    const isCorrect = studentAnswer === correctAnswer;
-                    sumsData[index].isCorrect = isCorrect;
-                    
-                    if (isCorrect) {
-                        correctCount++;
-                        input.classList.add('bg-green-100'); 
-                    } else {
-                        solvedWrongCount++;
-                        input.classList.add('bg-red-100'); 
-                        input.title = `Correct Answer: ${correctAnswer}`;
-                    }
+                    const isCorrect = data.studentAnswer === data.product;
+                    data.isCorrect = isCorrect;
+                    if (isCorrect) correctCount++;
+                    else solvedWrongCount++;
                 } else {
-                    sumsData[index].isCorrect = null; 
-                    sumsData[index].studentAnswer = null; 
+                    data.isCorrect = null;
                 }
             });
 
+            // STORE SPECIFICALLY FOR 3x2
             sessionStorage.setItem('multiplication3x2SumsData', JSON.stringify(sumsData));
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
-            let avgTimeDisplay = 'N/A';
-            if (attemptedCount > 0) {
-                const avgTimeSeconds = timeElapsedSeconds / attemptedCount;
-                avgTimeDisplay = `${avgTimeSeconds.toFixed(2)}s`;
-            }
             
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
-            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            let avgTimeDisplay = 'N/A';
+            if (attemptedCount > 0) {
+                avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
+            }
 
             const now = new Date();
-            const date = ('0' + now.getDate()).slice(-2);
-            const month = ('0' + (now.getMonth() + 1)).slice(-2);
-            const year = String(now.getFullYear()).slice(-2);
-            const hours = ('0' + now.getHours()).slice(-2);
-            const mins = ('0' + now.getMinutes()).slice(-2);            
-            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
-            document.getElementById('report-datetime').textContent = formattedDateTime;
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('report-student-name').textContent = formatStudentName(document.getElementById('student-identifier-input').value);
             
-            const studentIdentifier = document.getElementById('student-identifier-input').value.trim();
-            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
-            
-            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
-            document.getElementById('report-attempted').textContent = attemptedCount;
             document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = avgTimeDisplay;
             
-            const wrongButton = document.getElementById('see-wrong-button');
-            wrongButton.textContent = `Review Incorrect Sums (${solvedWrongCount})`;
-            if (solvedWrongCount === 0) {
-                wrongButton.disabled = true;
-                wrongButton.textContent = "All Correct! Great Job!";
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (solvedWrongCount > 0) {
+                wrongBtn.textContent = `Review ${solvedWrongCount} Mistakes`;
+                wrongBtn.disabled = false;
             } else {
-                wrongButton.disabled = false;
-            }
-            
-            if (typeof window.lilChampUtils !== 'undefined' && correctCount > (attemptedCount * 0.7)) { 
-                setTimeout(() => window.lilChampUtils.celebrate(), 500); 
-                window.lilChampUtils.playCorrect(); 
+                wrongBtn.textContent = "Perfect Score! No Mistakes.";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // --- TOGGLE VIEW FUNCTIONS ---
+        // --- WRONG ANSWERS VIEW ---
         function showWrongAnswers() {
             const allSums = JSON.parse(sessionStorage.getItem('multiplication3x2SumsData'));
             const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
-
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
             
-            if (wrongSums.length === 0) {
-                listContainer.innerHTML = '<p class="text-center py-4 text-green-600 font-bold">Great job! You made no mistakes on attempted sums!</p>';
-            } else {
-                wrongSums.forEach((sum, index) => {
-                    const studentAnswerText = sum.studentAnswer;
-                    const row = `
-                        <div class="wrong-sum-row hover:bg-red-50 transition duration-150">
-                            <span class="font-semibold text-gray-800">${index + 1}. ${sum.x} &times; ${sum.y}</span>
-                            <span class="text-red-600 font-bold font-mono">${studentAnswerText}</span>
-                            <span class="text-green-700 font-bold font-mono">${sum.product}</span>
-                        </div>
-                    `;
-                    listContainer.innerHTML += row;
-                });
-            }
+            wrongSums.forEach((sum, index) => {
+                const row = `
+                    <div class="grid grid-cols-3 text-center py-2 border-b hover:bg-red-50">
+                        <span class="font-bold text-gray-700">${sum.x} &times; ${sum.y}</span>
+                        <span class="text-red-500 font-bold line-through">${sum.studentAnswer}</span>
+                        <span class="text-green-600 font-bold">${sum.product}</span>
+                    </div>
+                `;
+                listContainer.innerHTML += row;
+            });
 
             document.getElementById('report-area').classList.add('hidden');
             document.getElementById('wrong-answer-area').classList.remove('hidden');
-            document.getElementById('wrong-answer-area').scrollIntoView({ behavior: 'smooth' });
         }
 
         function showReport() {
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
