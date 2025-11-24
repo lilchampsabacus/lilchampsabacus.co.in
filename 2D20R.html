@@ -390,7 +390,7 @@
                 currentData.isCorrect = false;
                 input.classList.add('wrong-answer');
                 input.classList.remove('correct-answer');
-                feedbackDiv.innerHTML = `Wrong. Ans: <span class="text-black">${currentData.correctTotal}</span>`;
+                feedbackDiv.innerHTML = `Wrong. Correct Ans: <span class="text-black">${currentData.correctTotal}</span>`;
                 feedbackDiv.className = "text-red-500 font-bold text-lg mb-2 h-6";
                 updateStreak(false);
                 updateButtonsForEnd();
