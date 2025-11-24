@@ -151,43 +151,54 @@
         </section>
 
         <section id="report-area" class="hidden flex justify-center">
-            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl">
-                
-                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
-                <p class="text-center text-gray-500 mb-6 border-b pb-4">
-                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
-                </p>
-                
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
-                        <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
-                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/30</span></p>
-                    </div>
-                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
-                        <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
-                        <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
-                    <p class="text-sm text-gray-500">Speed per Question</p>
-                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
-                </div>
-
-                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg">
-                    📥 Save Badge (Download Report)
-                </button>
-				
-                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
-                    Review Mistakes
-                </button>
-                
-				<button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
-                    🔄 Replay Mission
-                </button>
-            </div>
-        </section>
+    <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
         
+        <div class="text-center border-b border-gray-100 pb-2 mb-4">
+            <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                Skill Mastery
+            </span>
+            <h2 class="text-2xl font-extrabold text-gray-700 mt-2">2 Digits x 1 Digit</h2>
+        </div>
+
+        <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+        
+        <p class="text-center text-gray-500 mb-6 border-b pb-4">
+            <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
+        </p>
+        
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/30</span></p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
+                <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+            <p class="text-sm text-gray-500">Speed per Question</p>
+            <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+        </div>
+
+        <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Save Badge (Download)
+        </button>
+        
+        <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
+            Review Mistakes
+        </button>
+        
+        <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
+            🔄 Replay Mission
+        </button>
+    </div>
+</section>
+		
         <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
             <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
             <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
@@ -554,3 +565,4 @@
     </script>
 </body>
 </html>
+
