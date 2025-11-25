@@ -1,222 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Li'l Champs Abacus Academy</title>
+    <title>Flash Anzan Practice</title>
+    
+    <link rel="stylesheet" href="elegant-theme.css">
+    <script src="gamify.js" defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        /* General Reset and Mobile-First Styling */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-            overflow-x: hidden;
-        }
-
-        /* Header Styling - MODIFIED to match 2D20R (bg-yellow-200 text-black) */
-        header {
-            background-color: #fef08a; /* Tailwind yellow-200 */
-            color: #000;
-            padding: 15px 10px;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Container for content */
-        .container {
-            padding: 20px;
-            max-width: 600px;
-            margin: auto; /* Center on larger screens */
-        }
-
-        /* Input Form Styling (omitted for brevity, assume previous styles apply) */
-        #settings-screen select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 1em;
-            -webkit-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px top 50%;
-            background-size: 10px;
-        }
-
-        /* Button Styling (omitted for brevity, assume previous styles apply) */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
+        /* Base Settings */
+        html { scroll-padding-top: 20px; }
         
-        .btn-primary { background-color: #007BFF; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn:disabled { background-color: #ccc; cursor: not-allowed; color: #666; }
-
-
-        /* Practice Screen Styling */
-        #practice-screen {
-            display: none; /* Hidden by default */
-            text-align: center;
-            height: calc(100vh - 120px); 
+        /* --- FOCUS MODE (Kindle Style) --- */
+        body {
+            background-color: #fbf0d9 !important; /* Kindle Sepia */
+            color: #433422;
+            font-family: sans-serif;
+            height: 100vh;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
         }
 
-        #number-display {
+        /* Header/Footer Styles */
+        header {
+            background-color: #fef08a; /* Yellow-200 */
+            color: #000;
+            padding: 1rem;
+            text-align: center;
             font-weight: bold;
-            /* Default: Very Large Font for numbers */
-            font-size: 10vw; 
-            padding: 20px 0;
-            line-height: 1; 
-            color: #333;
-            max-font-size: 100px; 
-            flex-grow: 1; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        footer {
+            background-color: #fef08a;
+            color: #000;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* The Flashing Display */
+        #flash-container {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background-color: #fffdf5; /* Pearl White */
+            border: 4px solid #ebdcc4;
+            border-radius: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            word-break: break-all;
-            overflow: hidden;
-            /*transition: font-size 0.2s;*/ /* Smooth transition for text size change */
-        }
-        
-        /* Style for the initial, smaller text ("Get Ready...", "Tap Start") */
-        .initial-text {
-            font-size: 1.5em !important; /* Smaller size for initial text */
-            white-space: nowrap; /* Keep the sentence on one line */
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            position: relative;
+            margin-bottom: 1.5rem;
         }
 
-        /* Media query for smaller devices (typical phone portrait) */
-        @media (max-width: 600px) {
-            #number-display {
-                font-size: 25vw;
-            }
-        }
-        
-        /* Footer Styling - MODIFIED to match 2D20R (bg-yellow-200 text-black) */
-        footer {
-            background-color: #fef08a; /* Tailwind yellow-200 */
-            color: #000;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9em;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        #number-display {
+            font-size: clamp(4rem, 15vw, 8rem);
+            font-weight: 800;
+            color: #333;
+            line-height: 1;
         }
 
-        .button-group {
+        /* Countdown Overlay Styles */
+        .countdown-text {
+            font-size: 5rem;
+            color: #e11d48; /* Rose-600 */
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Input & Controls */
+        .control-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             width: 100%;
-            padding: 0 20px 20px 20px; 
-            max-width: 600px;
-            box-sizing: border-box;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Inputs */
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: #f8fafc;
+            margin-bottom: 1rem;
         }
         
-        /* New style for the student display */
-        .student-name-display {
-            font-size: 1em;
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
             font-weight: bold;
-            color: #007BFF; /* A nice blue */
-            margin-bottom: 10px;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: #16a34a; color: white; } /* Green */
+        .btn-blue { background-color: #2563eb; color: white; } /* Blue */
+        .btn-gray { background-color: #4b5563; color: white; } 
+
+        /* Feedback Colors */
+        .correct { color: #16a34a; }
+        .wrong { color: #dc2626; }
+        
     </style>
 </head>
 <body>
 
     <header>
-        Li'l Champs Abacus Academy Ambernath East and West
+        Li'l Champs Abacus Academy, Ambernath
     </header>
 
-    <div id="settings-screen" class="container">
-        <div id="login-status" class="student-name-display">
-            </div>
-        <form id="abacus-settings">
-            
-            <label for="digits">No. of Digits (1 to 5)</label>
-            <select id="digits" name="digits" required>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </select>
-
-            <label for="rows">No. of Rows (Multiple of 5, Max 100)</label>
-            <select id="rows" name="rows" required>
-                </select>
-
-            <label for="speed">Speed</label>
-            <select id="speed" name="speed" required>
-                <option value="3000">Slow (3.0 seconds)</option>
-                <option value="1000">Fast (1.0 second)</option>
-                <option value="700">Fastest (0.7 seconds)</option>
-            </select>
-            
-            <button type="submit" class="btn btn-primary" id="settings-submit-btn">Submit</button>
-            
-        </form>
-    </div>
-
-    <div id="practice-screen">
-        <div id="number-display" class="initial-text">
-            Tap Start
-        </div>
+    <main>
         
-        <div id="answer-display" style="display:none;">
+        <div id="settings-screen" class="control-card">
+            <h2 class="text-2xl font-bold text-center mb-4 text-gray-700">Flash Anzan Setup</h2>
+            <div id="login-status" class="text-center mb-4 font-semibold text-blue-600"></div>
+            
+            <form id="abacus-settings">
+                <div class="mb-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Digits (1-5)</label>
+                    <select id="digits" required>
+                        <option value="1">1 Digit</option>
+                        <option value="2">2 Digits</option>
+                        <option value="3">3 Digits</option>
+                        <option value="4">4 Digits</option>
+                        <option value="5">5 Digits</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">No. of Rows</label>
+                    <select id="rows" required></select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Flash Speed</label>
+                    <select id="speed" required>
+                        <option value="3000">Slow (3.0s)</option>
+                        <option value="2000">Medium (2.0s)</option>
+                        <option value="1000">Fast (1.0s)</option>
+                        <option value="700">Fastest (0.7s)</option>
+                        <option value="500">Expert (0.5s)</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="settings-submit-btn">Start Practice</button>
+            </form>
+        </div>
+
+        <div id="practice-screen" class="hidden w-full">
+            
+            <div id="flash-container">
+                <div id="number-display">Ready?</div>
             </div>
 
-        <div class="button-group">
-            <button id="start-btn" class="btn btn-primary" onclick="startAbacusPractice()">Start</button>
-            <button id="show-answer-btn" class="btn btn-secondary" onclick="showAnswer()">Show Answer</button>
-            <button id="back-btn" class="btn btn-secondary" onclick="backToSettings()">Back to Settings</button>
+            <div id="input-area" class="control-card hidden text-center">
+                <h3 class="text-xl font-bold text-gray-700 mb-3">Calculation Complete!</h3>
+                
+                <input type="number" id="user-answer" placeholder="Enter Total" class="text-center text-2xl font-bold">
+                
+                <button onclick="checkAnswer()" class="btn btn-blue mb-3">Check Answer</button>
+            </div>
+
+            <div id="result-area" class="control-card hidden text-center">
+                <h3 id="result-title" class="text-3xl font-bold mb-2"></h3>
+                <p class="text-lg text-gray-600 mb-4">Your Answer: <span id="display-user-ans" class="font-bold"></span></p>
+                <p class="text-lg text-gray-600 mb-6">Correct Answer: <span id="display-correct-ans" class="font-bold text-green-600"></span></p>
+                
+                <div class="flex gap-2">
+                    <button onclick="restartPractice()" class="btn btn-primary">Try Again</button>
+                    <button onclick="backToSettings()" class="btn btn-gray">Settings</button>
+                </div>
+            </div>
+
         </div>
-    </div>
+
+    </main>
 
     <footer>
         For any queries call 9730482620
     </footer>
 
     <script>
-        // --- DOM Elements ---
-        const settingsScreen = document.getElementById('settings-screen');
-        const practiceScreen = document.getElementById('practice-screen');
-        const settingsForm = document.getElementById('abacus-settings');
-        const numberDisplay = document.getElementById('number-display');
-        const answerDisplay = document.getElementById('answer-display');
-        const startBtn = document.getElementById('start-btn');
-        const showAnswerBtn = document.getElementById('show-answer-btn');
-        const backBtn = document.getElementById('back-btn');
-        const settingsSubmitBtn = document.getElementById('settings-submit-btn');
-        const loginStatusDisplay = document.getElementById('login-status');
+        // --- SESSION CHECK ---
+        const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+        let isUserLoggedIn = !!studentIdentifier;
 
-
-        // --- Global Variables ---
-        let practiceSettings = {};
-        let currentTotal = 0; 
-        let currentTimeout; // To hold the reference to the main loop timeout
-        let isUserLoggedIn = false; // NEW: Login status flag
+        // --- GLOBAL VARIABLES ---
+        let settings = {};
+        let currentTotal = 0;
+        let numbersList = [];
+        let currentTimeout;
         
-        // --- Configuration for Special Starting Numbers ---
+        // Special ranges for first 2 numbers
         const STARTING_RANGES = {
             1: { min: 6, max: 9 },
             2: { min: 71, max: 99 },
@@ -224,222 +232,212 @@
             4: { min: 7777, max: 9999 },
             5: { min: 77777, max: 99999 }
         };
-        
-        /**
- * Extracts a formatted name (First Name Last Name) from a student identifier 
- * which is expected to be an email-like string (e.g., "first.last@domain.com").
- * @param {string} identifier - The student identifier string.
- * @returns {string} The formatted name or the original identifier if extraction fails.
- */
-function formatStudentName(identifier) {
-    if (!identifier || typeof identifier !== 'string') {
-        return 'Student';
-    }
-    
-    // 1. Remove the domain part (everything after the first '@')
-    const namePart = identifier.split('@')[0];
-    
-    // 2. Split by '.' (or any common name separator)
-    const parts = namePart.split('.');
-    
-    // 3. Capitalize the first letter of each part and join them with a space
-    let formattedName = parts.map(part => {
-        if (part.length > 0) {
-            // Capitalize first letter, lowercase the rest
-            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+
+        // --- UTILITIES ---
+        function formatStudentName(id) {
+            if (!id) return 'Guest';
+            const namePart = id.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
         }
-        return '';
-    }).filter(p => p.length > 0) // Remove empty strings
-      .join(' ');
-      
-    // 4. Return the formatted name, or a fallback if the result is empty
-    return formattedName || identifier; 
-}
 
-        // --- Core Number Generation Function (Unchanged) ---
-        function generateNumber(digits, rowCount, currentTotal) {
-            let minVal, maxVal;
-            let newNumber;
-            let isNegative = (rowCount % 3 === 0);
-            
-            // 1. Determine Range
-            if (rowCount <= 2) {
-                // Special Rule: First two numbers use the high starting range
-                minVal = STARTING_RANGES[digits].min;
-                maxVal = STARTING_RANGES[digits].max;
-                isNegative = false; // The first two numbers must be positive
-            } else {
-                // Standard Rule: Generate any N-digit number
-                minVal = Math.pow(10, digits - 1);
-                maxVal = Math.pow(10, digits) - 1;
-            }
-
-            // 2. Generate Random Base Number
-            newNumber = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-
-            // 3. Apply Guarded Subtraction Logic
-            if (isNegative) {
-                // Determine the maximum amount we can safely subtract (Total - 1)
-                // We use Math.max(1, currentTotal) to avoid trying to subtract from a negative or zero total
-                let maxSafeSubtractor = Math.max(1, currentTotal - 1); 
-                
-                // Limit the generated number to the safe value
-                // This guarantees the running total will be >= 1 after subtraction.
-                let subtractionValue = Math.min(newNumber, maxSafeSubtractor);
-                
-                // The newNumber is now negative for addition
-                newNumber = -subtractionValue;
-            }
-            
-            return newNumber;
-        }
-        
-        // --- Utility Functions ---
-
-        // MODIFIED: Populate rows with multiples of 5, default to 10
-        function populateRowsSelect() {
-            const rowsSelect = document.getElementById('rows');
-            rowsSelect.innerHTML = '';
-            for (let i = 5; i <= 100; i += 5) { // Start at 5, increment by 5
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i;
-                if (i === 10) option.selected = true; // Set default to 10
-                rowsSelect.appendChild(option);
-            }
-        }
-        
-        function checkLoginStatus() {
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            if (studentIdentifier) {
-                isUserLoggedIn = true;
-                const studentName = formatStudentName(studentIdentifier);
-                loginStatusDisplay.textContent = `Welcome, ${studentName}!`;
-                loginStatusDisplay.style.color = 'green';
-                settingsSubmitBtn.disabled = false;
-                settingsSubmitBtn.textContent = 'Submit';
-            } else {
-                // REDIRECTION LOGIC ADDED HERE
-                // The user is not logged in, redirect them to index.html
-                alert('You must be logged in to access this page. Redirecting to login page.');
-                window.location.href = 'index.html';
-                isUserLoggedIn = false;
-                loginStatusDisplay.textContent = 'Login Required: Redirecting...';
-                settingsSubmitBtn.disabled = true;
-                settingsSubmitBtn.textContent = 'Login Required';
+        function populateRows() {
+            const select = document.getElementById('rows');
+            select.innerHTML = '';
+            for (let i = 5; i <= 100; i += 5) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                if (i === 10) opt.selected = true;
+                select.appendChild(opt);
             }
         }
 
+        // --- CORE LOGIC ---
+        function generateNumberSequence(digits, count) {
+            let sequence = [];
+            let runningTotal = 0;
+
+            for (let i = 1; i <= count; i++) {
+                let min, max;
+                let isNegative = (i > 2 && i % 3 === 0); // Negative every 3rd number, but not first 2
+
+                if (i <= 2) {
+                    min = STARTING_RANGES[digits].min;
+                    max = STARTING_RANGES[digits].max;
+                    isNegative = false; 
+                } else {
+                    min = Math.pow(10, digits - 1);
+                    max = Math.pow(10, digits) - 1;
+                }
+
+                let num = Math.floor(Math.random() * (max - min + 1)) + min;
+
+                if (isNegative) {
+                    // Ensure we don't go below zero
+                    let maxSub = Math.max(0, runningTotal); 
+                    // Ensure we don't subtract more than the random number generated (if random was small)
+                    // Actually, just limit num to runningTotal
+                    num = Math.min(num, maxSub);
+                    num = -num;
+                }
+
+                sequence.push(num);
+                runningTotal += num;
+            }
+            return { sequence, total: runningTotal };
+        }
+
+        // --- UI FLOW ---
         document.addEventListener('DOMContentLoaded', () => {
-            populateRowsSelect();
-            checkLoginStatus(); // Check login status on load
+            populateRows();
+            const nameDisplay = document.getElementById('login-status');
+            
+            if (isUserLoggedIn) {
+                nameDisplay.textContent = `Welcome, ${formatStudentName(studentIdentifier)}!`;
+            } else {
+                // Force Login or allow Guest? Assuming Force based on previous files
+                alert("Please login first.");
+                window.location.href = 'index.html';
+            }
+
+            document.getElementById('abacus-settings').addEventListener('submit', (e) => {
+                e.preventDefault();
+                startSequence();
+            });
         });
 
+        function startSequence() {
+            // 1. Get Settings
+            settings.digits = parseInt(document.getElementById('digits').value);
+            settings.rows = parseInt(document.getElementById('rows').value);
+            settings.speed = parseInt(document.getElementById('speed').value);
 
-        // 4. FORM SUBMISSION
-        settingsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+            // 2. Generate Math
+            const data = generateNumberSequence(settings.digits, settings.rows);
+            numbersList = data.sequence;
+            currentTotal = data.total;
 
-            if (!isUserLoggedIn) {
-                alert('Please log in on the Main Menu page to start the practice.');
+            // 3. Switch Screens
+            document.getElementById('settings-screen').classList.add('hidden');
+            document.getElementById('practice-screen').classList.remove('hidden');
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('result-area').classList.add('hidden');
+            
+            // 4. Start Countdown (3-2-1)
+            runCountdown();
+        }
+
+        function runCountdown() {
+            const display = document.getElementById('number-display');
+            display.classList.remove('text-8xl'); // Reset size
+            let count = 3;
+            
+            display.textContent = count;
+            display.className = "countdown-text";
+
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    display.textContent = count;
+                    // Re-trigger animation
+                    display.classList.remove("countdown-text");
+                    void display.offsetWidth; // Trigger reflow
+                    display.classList.add("countdown-text");
+                } else {
+                    clearInterval(countInterval);
+                    display.textContent = "";
+                    display.className = ""; // Remove special countdown styling
+                    display.style.color = "#333"; // Reset color
+                    runFlashLoop();
+                }
+            }, 1000);
+        }
+
+        function runFlashLoop() {
+            const display = document.getElementById('number-display');
+            let index = 0;
+            
+            // Calculation for timing
+            // If speed is 1000ms: Show for 600ms, Hide for 400ms
+            const showTime = Math.floor(settings.speed * 0.6); 
+            const hideTime = settings.speed - showTime;
+
+            function showNext() {
+                if (index < numbersList.length) {
+                    const num = numbersList[index];
+                    
+                    // Style based on positivity
+                    if (num < 0) display.style.color = "#dc2626"; // Red
+                    else display.style.color = "#333"; // Black
+
+                    display.textContent = num;
+                    
+                    // Hide after showTime
+                    currentTimeout = setTimeout(() => {
+                        display.textContent = "";
+                        index++;
+                        // Wait hideTime before next number
+                        currentTimeout = setTimeout(showNext, hideTime);
+                    }, showTime);
+                } else {
+                    // Finished
+                    display.style.color = "#16a34a"; // Green
+                    display.textContent = "Done!";
+                    setTimeout(showInputScreen, 1000);
+                }
+            }
+            
+            showNext();
+        }
+
+        function showInputScreen() {
+            document.getElementById('input-area').classList.remove('hidden');
+            const input = document.getElementById('user-answer');
+            input.value = '';
+            input.focus();
+            
+            // Allow Enter key
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') checkAnswer();
+            };
+        }
+
+        function checkAnswer() {
+            const inputVal = parseInt(document.getElementById('user-answer').value);
+            
+            if (isNaN(inputVal)) {
+                alert("Please enter a number");
                 return;
             }
 
-            practiceSettings.digits = parseInt(document.getElementById('digits').value);
-            practiceSettings.rows = parseInt(document.getElementById('rows').value);
-            practiceSettings.speed = parseInt(document.getElementById('speed').value);
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('result-area').classList.remove('hidden');
             
-            settingsScreen.style.display = 'none';
-            practiceScreen.style.display = 'flex';
-            
-            startBtn.disabled = false;
-            showAnswerBtn.disabled = true;
-            backBtn.disabled = false;
-            
-            // MODIFIED: Ensure "Tap Start" is shown on practice screen after submission
-            numberDisplay.textContent = 'Tap Start';
-            numberDisplay.classList.add('initial-text');
-            answerDisplay.style.display = 'none';
-            
-            // Clear any previous loop
-            if (currentTimeout) clearTimeout(currentTimeout);
-        });
+            const title = document.getElementById('result-title');
+            document.getElementById('display-user-ans').textContent = inputVal;
+            document.getElementById('display-correct-ans').textContent = currentTotal;
 
-        // 5. START BUTTON: Begins the Abacus practice loop
-        function startAbacusPractice() {
-            startBtn.disabled = true;
-            showAnswerBtn.disabled = true;
-            backBtn.disabled = true;
-            answerDisplay.style.display = 'none';
-            
-            // Show "Get Ready" with smaller font
-            numberDisplay.textContent = 'Get Ready...';
-            numberDisplay.classList.add('initial-text');
-            
-            currentTotal = 0; // Reset total
-
-            let rowCount = 0;
-            const numberDelay = practiceSettings.speed; 
-            const displayTime = 500; // 0.5 seconds to show the number
-            const pauseTime = numberDelay - displayTime; // Time to show blank screen
-
-            function displayNextNumber() {
-                if (rowCount < practiceSettings.rows) {
-                    rowCount++;
-                    
-                    // Generate the number based on all rules
-                    const newNumber = generateNumber(practiceSettings.digits, rowCount, currentTotal);
-                    currentTotal += newNumber;
-                    
-                    // Remove the smaller font class for the number display
-                    numberDisplay.classList.remove('initial-text');
-
-                    // 1. Show the number for 0.3s
-                    numberDisplay.textContent = newNumber;
-                    
-                    currentTimeout = setTimeout(() => {
-                        // 2. Clear the screen for the remaining pause time
-                        numberDisplay.textContent = ''; 
-                        
-                        // 3. Schedule the next number display after the pause
-                        currentTimeout = setTimeout(displayNextNumber, pauseTime);
-                    }, displayTime);
-                    
-                } else {
-                    // Practice finished
-                    numberDisplay.textContent = 'FINISHED!';
-                    numberDisplay.classList.add('initial-text'); // Return to smaller font
-                    startBtn.disabled = false; 
-                    showAnswerBtn.disabled = false;
-                    backBtn.disabled = false;
-                }
+            if (inputVal === currentTotal) {
+                title.textContent = "Correct! 🎉";
+                title.className = "text-3xl font-bold mb-2 text-green-600";
+                if(window.lilChampUtils) window.lilChampUtils.playCorrect();
+            } else {
+                title.textContent = "Wrong 😔";
+                title.className = "text-3xl font-bold mb-2 text-red-600";
+                if(window.lilChampUtils) window.lilChampUtils.playWrong();
             }
-
-            // Start the sequence after the "Get Ready" pause
-            currentTimeout = setTimeout(displayNextNumber, 1000); 
         }
 
-        // 6. SHOW ANSWER BUTTON
-        function showAnswer() {
-            // The logic guarantees a positive total, but use Math.abs for safety
-            const finalAnswer = Math.abs(currentTotal); 
-            answerDisplay.textContent = 'Answer: ' + finalAnswer;
-            answerDisplay.style.display = 'block';
-            showAnswerBtn.disabled = true; 
+        function restartPractice() {
+            // Same settings, new numbers
+            startSequence();
         }
 
-        // 7. BACK BUTTON
         function backToSettings() {
-            // Stop any running practice loop
-            if (currentTimeout) clearTimeout(currentTimeout); 
-
-            practiceScreen.style.display = 'none';
-            settingsScreen.style.display = 'block';
-            answerDisplay.style.display = 'none';
-            // Re-check login status when returning to settings
-            checkLoginStatus(); 
+            document.getElementById('practice-screen').classList.add('hidden');
+            document.getElementById('settings-screen').classList.remove('hidden');
         }
-    </script>
 
+    </script>
 </body>
 </html>
