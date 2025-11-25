@@ -80,6 +80,7 @@
             font-weight: 800;
             color: #333;
             line-height: 1;
+            text-align: center;
         }
 
         /* Countdown Overlay Styles */
@@ -87,6 +88,14 @@
             font-size: 5rem;
             color: #e11d48; /* Rose-600 */
             animation: popIn 0.5s ease-out;
+        }
+        
+        .start-text {
+            font-size: 4rem;
+            color: #16a34a !important; /* Green-600 */
+            animation: popIn 0.5s ease-out;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         @keyframes popIn {
@@ -139,7 +148,7 @@
 <body>
 
     <header>
-        Li'l Champs Abacus Academy, Ambernath
+        Li'l Champs Abacus Academy Ambernath
     </header>
 
     <main>
@@ -273,10 +282,7 @@
                 let num = Math.floor(Math.random() * (max - min + 1)) + min;
 
                 if (isNegative) {
-                    // Ensure we don't go below zero
                     let maxSub = Math.max(0, runningTotal); 
-                    // Ensure we don't subtract more than the random number generated (if random was small)
-                    // Actually, just limit num to runningTotal
                     num = Math.min(num, maxSub);
                     num = -num;
                 }
@@ -295,7 +301,6 @@
             if (isUserLoggedIn) {
                 nameDisplay.textContent = `Welcome, ${formatStudentName(studentIdentifier)}!`;
             } else {
-                // Force Login or allow Guest? Assuming Force based on previous files
                 alert("Please login first.");
                 window.location.href = 'index.html';
             }
@@ -307,48 +312,53 @@
         });
 
         function startSequence() {
-            // 1. Get Settings
             settings.digits = parseInt(document.getElementById('digits').value);
             settings.rows = parseInt(document.getElementById('rows').value);
             settings.speed = parseInt(document.getElementById('speed').value);
 
-            // 2. Generate Math
             const data = generateNumberSequence(settings.digits, settings.rows);
             numbersList = data.sequence;
             currentTotal = data.total;
 
-            // 3. Switch Screens
             document.getElementById('settings-screen').classList.add('hidden');
             document.getElementById('practice-screen').classList.remove('hidden');
             document.getElementById('input-area').classList.add('hidden');
             document.getElementById('result-area').classList.add('hidden');
             
-            // 4. Start Countdown (3-2-1)
             runCountdown();
         }
 
         function runCountdown() {
             const display = document.getElementById('number-display');
-            display.classList.remove('text-8xl'); // Reset size
-            let count = 3;
+            display.classList.remove('text-8xl'); 
             
+            let count = 3;
             display.textContent = count;
             display.className = "countdown-text";
 
             const countInterval = setInterval(() => {
                 count--;
+                
                 if (count > 0) {
+                    // Show 2, then 1
                     display.textContent = count;
-                    // Re-trigger animation
                     display.classList.remove("countdown-text");
-                    void display.offsetWidth; // Trigger reflow
+                    void display.offsetWidth; 
                     display.classList.add("countdown-text");
+                
                 } else {
+                    // Countdown finished: Show START
                     clearInterval(countInterval);
-                    display.textContent = "";
-                    display.className = ""; // Remove special countdown styling
-                    display.style.color = "#333"; // Reset color
-                    runFlashLoop();
+                    
+                    display.textContent = "Start!";
+                    display.className = "start-text"; // NEW: Special green styling for start
+                    
+                    // Wait 1 second showing "Start!" before numbers loop
+                    setTimeout(() => {
+                        display.className = ""; // Reset classes
+                        display.style.color = "#333"; // Reset color
+                        runFlashLoop();
+                    }, 1000);
                 }
             }, 1000);
         }
@@ -357,8 +367,6 @@
             const display = document.getElementById('number-display');
             let index = 0;
             
-            // Calculation for timing
-            // If speed is 1000ms: Show for 600ms, Hide for 400ms
             const showTime = Math.floor(settings.speed * 0.6); 
             const hideTime = settings.speed - showTime;
 
@@ -366,22 +374,18 @@
                 if (index < numbersList.length) {
                     const num = numbersList[index];
                     
-                    // Style based on positivity
                     if (num < 0) display.style.color = "#dc2626"; // Red
                     else display.style.color = "#333"; // Black
 
                     display.textContent = num;
                     
-                    // Hide after showTime
                     currentTimeout = setTimeout(() => {
                         display.textContent = "";
                         index++;
-                        // Wait hideTime before next number
                         currentTimeout = setTimeout(showNext, hideTime);
                     }, showTime);
                 } else {
-                    // Finished
-                    display.style.color = "#16a34a"; // Green
+                    display.style.color = "#16a34a"; 
                     display.textContent = "Done!";
                     setTimeout(showInputScreen, 1000);
                 }
@@ -396,7 +400,6 @@
             input.value = '';
             input.focus();
             
-            // Allow Enter key
             input.onkeydown = (e) => {
                 if (e.key === 'Enter') checkAnswer();
             };
@@ -429,7 +432,6 @@
         }
 
         function restartPractice() {
-            // Same settings, new numbers
             startSequence();
         }
 
