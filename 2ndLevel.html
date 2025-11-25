@@ -1,275 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conditional Vertical Addition Quiz</title>
+    <title>2nd Level Addition Challenge</title>
+    
+    <link rel="stylesheet" href="elegant-theme.css">
+    <script src="gamify.js" defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        /* Custom styles for the vertical sum layout and fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f9;
+        /* Base Settings */
+        html { scroll-padding-top: 20px; }
+        
+        /* Animations */
+        .slide-container {
+            display: none; 
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .slide-container.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* The math grid layout using CSS Grid */
-        .math-grid {
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 4px;
-            max-width: 50%; 
+        /* --- MATH GRID STYLES (Vertical Sum) --- */
+        .math-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             width: 100%;
-            margin: 0 auto 1.5rem; /* Center the grid horizontally */
+            max-width: 300px;
+            margin: 0 auto;
+            border: 2px solid #e5e7eb;
         }
 
-        .number-cell {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 2rem; /* Large text for easy reading */
-            font-weight: 300;
-            text-align: center; 
-            padding: 0 5px; 
-            color: #1f2937; /* Default dark gray text */
+        .number-row {
+            font-family: 'Courier New', Courier, monospace; /* Monospace for alignment */
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: right;
+            color: #374151;
+            line-height: 1.2;
+            padding-right: 1rem;
         }
 
-        /* The dividing line for the sum */
-        .horizontal-line {
-            grid-column: 1 / 2; /* Now spans the single column */
-            height: 3px;
-            background-color: #333;
-            margin: 4px 0;
-            border-radius: 9999px;
+        .divider-line {
+            height: 4px;
+            background-color: #1f2937;
+            margin: 0.5rem 0;
+            border-radius: 2px;
         }
 
-        #answer-input {
-            grid-column: 1 / 2; 
-            text-align: center; /* Center the input text */
-            border: none;
-            border-radius: 0.5rem;
-            padding: 4px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-            font-size: 2rem;
-            width: 100%;
-            transition: border-color 0.2s;
+        /* --- FOCUS MODE (Kindle Style) --- */
+        body.focus-mode {
+            background-color: #fbf0d9 !important; 
+            color: #433422;
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        /* CSS Animation to highlight the next button */
-        .highlight-next {
-            animation: pulse-shadow 1.5s infinite;
+        body.focus-mode header, 
+        body.focus-mode footer, 
+        body.focus-mode .back-link { 
+            display: none !important;
+        }
+        
+        body.focus-mode #test-area {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
         }
 
-        @keyframes pulse-shadow {
-            0%, 100% {
-                box-shadow: 0 0 0 0px rgba(79, 70, 229, 0.7);
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
-                transform: scale(1.02);
-            }
+        /* Input Feedback */
+        .correct-answer {
+            background-color: #dcfce7 !important; 
+            border-color: #22c55e !important;
+            color: #15803d;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #b91c1c;
+            animation: shake 0.3s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans">
-    
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+
     <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy Ambernath East and West</h1>
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div id="app-container" class="w-full max-w-xl bg-white p-6 md:p-10 rounded-3xl shadow-2xl border border-gray-100">
-            <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Addition/Subtraction Practice</h1>
-            
-            <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2 text-center">
-                Student: <span id="student-name-display" class="text-blue-900">...</span>
+    <main class="flex-grow w-full p-4 sm:p-6 flex flex-col items-center">
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">2nd Level +/- Mission</h2>
+
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Ready for your Mission?</h3>			
+            <div class="mb-6 hidden"> 
+                <input type="text" id="student-identifier-input" class="w-full" readonly>
             </div>
             
-            <p class="text-sm text-center text-gray-500 mb-6">Numbers are restricted to +/- 11, 22, 33, ... 99 based on rules.</p>
-
-            <div class="flex justify-center items-center mb-6">
-                <div class="text-2xl font-bold text-indigo-700 bg-indigo-100 px-4 py-2 rounded-lg shadow-md">
-                    Question <span id="current-question-number">1</span> of <span id="total-questions">20</span>
-                </div>
-                </div>
-
-             <div id="feedback-area" class="h-10 text-center font-semibold text-lg mb-6">
-                </div>
+            <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
+                Pilot: <span id="auto-student-name-display">... Loading ...</span>
+            </div>
             
-            <div id="question-area" class="flex flex-col items-center justify-center p-8 bg-indigo-50 rounded-2xl mb-6 shadow-inner">
-                </div>
-
-            <div id="control-buttons" class="flex justify-center gap-4">
-            <button id="submit-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg" onclick="checkAnswer()">
-                Check Answer
-            </button>
-            <button id="next-button" class="bg-gray-300 text-gray-600 font-bold py-3 px-6 rounded-xl transition duration-200 cursor-not-allowed" disabled onclick="nextQuestion()">
-                Next Sum &rarr;
-            </button>
-                </div>
+            <p class="text-lg text-gray-600 mb-8">You have 20 sums to solve. <br>Focus on accuracy.</p>
             
-            <section id="report-area" class="hidden flex justify-center mt-8">
-                <div id="report-card" class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-50 disabled:scale-100" disabled>
+                🚀 Launch Mission
+            </button>
+        </section>
 
-                    <h3 class="text-3xl font-extrabold text-green-700 mb-1 border-b-2 pb-1" id="report-title">Conditional Vertical Addition Quiz Report</h3>
-
-                    <p class="text-sm font-semibold text-gray-600 mb-3 border-b pb-1">
-                        Date & Time: <span id="report-datetime" class="font-medium text-gray-800"></span>
-                    </p>
-                    <p class="text-base mb-4">User Name: <span id="report-student-name" class="font-bold text-blue-800"></span></p>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
-                            <p class="text-xs text-gray-500">No. of Correct Sums</p>
-                            <p class="text-xl font-bold text-green-600" id="report-correct">0</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
-                            <p class="text-xs text-gray-500">No. of Sums Attempted</p>
-                            <p class="text-xl font-bold text-purple-900" id="report-attempted">0</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500">
-                            <p class="text-xs text-gray-500">Time Taken</p>
-                            <p class="text-xl font-bold text-blue-900" id="report-time-taken">0 min</p>
-                        </div>
+        <section id="test-area" class="hidden w-full max-w-xl">
+            
+            <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-gray-600 font-semibold">Progress</div>
+                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden">
+                        🔥 Streak: <span id="streak-count">0</span>
                     </div>
-
-                    <button onclick="downloadReport()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download Report
-                    </button>
-                    
-                    <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300" onclick="location.reload()">
-                        Practice again
-                    </button>
                 </div>
-            </section>
-        </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Start</span>
+                    <span id="progress-text">0/20 Solved</span>
+                </div>
+            </div>
+
+            <div id="question-carousel" class="mb-6 flex justify-center">
+                </div>
+            
+            <div id="feedback-display" class="h-8 text-center font-bold text-lg mb-4"></div>
+
+            <div class="flex flex-col gap-3 max-w-xs mx-auto">
+                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                    Check Answer (Enter)
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                    Next Question &rarr;
+                </button>
+                <button id="finish-btn" onclick="endTest()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-lg animate-pulse">
+                    Finish Mission 🏁
+                </button>
+            </div>
+        </section>
+
+        <section id="report-area" class="hidden flex justify-center">
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+                
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                        Skill Mastery
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2">2nd Level Addition</h2>
+                </div>
+
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                
+                <p class="text-center text-gray-500 mb-6 border-b pb-4">
+                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
+                </p>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/20</span></p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                        <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
+                        <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-sm text-gray-500">Speed per Question</p>
+                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+                </div>
+
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Save Badge (Download)
+                </button>
+                
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
+                    Review Mistakes
+                </button>
+                
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
+                    🔄 Replay Mission
+                </button>
+            </div>
+        </section>
+        
+        <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center">
+                    <span>Problem</span>
+                    <span>You Said</span>
+                    <span>Correct</span>
+                </div>
+                <div id="wrong-sums-list" class="space-y-2"></div>
+            </div>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
+                &larr; Back to Scoreboard
+            </button>
+        </section>
+
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
-        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Plus Minus
-        </a>
-        
-    <footer class="bg-yellow-200 text-black p-3 mt-8 shadow-inner">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">For any queries call 9730482620</p>
-        </div>
+    <footer class="bg-yellow-200 text-center p-3 mt-auto">
+        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
     </footer>
 
     <script>
-        // --- Configuration and Data ---
+        // --- SESSION CHECK ---
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
+        
+        // --- CONFIGURATION ---
         const TOTAL_QUESTIONS = 20;
         const POSITIVE_NUMBERS = [11, 22, 33, 44, 55, 66, 77, 88, 99];
         const NEGATIVE_NUMBERS = [-11, -22, -33, -44, -55, -66, -77, -88, -99];
         const N2_RESTRICTED_NEGATIVE = [-11, -22, -33, -44];
         
-        const quizData = [];
+        let quizData = [];
         let currentQuestionIndex = 0;
-        let correctAnswersCount = 0;
-        let startTime = 0; // Variable to store the start time
+        let currentStreak = 0;
+        let startTime;
+        let timerInterval;
 
-        // --- DOM Elements ---
-        const questionArea = document.getElementById('question-area');
-        const submitButton = document.getElementById('submit-button');
-        const nextButton = document.getElementById('next-button');
-        const feedbackArea = document.getElementById('feedback-area');
-        const currentQNumSpan = document.getElementById('current-question-number');
-        const studentNameDisplay = document.getElementById('student-name-display');
-        const controlButtons = document.getElementById('control-buttons');
-        const reportArea = document.getElementById('report-area');
-
-
-        // --- Utility Functions ---
-        
+        // --- UTILITIES ---
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') {
-                return 'Student';
-            }
-            
+            if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
-            const parts = namePart.split('.');
-            
-            let formattedName = parts.map(part => {
-                if (part.length > 0) {
-                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                }
-                return '';
-            }).filter(p => p.length > 0)
-              .join(' ');
-              
-            return formattedName || identifier; 
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        }
+
+        function downloadReport() {
+            const reportElement = document.getElementById('report-card');
+            const studentName = document.getElementById('report-student-name').textContent || "Student";
+            html2canvas(reportElement, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Mission_Report_2ndLevel_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
         }
 
         function getRandomElement(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // --- DOWNLOAD REPORT FUNCTION ---
-        function downloadReport() {
-            const reportElement = document.getElementById('report-card');
-            const studentName = document.getElementById('report-student-name').textContent || "Student";
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('student-identifier-input');
+            const startButton = document.getElementById('start-button');
+			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+			const displayStudentName = formatStudentName(studentIdentifier); 
             
-            if (!reportElement) {
-                alert("Error finding report card to download.");
-                return;
+			if (studentIdentifier) {
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+                startButton.disabled = false;
+            } else {
+                startButton.disabled = true;
             }
+            
+            generateAllQuestions();
+            renderQuestion(); 
+        });
 
-            html2canvas(reportElement, {
-                scale: 2, // Higher quality
-                backgroundColor: null 
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Abacus_Report_${studentName.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            }).catch(err => {
-                console.error("Report generation failed:", err);
-                alert("Could not download report. Please take a screenshot.");
-            });
-        }
-
-        /**
-         * Generates a single question based on the user-defined constraints.
-         */
+        // --- MATH GENERATION (Specific Logic Preserved) ---
         function generateQuestion() {
-            // 1. First Number (N1): Always positive (11, 22, ..., 99)
+            // 1. First Number (N1): Always positive
             const N1 = getRandomElement(POSITIVE_NUMBERS);
 
             // 2. Second Number (N2) logic
             let N2;
             if (N1 > 55) {
-                // If N1 > 55, N2 should be in [-11, -22, -33, -44] OR full positive set
                 const restrictedSet = N2_RESTRICTED_NEGATIVE.concat(POSITIVE_NUMBERS);
                 N2 = getRandomElement(restrictedSet);
             } else { 
-                // If N1 <= 55, N2 should be in [+11 to +99] (Full positive set)
                 N2 = getRandomElement(POSITIVE_NUMBERS);
             }
 
             // 3. Third Number (N3) logic
             const Sum12 = N1 + N2;
             let N3;
-
             if (Sum12 > 100) {
-                // If Sum12 > 100, N3 should be between -11 to -99 (Full negative set)
                 N3 = getRandomElement(NEGATIVE_NUMBERS);
             } else { 
-                // If Sum12 <= 100, N3 should be between +11 to +99 (Full positive set)
                 N3 = getRandomElement(POSITIVE_NUMBERS);
             }
 
             const numbers = [N1, N2, N3];
-            
-            // Calculation is correct using Array.reduce for robustness
             const correctAnswer = numbers.reduce((sum, n) => sum + n, 0);
 
             return {
@@ -280,210 +324,208 @@
             };
         }
 
-        /**
-         * Helper to format a single number row for display, handling the sign.
-         */
-        function formatNumberRow(number, isFirst = false) {
-            
-            if (isFirst) {
-                // First number (N1) is always positive, and we don't display a leading sign.
-                return `<div class="number-cell">${Math.abs(number)}</div>`;
-            }
-
-            // For N2 and N3: 
-            let displayString;
-            if (number < 0) {
-                // Prepend the minus sign to the number string
-                displayString = `-${Math.abs(number)}`;
-            } else {
-                // If positive, just show the magnitude (no explicit plus sign)
-                displayString = `${number}`;
-            }
-
-            return `
-                <div class="number-cell">${displayString}</div>
-            `;
-        }
-        
-        // --- Core Quiz Logic ---
-
-        /**
-         * Initializes the quiz by generating all 20 questions and checking login.
-         */
-        function initQuiz() {
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            if (!studentIdentifier) {
-                alert("Login Required. You will be redirected to the main menu.");
-                window.location.href = 'index.html'; 
-                return;
-            }
-
-            studentNameDisplay.textContent = formatStudentName(studentIdentifier);
-            startTime = Date.now(); // Start the timer
-
-            try {
-                for (let i = 0; i < TOTAL_QUESTIONS; i++) {
-                    quizData.push(generateQuestion());
-                }
-                renderQuestion();
-            } catch (e) {
-                console.error("Error during quiz initialization:", e);
-                feedbackArea.textContent = "Error loading quiz data. Check console for details.";
+        function generateAllQuestions() {
+            quizData = [];
+            for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+                quizData.push(generateQuestion());
             }
         }
 
-        /**
-         * Renders the current question to the UI, and updates the question number.
-         */
+        // --- RENDERING ---
         function renderQuestion() {
-            if (currentQuestionIndex >= TOTAL_QUESTIONS) {
-                showCompletionReport();
-                return;
-            }
-
+            const container = document.getElementById('question-carousel');
+            container.innerHTML = ''; // Clear previous
+            
             const currentQ = quizData[currentQuestionIndex];
             
-            questionArea.innerHTML = '';
-            feedbackArea.textContent = '';
+            const slideDiv = document.createElement('div');
+            slideDiv.className = 'slide-container active w-full';
+            slideDiv.id = `slide-${currentQuestionIndex}`;
+
+            // Build Math Card
+            let html = `<div class="math-card">`;
             
-            // FIX: Update Question Number Display Here
-            currentQNumSpan.textContent = currentQuestionIndex + 1;
-
-            const grid = document.createElement('div');
-            grid.className = 'math-grid';
-
-            // All rows now use the single column
-            grid.innerHTML += formatNumberRow(currentQ.numbers[0], true); 
-            grid.innerHTML += formatNumberRow(currentQ.numbers[1]);
-            grid.innerHTML += formatNumberRow(currentQ.numbers[2]);
+            // Row 1
+            html += `<div class="number-row">${currentQ.numbers[0]}</div>`;
+            // Row 2
+            html += `<div class="number-row">${currentQ.numbers[1] > 0 ? '' + currentQ.numbers[1] : currentQ.numbers[1]}</div>`;
+            // Row 3
+            html += `<div class="number-row">${currentQ.numbers[2] > 0 ? '' + currentQ.numbers[2] : currentQ.numbers[2]}</div>`;
             
-            grid.innerHTML += `<div class="horizontal-line"></div>`;
-
-            // Input now uses the single column
-            const inputHtml = `
-                <input type="number" id="answer-input" placeholder="Answer" class="answer-input">
-            `;
-            grid.innerHTML += inputHtml;
+            html += `<div class="divider-line"></div>`;
             
-            questionArea.appendChild(grid);
+            html += `
+                <input type="number" 
+                    id="answer-input"
+                    class="answer-input w-full p-2 text-3xl font-bold text-right border-none focus:ring-0 text-blue-800 placeholder-gray-200"
+                    placeholder="?" autofocus>
+            </div>`;
             
-            // Reset control states
-            submitButton.disabled = false;
-            submitButton.classList.replace('bg-gray-400', 'bg-indigo-600');
-            nextButton.disabled = true;
-            nextButton.classList.remove('highlight-next', 'bg-indigo-600', 'text-white');
-            nextButton.classList.add('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
+            slideDiv.innerHTML = html;
+            container.appendChild(slideDiv);
 
-            // Add event listener for 'Enter' key press on the newly created input
-            const answerInput = document.getElementById('answer-input');
-            answerInput.addEventListener('keyup', (event) => {
-                if(event.key === 'Enter') checkAnswer();
-            });
-
-            answerInput.focus();
-        }
-
-        /**
-         * Checks the user's answer against the correct answer.
-         */
-        function checkAnswer() {
-            const inputElement = document.getElementById('answer-input');
-            const userAnswer = parseInt(inputElement.value, 10);
-            const currentQ = quizData[currentQuestionIndex];
-
-            if (isNaN(userAnswer) || inputElement.value.trim() === '') {
-                feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-yellow-600';
-                feedbackArea.textContent = "Please enter a valid number first.";
-                return;
-            }
-
-            // Only update correct count if the question hasn't been checked yet (i.e., submit is enabled)
-            if (!submitButton.disabled) {
-                currentQ.userAnswer = userAnswer;
-                const isCorrect = (userAnswer === currentQ.correctAnswer);
-                currentQ.isCorrect = isCorrect;
-                
-                if (isCorrect) {
-                    correctAnswersCount++;
-                    feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-green-700';
-                    feedbackArea.textContent = "✅ Correct! Well done.";
-                    inputElement.classList.remove('border-4', 'border-red-500');
-                } else {
-                    feedbackArea.className = 'h-10 text-center font-semibold text-lg mb-6 text-red-700';
-                    feedbackArea.innerHTML = `❌ Incorrect. The correct answer is: <span class="text-blue-600">${currentQ.correctAnswer}</span>`;
-                    inputElement.classList.add('border-4', 'border-red-500');
+            // Focus and Event Listener
+            const input = document.getElementById('answer-input');
+            input.focus();
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const btn = document.getElementById('submit-button');
+                    const nextBtn = document.getElementById('next-btn');
+                    if (!btn.classList.contains('hidden')) checkAnswer();
+                    else if (!nextBtn.classList.contains('hidden')) nextQuestion();
                 }
+            });
+        }
+
+        // --- GAME FLOW ---
+        function checkAnswer() {
+            const input = document.getElementById('answer-input');
+            const val = parseInt(input.value);
+            
+            if (isNaN(val)) return;
+
+            const currentQ = quizData[currentQuestionIndex];
+            currentQ.userAnswer = val;
+            input.disabled = true;
+
+            const feedbackDiv = document.getElementById('feedback-display');
+            
+            if (val === currentQ.correctAnswer) {
+                currentQ.isCorrect = true;
+                input.classList.add('correct-answer');
+                feedbackDiv.textContent = "Correct! 🎉";
+                feedbackDiv.className = "text-green-600 font-bold text-lg mb-4 h-8";
+                updateStreak(true);
                 
-                submitButton.disabled = true;
-                submitButton.classList.replace('bg-indigo-600', 'bg-gray-400');
-                
-                nextButton.disabled = false;
-                nextButton.classList.remove('bg-gray-300', 'text-gray-600', 'cursor-not-allowed');
-                nextButton.classList.add('bg-indigo-600', 'text-white', 'highlight-next');
+                // Auto Advance on Correct
+                setTimeout(() => {
+                    if (currentQuestionIndex < TOTAL_QUESTIONS - 1) nextQuestion();
+                    else updateButtonsForEnd();
+                }, 800);
+
+            } else {
+                currentQ.isCorrect = false;
+                input.classList.add('wrong-answer');
+                feedbackDiv.innerHTML = `Wrong. Correct: ${currentQ.correctAnswer}`;
+                feedbackDiv.className = "text-red-500 font-bold text-lg mb-4 h-8";
+                updateStreak(false);
+                updateButtonsForEnd(); // Manual advance for wrong answers
+            }
+            updateProgress();
+        }
+
+        function updateButtonsForEnd() {
+            document.getElementById('submit-button').classList.add('hidden');
+            if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
+                const nextBtn = document.getElementById('next-btn');
+                nextBtn.classList.remove('hidden');
+                nextBtn.focus();
+            } else {
+                const finishBtn = document.getElementById('finish-btn');
+                finishBtn.classList.remove('hidden');
+                finishBtn.focus();
             }
         }
 
-        /**
-         * Moves to the next question or finishes the quiz.
-         */
         function nextQuestion() {
-            nextButton.classList.remove('highlight-next');
-            
             currentQuestionIndex++;
             
-            if (currentQuestionIndex < TOTAL_QUESTIONS) {
-                renderQuestion();
+            // Reset Controls
+            document.getElementById('submit-button').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('feedback-display').textContent = '';
+            
+            renderQuestion();
+        }
+
+        function updateStreak(isCorrect) {
+            const streakDisplay = document.getElementById('streak-display');
+            if (isCorrect) {
+                currentStreak++;
+                if (currentStreak > 1) {
+                    streakDisplay.classList.remove('hidden');
+                    document.getElementById('streak-count').textContent = currentStreak;
+                }
             } else {
-                showCompletionReport();
+                currentStreak = 0;
+                streakDisplay.classList.add('hidden');
             }
         }
-        
-        /**
-         * Displays the final score report (similar to 2D20R).
-         */
-        function showCompletionReport() {
-            // Calculate time taken
-            const endTime = Date.now();
-            const timeTakenMs = endTime - startTime;
-            
-            // NEW: Calculate time in minutes, rounded to one decimal place for precision
-            const timeTakenInMinutes = (timeTakenMs / 60000).toFixed(1);
 
-            // Hide quiz elements
-            questionArea.classList.add('hidden');
-            controlButtons.classList.add('hidden');
-            feedbackArea.classList.add('hidden');
-            document.querySelector('.flex.justify-center.items-center.mb-6').classList.add('hidden'); // Hide Q status
-            
-            // Show report area
-            reportArea.classList.remove('hidden');
-            reportArea.classList.add('flex');
-            
-            // Update report stats
-            const attemptedCount = TOTAL_QUESTIONS; 
-            const correctCount = correctAnswersCount;
-
-            const now = new Date();
-            const date = ('0' + now.getDate()).slice(-2);
-            const month = ('0' + (now.getMonth() + 1)).slice(-2);
-            const year = String(now.getFullYear()).slice(-2);
-            const hours = ('0' + now.getHours()).slice(-2);
-            const mins = ('0' + now.getMinutes()).slice(-2);            
-            const formattedDateTime = `${date}/${month}/${year} at ${hours}:${mins}`;
-            
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier'); 
-            
-            document.getElementById('report-datetime').textContent = formattedDateTime;
-            document.getElementById('report-student-name').textContent = formatStudentName(studentIdentifier);
-            document.getElementById('report-attempted').textContent = attemptedCount; 
-            document.getElementById('report-correct').textContent = correctCount; 
-            document.getElementById('report-time-taken').textContent = `${timeTakenInMinutes} min`; // UPDATED: Display time in minutes
-            
-            document.getElementById('report-title').textContent = "2nd level Addition/Subtraction Report";
+        function updateProgress() {
+            const totalAnswered = quizData.filter(s => s.userAnswer !== null).length;
+            const pct = (totalAnswered / TOTAL_QUESTIONS) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_QUESTIONS} Solved`;
         }
 
-        // Initialize the quiz when the page loads
-        document.addEventListener('DOMContentLoaded', initQuiz);
+        // --- START & END ---
+        function startTest() {
+            document.body.classList.add('focus-mode');
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('test-area').classList.remove('hidden');
+            startTime = Date.now();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {}, 1000);
+        }
+
+        function endTest() {
+            document.body.classList.remove('focus-mode');
+            clearInterval(timerInterval);
+            
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            let correctCount = quizData.filter(s => s.isCorrect).length;
+            const endTime = Date.now();
+            const totalTime = Math.floor((endTime - startTime) / 1000);
+            const mins = Math.floor(totalTime / 60);
+            const secs = totalTime % 60;
+            
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('report-student-name').textContent = formatStudentName(document.getElementById('student-identifier-input').value);
+            
+            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-time-elapsed').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            document.getElementById('report-avg-time').textContent = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
+            
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (correctCount === TOTAL_QUESTIONS) {
+                wrongBtn.disabled = true;
+                wrongBtn.textContent = "Perfect Score! No Mistakes";
+            }
+        }
+
+        // --- REVIEW MISTAKES ---
+        function showWrongAnswers() {
+            const wrongSums = quizData.filter(s => s.isCorrect === false);
+            const list = document.getElementById('wrong-sums-list');
+            list.innerHTML = '';
+            
+            wrongSums.forEach((q, index) => {
+                const row = `
+                    <div class="grid grid-cols-3 text-center py-2 border-b hover:bg-red-50">
+                        <span class="font-bold text-gray-700 text-sm whitespace-pre-line">${q.numbers.join('\n')}</span>
+                        <span class="text-red-500 font-bold line-through">${q.userAnswer}</span>
+                        <span class="text-green-600 font-bold">${q.correctAnswer}</span>
+                    </div>
+                `;
+                list.innerHTML += row;
+            });
+
+            document.getElementById('report-area').classList.add('hidden');
+            document.getElementById('wrong-answer-area').classList.remove('hidden');
+        }
+
+        function showReport() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
