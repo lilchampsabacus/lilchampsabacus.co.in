@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Li'l Champs Abacus Academy - Learning Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700;900&family=Verdana:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fbf0d9;
+            --text-color: #5f4b32;
+            --card-bg: #fffbf0;
+            --accent: #d76a03;
+            --brand-color: #4a3b2a;
+            --success: #2e7d32;
+            --error: #c62828;
+            --btn-border: #e6dcc8;
+            --modal-bg: rgba(95, 75, 50, 0.8);
+        }
+
+        body {
+            font-family: 'Merriweather', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        /* --- HEADER --- */
+        .brand-header {
+            width: 100%;
+            background-color: #eddec5;
+            text-align: center;
+            padding: 15px 10px;
+            border-bottom: 2px solid #e0d0b8;
+            margin-bottom: 20px;
+        }
+
+        .brand-title {
+            font-family: 'Verdana', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--brand-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- START SCREEN (LEVELS) --- */
+        #setup-screen { text-align: center; padding-top: 10px; }
+        
+        .welcome-badge {
+            background: #e6dcc8;
+            color: #4a3b2a;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-family: 'Verdana', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 1px solid #d0c0a8;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .level-btn {
+            background: white;
+            border: 2px solid var(--btn-border);
+            border-bottom: 5px solid var(--btn-border);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Verdana', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--brand-color);
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-align: left;
+            position: relative;
+        }
+
+        .level-btn:active { transform: translateY(3px); border-bottom: 2px solid var(--btn-border); }
+        .level-btn span { display: block; font-size: 0.8rem; font-weight: normal; color: #888; margin-top: 5px; }
+        .level-btn::after { content: '👉'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+        .master-mode { background: linear-gradient(to right, #fff, #fffbf0); border-color: var(--accent); color: var(--accent); }
+
+        /* --- GAME UI --- */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        .progress-pill {
+            background: #e0d0b8;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .right-controls { display: flex; gap: 10px; align-items: center; }
+
+        .help-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #8d6e63;
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .score-box {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent);
+            background: rgba(255,255,255,0.6);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-border);
+        }
+
+        .timer-container {
+            width: 100%;
+            height: 6px;
+            background-color: #e0d0b8;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: var(--accent);
+            transition: width 1s linear;
+        }
+
+        .formula-card {
+            background: var(--card-bg);
+            padding: 50px 20px 40px 20px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 5px 5px 0px rgba(95, 75, 50, 0.1);
+            border: 1px solid var(--btn-border);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .formula-text {
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .formula-label {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Verdana', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            font-weight: 900;
+            color: #000;
+            border-bottom: 2px solid #eddec5;
+            padding-bottom: 5px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            font-family: 'Verdana', sans-serif;
+            background: white;
+            border: 2px solid var(--btn-border);
+            border-bottom: 4px solid var(--btn-border);
+            color: var(--text-color);
+            padding: 15px;
+            font-size: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-align: center;
+        }
+
+        .option-btn:active { transform: translateY(3px); border-bottom: 1px solid var(--btn-border); }
+        .correct-answer { background-color: #dcedc8 !important; border-color: #aed581 !important; color: #2e7d32 !important; }
+        .wrong-answer { background-color: #ffcdd2 !important; border-color: #ef9a9a !important; color: #c62828 !important; opacity: 0.6; }
+
+        /* --- VICTORY SCREEN --- */
+        #victory-screen { text-align: center; padding: 40px 20px; display: none; }
+        .trophy { font-size: 5rem; margin-bottom: 10px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cert-title { font-size: 1.8rem; font-weight: 900; color: var(--brand-color); margin-bottom: 5px; }
+        .final-score { font-size: 1.2rem; color: #777; margin-bottom: 30px; font-family: 'Verdana', sans-serif; }
+        
+        .restart-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Verdana', sans-serif;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+        }
+
+        @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* --- HELP MODAL (CHEAT SHEET) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-bg);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .close-modal {
+            position: sticky; top: 0;
+            background: var(--error); color: white;
+            border: none; padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold; cursor: pointer;
+            margin-bottom: 15px;
+            z-index: 101;
+        }
+
+        .cheat-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Verdana', sans-serif; }
+        .cheat-table th { background: #eee; padding: 8px; font-size: 0.9rem; border-bottom: 2px solid #ddd; }
+        .cheat-table td { padding: 8px; border-bottom: 1px solid #eee; font-size: 1rem; color: #333; }
+        .cheat-header { background: var(--brand-color) !important; color: white; }
+
+        /* --- FOOTER --- */
+        .brand-footer {
+            width: 100%;
+            background-color: #eddec5;
+            text-align: center;
+            padding: 15px;
+            font-family: 'Verdana', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-top: auto;
+            border-top: 2px solid #e0d0b8;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="brand-header">
+        <h1 class="brand-title">Li'l Champs Abacus Academy</h1>
+        <div class="brand-subtitle">Ambernath</div>
+    </header>
+
+    <div class="container">
+        
+        <div id="setup-screen">
+            <div class="welcome-badge">👋 Hi, <span id="student-name">Student</span></div>
+
+            <h2 style="font-size: 1.8rem; margin: 0 0 10px 0;">Select Level</h2>
+            <p style="color: #888; margin-bottom: 20px;">Daily Goal: 20 Questions</p>
+            
+            <div class="level-grid">
+                <button class="level-btn" onclick="startGame('Small Friend')">
+                    Level 1: Small Friends
+                    <span>Formulas for ±1 to ±4</span>
+                </button>
+                <button class="level-btn" onclick="startGame('Big Friend')">
+                    Level 2: Big Friends
+                    <span>Formulas for ±1 to ±9</span>
+                </button>
+                <button class="level-btn" onclick="startGame('Combination')">
+                    Level 3: Combination
+                    <span>Complex formulas (±6 to ±9)</span>
+                </button>
+                <button class="level-btn master-mode" onclick="startGame('mix')">
+                    🏆 Master Mode
+                    <span>Mix of all formulas</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="game-screen" style="display: none;">
+            <div class="top-bar">
+                <div class="progress-pill">Question <span id="q-current">1</span> / <span id="q-total">20</span></div>
+                <div class="right-controls">
+                    <div class="score-box">⭐ <span id="score">0</span></div>
+                    <button class="help-btn" onclick="toggleHelp()">?</button>
+                </div>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+
+            <div class="formula-card">
+                <span class="formula-label" id="type-label">Big Friend</span>
+                <div class="formula-text" id="question">...</div>
+            </div>
+
+            <div class="options-grid" id="options"></div>
+        </div>
+
+        <div id="victory-screen">
+            <div class="trophy">🏆</div>
+            <div class="cert-title">Certificate of Completion</div>
+            <p>Great job! You finished today's session.</p>
+            <div class="final-score">Final Score: <span id="final-score">0</span> / 20 ⭐</div>
+            <button class="restart-btn" onclick="location.reload()">Start New Session</button>
+        </div>
+
+    </div>
+
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleHelp()">Close & Resume Timer</button>
+            
+            <table class="cheat-table">
+                <thead><tr><th colspan="2" class="cheat-header">Small Friends (5)</th></tr></thead>
+                <tbody>
+                    <tr><td>+1 = +5-4</td><td>-1 = +4-5</td></tr>
+                    <tr><td>+2 = +5-3</td><td>-2 = +3-5</td></tr>
+                    <tr><td>+3 = +5-2</td><td>-3 = +2-5</td></tr>
+                    <tr><td>+4 = +5-1</td><td>-4 = +1-5</td></tr>
+                </tbody>
+            </table>
+
+            <table class="cheat-table">
+                <thead><tr><th colspan="2" class="cheat-header" style="background: #1565c0 !important;">Big Friends (10)</th></tr></thead>
+                <tbody>
+                    <tr><td>+9 = -1+10</td><td>-9 = -10+1</td></tr>
+                    <tr><td>+8 = -2+10</td><td>-8 = -10+2</td></tr>
+                    <tr><td>+7 = -3+10</td><td>-7 = -10+3</td></tr>
+                    <tr><td>+6 = -4+10</td><td>-6 = -10+4</td></tr>
+                    <tr><td>+5 = -5+10</td><td>-5 = -10+5</td></tr>
+                    <tr><td>+4 = -6+10</td><td>-4 = -10+6</td></tr>
+                    <tr><td>+3 = -7+10</td><td>-3 = -10+7</td></tr>
+                    <tr><td>+2 = -8+10</td><td>-2 = -10+8</td></tr>
+                    <tr><td>+1 = -9+10</td><td>-1 = -10+9</td></tr>
+                </tbody>
+            </table>
+
+            <table class="cheat-table">
+                <thead><tr><th colspan="2" class="cheat-header" style="background: #6a1b9a !important;">Combination</th></tr></thead>
+                <tbody>
+                    <tr><td>+6 = +1-5+10</td><td>-6 = -10+5-1</td></tr>
+                    <tr><td>+7 = +2-5+10</td><td>-7 = -10+5-2</td></tr>
+                    <tr><td>+8 = +3-5+10</td><td>-8 = -10+5-3</td></tr>
+                    <tr><td>+9 = +4-5+10</td><td>-9 = -10+5-4</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="brand-footer">
+        📞 9730482620
+    </footer>
+
+    <script>
+        // --- SESSION SECURITY CHECK ---
+        // Must be at the very top to prevent unauthorized access
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('index.html');
+        }
+
+        // --- CONSTANTS ---
+        const TIME_LIMIT = 30;
+        const TOTAL_QUESTIONS = 20;
+
+        // --- UTILS: Format Name ---
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') return 'Student';
+            // Example: vedika.s@gmail.com -> Vedika S
+            const namePart = identifier.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        }
+
+        // --- INITIAL SETUP (ON LOAD) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentId = sessionStorage.getItem('studentIdentifier');
+            const displayName = formatStudentName(studentId);
+            document.getElementById('student-name').innerText = displayName;
+        });
+
+        // --- AUDIO ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'victory') {
+                // Fanfare
+                osc.type = 'square';
+                const now = audioCtx.currentTime;
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.2);
+                osc.frequency.setValueAtTime(783.99, now + 0.4);
+                osc.frequency.setValueAtTime(1046.50, now + 0.6);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1.5);
+                osc.start(); osc.stop(now + 1.5);
+            }
+        }
+
+        // --- DATA ---
+        const allFormulas = [
+            { q: "+9", a: "-1+10", type: "Big Friend" }, { q: "+8", a: "-2+10", type: "Big Friend" },
+            { q: "+7", a: "-3+10", type: "Big Friend" }, { q: "+6", a: "-4+10", type: "Big Friend" },
+            { q: "+5", a: "-5+10", type: "Big Friend" }, { q: "+4", a: "-6+10", type: "Big Friend" },
+            { q: "+3", a: "-7+10", type: "Big Friend" }, { q: "+2", a: "-8+10", type: "Big Friend" },
+            { q: "+1", a: "-9+10", type: "Big Friend" },
+            { q: "-9", a: "-10+1", type: "Big Friend" }, { q: "-8", a: "-10+2", type: "Big Friend" },
+            { q: "-7", a: "-10+3", type: "Big Friend" }, { q: "-6", a: "-10+4", type: "Big Friend" },
+            { q: "-5", a: "-10+5", type: "Big Friend" }, { q: "-4", a: "-10+6", type: "Big Friend" },
+            { q: "-3", a: "-10+7", type: "Big Friend" }, { q: "-2", a: "-10+8", type: "Big Friend" },
+            { q: "-1", a: "-10+9", type: "Big Friend" },
+            { q: "+1", a: "+5-4", type: "Small Friend" }, { q: "+2", a: "+5-3", type: "Small Friend" },
+            { q: "+3", a: "+5-2", type: "Small Friend" }, { q: "+4", a: "+5-1", type: "Small Friend" },
+            { q: "-1", a: "+4-5", type: "Small Friend" }, { q: "-2", a: "+3-5", type: "Small Friend" },
+            { q: "-3", a: "+2-5", type: "Small Friend" }, { q: "-4", a: "+1-5", type: "Small Friend" },
+            { q: "+6", a: "+1-5+10", type: "Combination" }, { q: "+7", a: "+2-5+10", type: "Combination" },
+            { q: "+8", a: "+3-5+10", type: "Combination" }, { q: "+9", a: "+4-5+10", type: "Combination" },
+            { q: "-6", a: "-10+5-1", type: "Combination" }, { q: "-7", a: "-10+5-2", type: "Combination" },
+            { q: "-8", a: "-10+5-3", type: "Combination" }, { q: "-9", a: "-10+5-4", type: "Combination" }
+        ];
+
+        // --- STATE ---
+        let gamePool = [];
+        let score = 0;
+        let questionCount = 0;
+        let currentItem = null;
+        let isLocked = false;
+        let timeLeft = TIME_LIMIT;
+        let timerInterval = null;
+        let isPaused = false;
+
+        function startGame(level) {
+            // Filter pool
+            if (level === 'mix') {
+                gamePool = [...allFormulas];
+            } else {
+                gamePool = allFormulas.filter(f => f.type === level);
+            }
+
+            // Reset Stats
+            score = 0;
+            questionCount = 0;
+            document.getElementById('score').innerText = 0;
+            document.getElementById('q-total').innerText = TOTAL_QUESTIONS;
+
+            // Switch Screen
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+
+            nextCard();
+        }
+
+        function nextCard() {
+            // Check Victory
+            if (questionCount >= TOTAL_QUESTIONS) {
+                endGame();
+                return;
+            }
+
+            questionCount++;
+            document.getElementById('q-current').innerText = questionCount;
+
+            // Reset Timer logic
+            isLocked = false;
+            clearInterval(timerInterval);
+            timeLeft = TIME_LIMIT;
+            updateTimerVisual();
+            
+            // Pick Random
+            currentItem = gamePool[Math.floor(Math.random() * gamePool.length)];
+            
+            // Render
+            document.getElementById('question').innerText = currentItem.q;
+            document.getElementById('type-label').innerText = currentItem.type;
+            
+            // Options
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            let answers = [currentItem.a];
+            while(answers.length < 4) {
+                let fake = generateFake(currentItem.a);
+                if(!answers.includes(fake)) answers.push(fake);
+            }
+            answers.sort(() => Math.random() - 0.5);
+
+            answers.forEach(ans => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.innerText = ans;
+                btn.onclick = () => handleAnswer(btn, ans);
+                optionsDiv.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(!isPaused) {
+                    timeLeft--;
+                    updateTimerVisual();
+                    if(timeLeft <= 0) handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTimerVisual() {
+            const bar = document.getElementById('timer-bar');
+            const pct = (timeLeft / TIME_LIMIT) * 100;
+            bar.style.width = pct + '%';
+            if(timeLeft < 10) bar.style.backgroundColor = '#c62828';
+            else bar.style.backgroundColor = '#d76a03';
+        }
+
+        function handleAnswer(btn, selected) {
+            if(isLocked || isPaused) return;
+            isLocked = true;
+            clearInterval(timerInterval);
+
+            if(selected === currentItem.a) {
+                playSound('correct');
+                btn.classList.add('correct-answer');
+                score++;
+                document.getElementById('score').innerText = score;
+                setTimeout(nextCard, 1000);
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong-answer');
+                highlightCorrect();
+                setTimeout(nextCard, 2000);
+            }
+        }
+
+        function handleTimeout() {
+            if(isLocked || isPaused) return;
+            isLocked = true;
+            clearInterval(timerInterval);
+            playSound('wrong');
+            highlightCorrect();
+            setTimeout(nextCard, 3000);
+        }
+
+        function highlightCorrect() {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                if(btn.innerText === currentItem.a) btn.classList.add('correct-answer');
+            });
+        }
+
+        function endGame() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('victory-screen').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+            playSound('victory');
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('help-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                isPaused = false;
+            } else {
+                modal.style.display = 'flex';
+                isPaused = true;
+            }
+        }
+
+        function generateFake(correct) {
+            let fake = correct;
+            const methods = [
+                s => s.replace('+', 'TEMP').replace('-', '+').replace('TEMP', '-'),
+                s => s.includes('10') ? s.replace('10', '5') : s.replace('5', '10'),
+                s => {
+                    const nums = s.match(/\d+/g);
+                    if(nums) {
+                        const target = nums[nums.length - 1]; 
+                        const newVal = Math.abs(parseInt(target) + (Math.random()>0.5?1:-1));
+                        return s.replace(target, newVal);
+                    }
+                    return s;
+                }
+            ];
+            const randomMethod = methods[Math.floor(Math.random() * methods.length)];
+            return randomMethod(fake);
+        }
+    </script>
+</body>
+</html>
