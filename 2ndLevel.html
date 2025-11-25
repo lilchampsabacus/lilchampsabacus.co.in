@@ -395,7 +395,7 @@
                 currentQ.isCorrect = true;
                 input.classList.add('correct-answer');
                 feedbackDiv.textContent = "Correct! 🎉";
-                feedbackDiv.className = "text-green-600 font-bold text-lg mb-4 h-8";
+                feedbackDiv.className = "text-green-600 font-bold text-lg mb-4 h-8 text-center"; // Centered
                 updateStreak(true);
                 
                 // Auto Advance on Correct
@@ -408,7 +408,7 @@
                 currentQ.isCorrect = false;
                 input.classList.add('wrong-answer');
                 feedbackDiv.innerHTML = `Wrong. Correct: ${currentQ.correctAnswer}`;
-                feedbackDiv.className = "text-red-500 font-bold text-lg mb-4 h-8";
+                feedbackDiv.className = "text-red-500 font-bold text-lg mb-4 h-8 text-center"; // Centered
                 updateStreak(false);
                 updateButtonsForEnd(); // Manual advance for wrong answers
             }
