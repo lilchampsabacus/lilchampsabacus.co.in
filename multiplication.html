@@ -3,81 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiplication Practice</title>
+    <title>Multiplication Practice - Select Level</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #f8fafc; /* Soft slate background */
+            background-color: #f8fafc;
         }
 
-        /* --- ANIMATIONS --- */
-
-        /* 1. The Spring/Bounce Effect on Hover (Card Body) */
-        .practice-card {
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+        /* Card Animation & Hover Effects */
+        .practice-card, .level-card {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                         box-shadow 0.3s ease, 
                         border-color 0.3s ease;
             border: 2px solid transparent;
-            opacity: 0; /* Hidden initially for entrance animation */
-            animation: slideUpFade 0.6s ease-out forwards;
         }
         
-        .practice-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            border-color: #818cf8; /* Indigo-400 */
-            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2), 0 10px 10px -5px rgba(99, 102, 241, 0.1);
+        .practice-card:hover, .level-card:hover {
+            transform: translateY(-8px);
+            border-color: #818cf8;
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2);
         }
 
-        /* 2. THE EMOJI SHAKE */
-        @keyframes shake-icon {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-15deg); }
-            75% { transform: rotate(15deg); }
+        /* Animation Classes */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Target the emoji (inside class .text-2xl) when the card is hovered */
-        .practice-card:hover .text-2xl {
-            display: inline-block; /* Required for transform to work on text */
-            animation: shake-icon 0.4s ease-in-out infinite;
-        }
-
-        /* 3. Page Load Entrance Animation */
-        @keyframes slideUpFade {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Stagger delays */
-        .card-delay-1 { animation-delay: 0.1s; }
-        .card-delay-2 { animation-delay: 0.2s; }
-        .card-delay-3 { animation-delay: 0.3s; }
-        .card-delay-4 { animation-delay: 0.4s; }
-        .card-delay-5 { animation-delay: 0.5s; }
-        .card-delay-6 { animation-delay: 0.6s; }
-
-        /* Level Badge Colors */
-        .badge-level-4 { background-color: #dbeafe; color: #1e40af; } /* Blue */
-        .badge-level-5 { background-color: #d1fae5; color: #065f46; } /* Green */
-        .badge-level-6 { background-color: #fef3c7; color: #92400e; } /* Amber */
-        .badge-level-7 { background-color: #fee2e2; color: #991b1b; } /* Red */
+        /* Badge Colors */
+        .badge-level-4 { background-color: #dbeafe; color: #1e40af; } 
+        .badge-level-5 { background-color: #d1fae5; color: #065f46; } 
+        .badge-level-6 { background-color: #fef3c7; color: #92400e; } 
+        .badge-level-7 { background-color: #fee2e2; color: #991b1b; } 
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <script>
+        // Check login (Keep existing logic)
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
@@ -86,7 +56,7 @@
             const name = sessionStorage.getItem('studentName') || sessionStorage.getItem('username') || 'Champ';
             const greetingEl = document.getElementById('student-greeting');
             if (greetingEl) {
-                greetingEl.innerHTML = `Welcome, <span class="text-yellow-300 underline decoration-wavy decoration-2">${name}</span>! Ready to Multiply?`;
+                greetingEl.innerHTML = `Welcome, <span class="text-yellow-300 underline decoration-wavy decoration-2">${name}</span>!`;
             }
         });
     </script>
@@ -94,98 +64,113 @@
     <header class="bg-indigo-600 text-white p-6 shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
         <div class="absolute bottom-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full translate-x-1/3 translate-y-1/3"></div>
-
         <div class="max-w-6xl mx-auto text-center relative z-10">
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">Li'l Champs Abacus Academy</h1>
-            <h2 id="student-greeting" class="text-indigo-100 text-xl md:text-2xl font-semibold">
-                Welcome, Champ! Ready to Multiply?
-            </h2>
+            <h2 id="student-greeting" class="text-indigo-100 text-xl md:text-2xl font-semibold">Welcome, Champ!</h2>
         </div>
     </header>
 
     <main class="flex-grow p-6 md:p-10">
         <div class="max-w-6xl mx-auto">
             
-            <div class="text-center mb-10">
-                <h3 class="text-3xl font-bold text-gray-800">Choose Your Challenge</h3>
-                <p class="text-gray-500 mt-2 text-lg">Select a difficulty level to begin practicing.</p>
+            <div id="level-selection-container" class="fade-in">
+                <div class="text-center mb-10">
+                    <h3 class="text-3xl font-bold text-gray-800">Select Your Level</h3>
+                    <p class="text-gray-500 mt-2 text-lg">Choose your current level to see practice options.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div onclick="showPractice('level4')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-3xl">⚡</div>
+                        <h4 class="text-xl font-bold text-gray-800">4th Level</h4>
+                        <p class="text-gray-400 text-sm mt-2">2 Digits &times; 1 Digit</p>
+                    </div>
+
+                    <div onclick="showPractice('level5')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-3xl">🎯</div>
+                        <h4 class="text-xl font-bold text-gray-800">5th Level</h4>
+                        <p class="text-gray-400 text-sm mt-2">3 Digits &times; 1 Digit</p>
+                    </div>
+
+                    <div onclick="showPractice('level6')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-3xl">🚀</div>
+                        <h4 class="text-xl font-bold text-gray-800">6th Level</h4>
+                        <p class="text-gray-400 text-sm mt-2">2x2 and 4x1</p>
+                    </div>
+
+                    <div onclick="showPractice('level78')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-3xl">🏆</div>
+                        <h4 class="text-xl font-bold text-gray-800">7th & 8th Level</h4>
+                        <p class="text-gray-400 text-sm mt-2">3x2, 5x1, 4x2</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="practice-options-container" class="hidden">
+                
+                <div class="flex flex-col md:flex-row items-center justify-between mb-8">
+                    <button onclick="showLevels()" class="mb-4 md:mb-0 text-indigo-600 font-bold hover:bg-indigo-50 px-4 py-2 rounded-lg transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Back to Levels
+                    </button>
+                    <h3 class="text-2xl font-bold text-gray-800" id="current-level-title">Practice Selection</h3>
+                    <div class="w-24"></div> </div>
 
-                <a href="2x1.html" class="practice-card card-delay-1 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition">
-                        <span class="text-2xl">⚡</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">2 Digits &times; 1 Digit</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-4 mb-4">4th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                <a href="2x2.html" class="practice-card card-delay-2 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-200 transition">
-                        <span class="text-2xl">🚀</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">2 Digits &times; 2 Digits</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
+                    <a href="2x1.html" class="practice-card group-level4 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4">⚡</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">2 Digits &times; 1 Digit</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-4 mb-4">4th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
 
-                <a href="3x1.html" class="practice-card card-delay-3 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition">
-                        <span class="text-2xl">🎯</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">3 Digits &times; 1 Digit</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-5 mb-4">5th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
+                    <a href="3x1.html" class="practice-card group-level5 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4">🎯</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">3 Digits &times; 1 Digit</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-5 mb-4">5th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
 
-                <a href="3x2.html" class="practice-card card-delay-4 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-red-200 transition">
-                        <span class="text-2xl">🔥</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">3 Digits &times; 2 Digits</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
+                    <a href="2x2.html" class="practice-card group-level6 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">🚀</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">2 Digits &times; 2 Digits</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
+                    <a href="4x1.html" class="practice-card group-level6 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">⭐</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &times; 1 Digit</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
 
-                <a href="4x1.html" class="practice-card card-delay-5 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-200 transition">
-                        <span class="text-2xl">⭐</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &times; 1 Digit</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-6 mb-4">6th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
+                    <a href="3x2.html" class="practice-card group-level78 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">🔥</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">3 Digits &times; 2 Digits</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
+                    <a href="5x1.html" class="practice-card group-level78 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mb-4">🏆</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">5 Digits &times; 1 Digit</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
+                    <a href="4x2.html" class="practice-card group-level78 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mb-4">👑</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">4 Digits &times; 2 Digits</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">8th Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
 
-                <a href="5x1.html" class="practice-card card-delay-6 bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
-                    <div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-200 transition">
-                        <span class="text-2xl">🏆</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">5 Digits &times; 1 Digit</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-7 mb-4">7th Level</span>
-                    <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center">
-                        Start Practice &rarr;
-                    </span>
-                </a>
-
+                </div>
             </div>
 
             <div class="mt-12 text-center">
                 <a href="practice_options.html" class="text-gray-500 hover:text-indigo-600 font-bold transition duration-200 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                    </svg>
                     Back to Main Menu
                 </a>
             </div>
@@ -197,5 +182,48 @@
         <p class="text-sm">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
+    <script>
+        // DOM Elements
+        const levelContainer = document.getElementById('level-selection-container');
+        const practiceContainer = document.getElementById('practice-options-container');
+        const levelTitle = document.getElementById('current-level-title');
+
+        // Function to show specific practice cards
+        function showPractice(groupClass) {
+            // 1. Hide Level Selection
+            levelContainer.classList.add('hidden');
+            
+            // 2. Show Practice Container with animation
+            practiceContainer.classList.remove('hidden');
+            practiceContainer.classList.add('fade-in');
+
+            // 3. Update Title based on selection
+            if(groupClass === 'level4') levelTitle.innerText = "4th Level Practice";
+            if(groupClass === 'level5') levelTitle.innerText = "5th Level Practice";
+            if(groupClass === 'level6') levelTitle.innerText = "6th Level Practice";
+            if(groupClass === 'level78') levelTitle.innerText = "7th & 8th Level Practice";
+
+            // 4. Hide ALL cards first
+            document.querySelectorAll('.practice-card').forEach(card => {
+                card.classList.add('hidden');
+                card.classList.remove('flex'); // Remove flex display
+            });
+
+            // 5. Show ONLY the cards belonging to the selected group
+            document.querySelectorAll('.group-' + groupClass).forEach(card => {
+                card.classList.remove('hidden');
+                card.classList.add('flex'); // Add flex back for layout
+            });
+        }
+
+        // Function to go back to Level Selection
+        function showLevels() {
+            practiceContainer.classList.add('hidden');
+            practiceContainer.classList.remove('fade-in');
+            
+            levelContainer.classList.remove('hidden');
+            levelContainer.classList.add('fade-in');
+        }
+    </script>
 </body>
 </html>
