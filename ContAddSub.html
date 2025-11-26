@@ -61,9 +61,9 @@
                     </div>
 
                     <div>
-                        <label for="startNumber" class="block text-sm font-medium text-gray-700 mb-1" id="startNumberLabel">Number to Add in each step</label>
+                        <label for="startNumber" class="block text-sm font-medium text-gray-700 mb-1" id="startNumberLabel">Number to subtract in each step</label>
                         <select id="startNumber" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                            <optgroup label="Single Digits">
+                            <optgroup label="1st level">
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                                 <option value="4">4</option>
@@ -73,8 +73,7 @@
                                 <option value="8">8</option>
                                 <option value="9">9</option>
                             </optgroup>
-                            <optgroup label="Two Digits">
-                                <option value="11">11</option>
+                            <optgroup label="2nd level">
                                 <option value="22">22</option>
                                 <option value="33">33</option>
                                 <option value="44">44</option>
@@ -84,8 +83,7 @@
                                 <option value="88">88</option>
                                 <option value="99">99</option>
                             </optgroup>
-                            <optgroup label="Three Digits">
-                                <option value="111">111</option>
+                            <optgroup label="3rd Level">
                                 <option value="222">222</option>
                                 <option value="333">333</option>
                                 <option value="444">444</option>
@@ -95,8 +93,7 @@
                                 <option value="888">888</option>
                                 <option value="999">999</option>
                             </optgroup>
-                            <optgroup label="Four Digits">
-                                <option value="1111">1,111</option>
+                            <optgroup label="4th Level Onwards">
                                 <option value="2222">2,222</option>
                                 <option value="3333">3,333</option>
                                 <option value="4444">4,444</option>
@@ -106,8 +103,7 @@
                                 <option value="8888">8,888</option>
                                 <option value="9999">9,999</option>
                             </optgroup>
-                            <optgroup label="Five Digits">
-                                <option value="11111">11,111</option>
+                            <optgroup label="5th Level Onwards">
                                 <option value="22222">22,222</option>
                                 <option value="33333">33,333</option>
                                 <option value="44444">44,444</option>
@@ -139,14 +135,15 @@
                     <div class="pt-2">
                         <span class="text-sm font-medium text-gray-700 block mb-2">Select Operation</span>
                         <div class="flex space-x-4">
-                            <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
-                                <input type="radio" name="operation" value="addition" checked class="form-radio text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-sm font-medium text-gray-900">Continuous Addition</span>
-                            </label>
-                            <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
-                                <input type="radio" name="operation" value="subtraction" class="form-radio text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-sm font-medium text-gray-900">Continuous Subtraction</span>
-                            </label>
+                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-not-allowed opacity-50 bg-gray-100">
+                                   <input type="radio" name="operation" value="addition" disabled class="form-radio text-gray-400 focus:ring-0">
+                                   <span class="text-sm font-medium text-gray-500">Continuous Addition</span>
+                              </label>
+
+                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                                   <input type="radio" name="operation" value="subtraction" checked class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                   <span class="text-sm font-medium text-gray-900">Continuous Subtraction</span>
+                              </label>
                         </div>
                     </div>
 
@@ -514,6 +511,7 @@
 </body>
 
 </html>
+
 
 
 
