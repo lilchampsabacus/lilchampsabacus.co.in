@@ -39,15 +39,17 @@
 
     <!-- Header -->
     <header class="bg-teal-700 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center relative">
-            <!-- Logo & Title (Centered) -->
-            <div class="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center relative min-h-[50px]">
+            
+            <!-- Logo & Title -->
+            <!-- Changed: Static on mobile (flex flow), Absolute Centered on Desktop -->
+            <div class="flex items-center gap-3 mb-2 md:mb-0 md:absolute md:left-1/2 md:transform md:-translate-x-1/2 z-10">
                 <!-- Modern Tech Logo -->
-                <div class="relative flex items-center justify-center w-12 h-12 bg-teal-800 rounded-xl shadow-md border border-teal-500/30 overflow-hidden">
+                <div class="relative flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-teal-800 rounded-xl shadow-md border border-teal-500/30 overflow-hidden shrink-0">
                     <!-- Brain/Circuit Icon -->
-                    <i class="fa-solid fa-brain-circuit text-cyan-300 text-2xl absolute opacity-90"></i>
+                    <i class="fa-solid fa-brain-circuit text-cyan-300 text-xl md:text-2xl absolute opacity-90"></i>
                     <!-- Sound Wave Overlay -->
-                    <i class="fa-solid fa-wave-square text-teal-200 text-xl absolute bottom-1 opacity-70 animate-pulse"></i>
+                    <i class="fa-solid fa-wave-square text-teal-200 text-lg md:text-xl absolute bottom-1 opacity-70 animate-pulse"></i>
                     <!-- Subtle Tech Pattern -->
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-500/10 via-transparent to-transparent opacity-50"></div>
                 </div>
@@ -58,7 +60,9 @@
             <!-- Empty div for spacing on left on larger screens -->
             <div class="hidden md:block"></div>
             
-            <div id="status-indicator" class="hidden text-xs md:text-sm bg-teal-600 px-3 py-1 rounded-full mt-3 md:mt-0">
+            <!-- Status Indicator -->
+            <!-- Will naturally flow below title on mobile due to flex-col -->
+            <div id="status-indicator" class="hidden text-xs md:text-sm bg-teal-600 px-3 py-1 rounded-full border border-teal-500/50">
                 <i class="fa-solid fa-volume-high mr-1"></i> Voice Ready
             </div>
         </div>
@@ -602,7 +606,7 @@
 
                 if (index >= numbers.length) {
                     this.speak("That is", () => {
-                    this.enableInput();
+                        this.enableInput();
                     });
                     return;
                 }
@@ -725,7 +729,4 @@
 
     </script>
 </body>
-
 </html>
-
-
