@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Virtual Abacus AI</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #f5f7fa; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none; 
+            display: flex; 
+            flex-direction: row; /* Default to Desktop Layout */
+            height: 100dvh; /* Dynamic Viewport Height for Mobile Browsers */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        }
+
+        /* --- 3D CANVAS CONTAINER (Left Side on Desktop) --- */
+        #canvas-container {
+            position: relative;
+            width: 70%;
+            height: 100%;
+            overflow: hidden;
+            box-shadow: inset -5px 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* Header Overlay */
+        #header-overlay {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #main-title {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 32px; 
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        #sub-title {
+            color: #e67e22; /* Orange accent */
+            font-weight: 600;
+            font-size: 18px;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
+        }
+
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            z-index: 10;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .control-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+
+        #reset-btn {
+            left: 20px;
+            background-color: #e74c3c;
+            color: white;
+        }
+        #reset-btn:hover { background-color: #c0392b; }
+
+        #replay-btn {
+            display: none;
+            left: 110px; 
+            background-color: #3498db;
+            color: white;
+        }
+        #replay-btn:hover { background-color: #2980b9; }
+
+        /* --- CHAT/STEPS CONTAINER (Right Side on Desktop) --- */
+        #chat-container {
+            width: 30%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e0e0e0;
+            box-shadow: -2px 0 15px rgba(0,0,0,0.05);
+            z-index: 20;
+        }
+
+        #chat-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fdfdfd;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #chat-messages::-webkit-scrollbar { width: 6px; }
+        #chat-messages::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
+
+        .message {
+            max-width: 90%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bot-msg {
+            align-self: flex-start;
+            background-color: #f1f3f5;
+            color: #2c3e50;
+            border-bottom-left-radius: 2px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .formula-text {
+            color: #c0392b;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            background: #fff5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #fadbd8;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background-color: #3498db;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        #chat-input-area {
+            padding: 15px;
+            background-color: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0; /* Prevent shrinking */
+            padding-bottom: max(15px, env(safe-area-inset-bottom)); /* Handle iPhone X+ bottom bar */
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px; /* Prevents iOS zoom on focus */
+            transition: border-color 0.2s;
+        }
+        #chat-input:focus { border-color: #3498db; }
+
+        #send-btn {
+            padding: 0 20px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        #send-btn:hover { background-color: #34495e; }
+
+        /* Remove the Landscape Warning */
+        #landscape-warning { display: none !important; }
+        
+        /* --- MOBILE / PORTRAIT OPTIMIZATIONS --- */
+        @media (max-width: 768px) {
+            body { 
+                flex-direction: column; 
+            }
+            
+            /* Stack Vertically */
+            #canvas-container { 
+                width: 100%; 
+                height: 50%; 
+                box-shadow: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            #chat-container { 
+                width: 100%; 
+                height: 50%; 
+                border-left: none;
+            }
+
+            /* Adjust Header Size */
+            #main-title { font-size: 24px; }
+            #sub-title { font-size: 14px; }
+            #header-overlay { top: 10px; }
+
+            /* Adjust Buttons */
+            .control-btn { 
+                bottom: 10px; 
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            #reset-btn { left: 10px; }
+            #replay-btn { left: 90px; }
+
+            /* Adjust Chat */
+            #chat-header { padding: 10px 15px; }
+            #chat-input-area { padding: 10px; padding-bottom: 10px; }
+        }
+    </style>
+    <!-- Import Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- 3D Area -->
+    <div id="canvas-container">
+        <a href="practice_options.html" 
+           style="position: absolute; top: 20px; left: 20px; z-index: 100; text-decoration: none; font-size: 24px; color: #2c3e50; font-weight: bold; opacity: 0.6; transition: 0.3s;"
+           onmouseover="this.style.opacity='1'; this.style.transform='scale(1.1)'"
+           onmouseout="this.style.opacity='0.6'; this.style.transform='scale(1)'">
+           &larr;
+        </a>
+        
+        <div id="header-overlay">
+            <h1 id="main-title">Virtual Abacus AI</h1>
+            <h2 id="sub-title">Li'l Champs Abacus Academy, Ambernath</h2>
+        </div>
+        <button id="reset-btn" class="control-btn">RESET</button>
+        <button id="replay-btn" class="control-btn">REPLAY ⟳</button>
+    </div>
+
+    <!-- Chat/Steps Area -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <span>ChampBot</span>
+            <span style="font-size: 0.8em; opacity: 0.7; font-weight: normal;">AI Assistant</span>
+        </div>
+        <div id="chat-messages">
+            <div class="message bot-msg">
+                Hey Li'l Champ Welcome! <br>
+                I am ChampBot. <br>
+                How may I help you? <br>
+                I can show you how to do addition, subtraction and multiplication on Virtual abacus. <br>
+                Ask a question or type "tips" for advice!
+            </div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type a math problem or 'tips'...">
+            <button id="send-btn">Solve</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- GLOBAL CONFIG ---
+        const columns = 13; 
+        const rodSpacing = 1.5;
+        const beadRadius = 0.6;
+        const beadHeightScale = 0.65; 
+        const beadRealHeight = (beadRadius * 2) * beadHeightScale; 
+        
+        const BEAM_Y = 1.5;
+        const FRAME_TOP_Y = 4.0;
+        const FRAME_BOTTOM_Y = -3.0; 
+        const EDGE_FRAME_TOP = FRAME_TOP_Y - 0.25; 
+        const EDGE_FRAME_BOTTOM = FRAME_BOTTOM_Y + 0.25;
+        const EDGE_BEAM_TOP = BEAM_Y + 0.2;
+        const EDGE_BEAM_BOTTOM = BEAM_Y - 0.2;
+        const frameHeight = FRAME_TOP_Y - FRAME_BOTTOM_Y;
+        const frameCenterY = (FRAME_TOP_Y + FRAME_BOTTOM_Y) / 2;
+        const totalFrameWidth = (columns * rodSpacing) + 2; 
+
+        // State
+        const rods = []; 
+        const logicalState = new Array(columns).fill(0); 
+        const centerRodIndex = Math.floor(columns / 2); // Unit Rod (1st Rod)
+        let isAnimating = false;
+        let animationQueue = [];
+        let lastCalculation = null; 
+
+        // --- KNOWLEDGE BASE ---
+        const ABACUS_TIPS = [
+            "<strong>Fingering Tip:</strong> Use your Thumb to move Earth beads UP. Use your Index finger to move Earth beads DOWN.",
+            "<strong>Fingering Tip:</strong> Always use your Middle finger (or Index, depending on style) for the Heaven beads (both up and down).",
+            "<strong>Posture:</strong> Sit straight with both feet flat on the floor. Hold the abacus frame with your left hand to keep it steady.",
+            "<strong>Visualization:</strong> Before you move a bead, try to see the move in your mind. This builds your Anzan (Mental Math) skills!",
+            "<strong>Clearing:</strong> Always 'zoom' (clear) your abacus completely before starting a new sum. A messy board leads to mistakes.",
+            "<strong>Focus:</strong> Look at the beads, not your fingers. Trust your muscle memory.",
+            "<strong>Speed:</strong> Don't rush! Accuracy comes first. Speed comes automatically with practice.",
+            "<strong>Pencil Hold:</strong> Keep your pencil in your hand while moving beads. Tuck it in your palm so you don't drop it.",
+            "<strong>Shortcuts:</strong> Look for patterns. 9 is just 10 minus 1. 8 is 10 minus 2. See the 'Big Friends' instantly."
+        ];
+
+        const PRACTICE_ADVICE = [
+            "<strong>Time Management:</strong> It is better to practice for 15 minutes every day than 2 hours once a week. Consistency creates champions!",
+            "<strong>Speed Writing:</strong> Practice writing numbers 0 to 9 as fast as you can for 1 minute. This helps you write answers quickly during exams.",
+            "<strong>The Timer Game:</strong> Set a timer for 5 minutes. See how many sums you can solve correctly. Beat your own score tomorrow!",
+            "<strong>Finger Drills:</strong> Do the '+1' drill: Add 1 repeatedly until you reach 100, then Subtract 1 until you reach 0. Do this daily to warm up.",
+            "<strong>Distraction Free:</strong> Turn off the TV and put away phones during practice. 10 minutes of pure focus is worth 30 minutes of distracted work.",
+            "<strong>Flash Cards:</strong> Ask a parent to flash numbers at you for 1 second. Try to visualize them on the abacus instantly.",
+            "<strong>Mistakes are Good:</strong> If you get an answer wrong, don't erase it immediately. Find out WHERE the bead went wrong. That is how you learn."
+        ];
+
+        // --- AUDIO SYSTEM ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playClack(volume = 1.0) {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            
+            const bufferSize = audioCtx.sampleRate * 0.02; 
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 3000;
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.8 * volume, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.02); 
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f7fa); 
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 0, 28); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableRotate = false; controls.enableZoom = false; controls.enablePan = false;
+
+        // Lights & Materials
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.3 }); 
+        const rodMaterial = new THREE.MeshStandardMaterial({ color: 0xecf0f1, metalness: 0.4, roughness: 0.1 }); 
+        const beadMaterial = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.2, metalness: 0.1 }); 
+        const beamMaterial = new THREE.MeshStandardMaterial({ color: 0xbdc3c7, roughness: 0.3 }); 
+        const markerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xaaaaaa }); 
+
+        // --- BUILD ABACUS ---
+        const group = new THREE.Group();
+        function createBox(w, h, d, mat, x, y, z) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            return mesh;
+        }
+
+        // Frame
+        group.add(createBox(totalFrameWidth, 0.5, 1.0, frameMaterial, 0, FRAME_TOP_Y, 0));
+        group.add(createBox(totalFrameWidth, 0.5, 1.0, frameMaterial, 0, FRAME_BOTTOM_Y, 0));
+        group.add(createBox(0.5, frameHeight + 0.5, 1.0, frameMaterial, -totalFrameWidth/2, frameCenterY, 0));
+        group.add(createBox(0.5, frameHeight + 0.5, 1.0, frameMaterial, totalFrameWidth/2, frameCenterY, 0));
+        group.add(createBox(totalFrameWidth - 1, 0.4, 0.2, beamMaterial, 0, BEAM_Y, 0));
+
+        // Rods & Beads
+        const beadGeo = new THREE.SphereGeometry(beadRadius, 32, 16);
+        beadGeo.scale(1, beadHeightScale, 1);
+        const rodGeo = new THREE.CylinderGeometry(0.12, 0.12, frameHeight, 12);
+
+        for (let i = 0; i < columns; i++) {
+            const xPos = (i - (columns - 1) / 2) * rodSpacing;
+            const rod = new THREE.Mesh(rodGeo, rodMaterial);
+            rod.position.set(xPos, frameCenterY, 0); 
+            group.add(rod);
+
+            const rodData = { index: i, heaven: null, earth: [] };
+            
+            const hBead = new THREE.Mesh(beadGeo, beadMaterial);
+            hBead.position.set(xPos, EDGE_FRAME_TOP - 0.05 - (beadRealHeight/2), 0);
+            hBead.castShadow = true;
+            hBead.userData = { isBead: true, type: 'heaven', rodIndex: i, targetY: null };
+            group.add(hBead);
+            rodData.heaven = hBead;
+
+            for (let j = 0; j < 4; j++) {
+                const eBead = new THREE.Mesh(beadGeo, beadMaterial);
+                const startY = EDGE_FRAME_BOTTOM + 0.02 + (beadRealHeight/2) + (j * beadRealHeight);
+                eBead.position.set(xPos, startY, 0);
+                eBead.castShadow = true;
+                eBead.userData = { isBead: true, type: 'earth', rodIndex: i, beadIndex: j, targetY: null };
+                group.add(eBead);
+                rodData.earth.push(eBead);
+            }
+            rods.push(rodData);
+
+            if (Math.abs(i - centerRodIndex) % 3 === 0) {
+                const dot = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), markerMaterial);
+                dot.position.set(xPos, BEAM_Y, 0.15); 
+                group.add(dot);
+            }
+        }
+        scene.add(group);
+
+        // --- HELPERS ---
+        function getRodName(power) {
+            const pos = power + 1;
+            let suffix = 'th';
+            if (pos % 10 === 1 && pos % 100 !== 11) suffix = 'st';
+            else if (pos % 10 === 2 && pos % 100 !== 12) suffix = 'nd';
+            else if (pos % 10 === 3 && pos % 100 !== 13) suffix = 'rd';
+            return `${pos}${suffix} rod`;
+        }
+
+        // --- ABACUS LOGIC ENGINE (Formulas) ---
+
+        const FRIENDS_BIG = { 1:9, 2:8, 3:7, 4:6, 5:5, 6:4, 7:3, 8:2, 9:1 }; 
+        const FRIENDS_SMALL = { 1:4, 2:3, 3:2, 4:1 }; 
+
+        function pushFrame(rodIdx, val, message = null) {
+            if (rodIdx < 0 || rodIdx >= columns) return; 
+            animationQueue.push({ 
+                msg: message, 
+                changes: [{ rod: rodIdx, val: val }] 
+            });
+        }
+
+        function addRod(rodIdx, valToAdd, logSteps = true) {
+            if (valToAdd === 0) return;
+            if (rodIdx < 0 || rodIdx >= columns) return; 
+
+            const currentVal = logicalState[rodIdx];
+            const earths = currentVal % 5;
+            const heavenActive = currentVal >= 5;
+            const availableEarths = 4 - earths;
+            
+            const rodName = getRodName(centerRodIndex - rodIdx);
+            const nextRodName = getRodName(centerRodIndex - (rodIdx - 1));
+
+            // 1. DIRECT ADDITION
+            if (valToAdd < 5 && availableEarths >= valToAdd) {
+                logicalState[rodIdx] += valToAdd;
+                pushFrame(rodIdx, logicalState[rodIdx], logSteps ? `Directly add ${valToAdd} on ${rodName}` : null);
+                return;
+            }
+            if (valToAdd === 5 && !heavenActive) {
+                logicalState[rodIdx] += 5;
+                pushFrame(rodIdx, logicalState[rodIdx], logSteps ? `Directly add 5 on ${rodName}` : null);
+                return;
+            }
+            if (valToAdd > 5 && !heavenActive && availableEarths >= (valToAdd - 5)) {
+                logicalState[rodIdx] += valToAdd;
+                pushFrame(rodIdx, logicalState[rodIdx], logSteps ? `Directly add ${valToAdd} on ${rodName}` : null);
+                return;
+            }
+
+            // 2. SMALL FRIENDS (+5 -Friend)
+            if (valToAdd < 5 && !heavenActive) {
+                const friend = FRIENDS_SMALL[valToAdd];
+                logicalState[rodIdx] += 5;
+                logicalState[rodIdx] -= friend;
+                pushFrame(rodIdx, logicalState[rodIdx], 
+                    logSteps ? `for +${valToAdd} use +5-${friend} formula.<br>+5 on ${rodName} and -${friend} on ${rodName}` : null);
+                return;
+            }
+
+            // 3. BIG FRIENDS (-Friend +10)
+            const bigFriend = FRIENDS_BIG[valToAdd];
+            
+            if(logSteps) {
+                animationQueue.push({ 
+                    msg: `for +${valToAdd} use -${bigFriend}+10 formula.<br>-${bigFriend} from ${rodName} and +10 on ${nextRodName}`,
+                    changes: []
+                });
+            }
+
+            if (currentVal >= bigFriend) {
+                subtractRod(rodIdx, bigFriend, false); 
+            } else {
+                subtractRod(rodIdx, bigFriend, false); 
+            }
+            
+            const nextRod = rodIdx - 1; 
+            addRod(nextRod, 1, false);
+        }
+
+        // --- SUBTRACTION LOGIC ---
+        function subtractRod(rodIdx, valToSub, logSteps = true) {
+            if (valToSub === 0) return;
+            if (rodIdx < 0 || rodIdx >= columns) return; 
+
+            const currentVal = logicalState[rodIdx];
+            const rodName = getRodName(centerRodIndex - rodIdx);
+            const nextRodName = getRodName(centerRodIndex - (rodIdx - 1));
+            
+            // BORROW / BIG FRIEND (-n = -10 + Friend)
+            if (currentVal < valToSub) {
+                const bigFriend = 10 - valToSub;
+                const nextRod = rodIdx - 1;
+                
+                if(logSteps) {
+                    animationQueue.push({ 
+                        msg: `for -${valToSub} use -10+${bigFriend} formula.<br>-10 from ${nextRodName} and +${bigFriend} on ${rodName}`,
+                        changes: []
+                    });
+                }
+
+                if (nextRod >= 0) {
+                    subtractRod(nextRod, 1, false); 
+                } else {
+                    return;
+                }
+                addRod(rodIdx, bigFriend, false);
+                return;
+            }
+
+            const earths = currentVal % 5;
+            const heavenActive = currentVal >= 5;
+
+            // SMALL FRIEND (-n = -5 + Friend)
+            if (valToSub < 5 && heavenActive && earths < valToSub) {
+                const smallFriend = 5 - valToSub;
+                logicalState[rodIdx] -= 5;
+                logicalState[rodIdx] += smallFriend;
+                pushFrame(rodIdx, logicalState[rodIdx], 
+                    logSteps ? `for -${valToSub} use +${smallFriend}-5 formula.<br>+${smallFriend} on ${rodName} and -5 from ${rodName}` : null);
+                return;
+            }
+
+            // DIRECT SUBTRACTION
+            logicalState[rodIdx] -= valToSub;
+            pushFrame(rodIdx, logicalState[rodIdx], logSteps ? `Directly subtract ${valToSub} from ${rodName}` : null);
+        }
+
+        // --- ANIMATION VISUALS ---
+
+        function setRodAnimation(rodIndex, val) {
+            if (!rods[rodIndex]) return; 
+
+            const rod = rods[rodIndex];
+            const padding = 0.05;
+            const halfBead = beadRealHeight / 2;
+            const heavenActive = val >= 5;
+            
+            rod.heaven.userData.targetY = heavenActive 
+                ? EDGE_BEAM_TOP + padding + halfBead 
+                : EDGE_FRAME_TOP - padding - halfBead;
+
+            const activeEarths = val % 5; 
+            for (let j = 0; j < 4; j++) {
+                const bead = rod.earth[j];
+                const isBeadActive = (3 - j) < activeEarths; 
+                
+                if (isBeadActive) {
+                    const offset = (3 - j);
+                    bead.userData.targetY = EDGE_BEAM_BOTTOM - padding - halfBead - (offset * beadRealHeight);
+                } else {
+                    const offset = j;
+                    bead.userData.targetY = EDGE_FRAME_BOTTOM + 0.02 + halfBead + (offset * beadRealHeight);
+                }
+            }
+        }
+
+        function updateBeadAnimations() {
+            if (!isAnimating && animationQueue.length > 0) {
+                const step = animationQueue.shift();
+                if (step.msg) addBotMessage(step.msg); 
+                
+                step.changes.forEach(change => {
+                    setRodAnimation(change.rod, change.val);
+                });
+                
+                isAnimating = true;
+                playClack();
+                
+                setTimeout(() => {
+                    isAnimating = false;
+                    if(animationQueue.length === 0) {
+                        document.getElementById('replay-btn').style.display = 'block';
+                    }
+                }, 1000); 
+            }
+
+            const lerpSpeed = 0.1;
+            rods.forEach(rod => {
+                if (rod.heaven.userData.targetY !== null) {
+                    rod.heaven.position.y += (rod.heaven.userData.targetY - rod.heaven.position.y) * lerpSpeed;
+                }
+                rod.earth.forEach(bead => {
+                    if (bead.userData.targetY !== null) {
+                        bead.position.y += (bead.userData.targetY - bead.position.y) * lerpSpeed;
+                    }
+                });
+            });
+        }
+
+        function resetAbacusVisuals() {
+            initAudio();
+            playClack(0.5);
+            animationQueue = [];
+            isAnimating = false;
+            rods.forEach((rod, i) => {
+                setRodAnimation(i, 0); 
+                logicalState[i] = 0;
+                rod.heaven.position.y = rod.heaven.userData.targetY;
+                rod.earth.forEach(b => b.position.y = b.userData.targetY);
+            });
+            document.getElementById('replay-btn').style.display = 'none';
+        }
+
+        // --- INTERACTION ---
+
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatMsgs = document.getElementById('chat-messages');
+
+        function addBotMessage(html) {
+            const div = document.createElement('div');
+            div.className = 'message bot-msg';
+            div.innerHTML = html; 
+            chatMsgs.appendChild(div);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'message user-msg';
+            div.innerText = text;
+            chatMsgs.appendChild(div);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+
+        function processCommand(text) {
+            const lowerText = text.toLowerCase();
+            
+            // 1. Reset
+            if (lowerText.includes('reset')) {
+                resetAbacusVisuals();
+                addBotMessage("Abacus reset.");
+                return;
+            }
+
+            // 2. Gratitude
+            if (lowerText.includes('thank') || lowerText.includes('thx')) {
+                addBotMessage("You are welcome, Li'l Champ! 🌟<br>Remember: Daily practice makes perfect. Keep it up!");
+                return;
+            }
+
+            // 3. Tips / Advice / Practice
+            if (lowerText.includes('tip') || lowerText.includes('advice')) {
+                const randomTip = ABACUS_TIPS[Math.floor(Math.random() * ABACUS_TIPS.length)];
+                addBotMessage(randomTip);
+                return;
+            }
+            
+            if (lowerText.includes('practice') || lowerText.includes('drill')) {
+                const randomPrac = PRACTICE_ADVICE[Math.floor(Math.random() * PRACTICE_ADVICE.length)];
+                addBotMessage(randomPrac);
+                return;
+            }
+
+            // Check for multi-step (more than 2 numbers)
+            const multiStepRegex = /\d+\s*[\+\-\*x]\s*\d+\s*[\+\-\*x]\s*\d+/;
+            if (multiStepRegex.test(lowerText)) {
+                addBotMessage("Please enter 2 numbers only (e.g., '23 + 54').");
+                return;
+            }
+
+            // 4. Math Calculation
+            const regex = /(\d+)\s*([\+\-\*x])\s*(\d+)/;
+            const match = lowerText.match(regex);
+
+            if (match) {
+                const num1 = parseInt(match[1]);
+                const op = match[2].replace('x', '*');
+                const num2 = parseInt(match[3]);
+                prepareCalculation(num1, op, num2);
+            } else {
+                // 5. Fallback
+                addBotMessage("I am ChampBot, your Abacus Tutor. 🧮<br>I can help with Addition, Subtraction, and Multiplication.<br>Ask me for 'tips' or 'practice' advice!");
+            }
+        }
+
+        function prepareCalculation(num1, op, num2, isReplay = false) {
+            resetAbacusVisuals();
+            setTimeout(() => { 
+                lastCalculation = { n1: num1, op: op, n2: num2 };
+                animationQueue = [];
+                const log = !isReplay;
+
+                if (op === '+') {
+                    const sNum = num1.toString();
+                    const startPower = sNum.length - 1;
+                    setNumberDirectly(num1);
+                    animationQueue.push({ msg: log ? `Take ${num1} on ${getRodName(startPower)}` : null, changes: getFullStateChanges() });
+                    
+                    const sNum2 = num2.toString();
+                    const startPower2 = sNum2.length - 1;
+                    
+                    for (let i = 0; i < sNum2.length; i++) {
+                        const digit = parseInt(sNum2[i]);
+                        const power = startPower2 - i;
+                        const rodIdx = centerRodIndex - power;
+                        if (digit > 0 && rodIdx >= 0 && rodIdx < columns) {
+                            if (log) animationQueue.push({ msg: `<strong>Adding ${digit} to ${getRodName(power)}</strong>`, changes: [] });
+                            addRod(rodIdx, digit, log);
+                        }
+                    }
+                    animationQueue.push({ msg: log ? `<strong>Result is ${num1 + num2}</strong>` : null, changes: [] });
+                } 
+                else if (op === '-') {
+                    const sNum = num1.toString();
+                    const startPower = sNum.length - 1;
+                    setNumberDirectly(num1);
+                    animationQueue.push({ msg: log ? `Take ${num1} on ${getRodName(startPower)}` : null, changes: getFullStateChanges() });
+                    
+                    if (num1 < num2) {
+                        let borrow = 10;
+                        let power = 1;
+                        while (borrow <= num2) {
+                            borrow *= 10;
+                            power++;
+                        }
+                        const borrowRod = centerRodIndex - power;
+                        if (log) animationQueue.push({ msg: `<strong>${num1} < ${num2}: Borrowing from ${getRodName(power)}...</strong>`, changes: [] });
+                        addRod(borrowRod, 1, log); 
+                        if (log) animationQueue.push({ msg: `Subtracting ${num2}...`, changes: [] });
+                        
+                        const sNum = num2.toString();
+                        const startPower = sNum.length - 1;
+                        for (let i = 0; i < sNum.length; i++) {
+                            const digit = parseInt(sNum[i]);
+                            const p = startPower - i;
+                            const rodIdx = centerRodIndex - p;
+                            if (digit > 0 && rodIdx >= 0 && rodIdx < columns) {
+                                if (log) animationQueue.push({ msg: `<strong>Subtracting ${digit} from ${getRodName(p)}</strong>`, changes: [] });
+                                subtractRod(rodIdx, digit, log);
+                            }
+                        }
+                        const visualVal = num1 + borrow - num2;
+                        const maxVal = borrow - 1;
+                        const remainingBeads = maxVal - visualVal;
+                        animationQueue.push({ 
+                            msg: log ? `<strong>Result is negative.</strong><br>
+                                  Value on Abacus: ${visualVal}<br>
+                                  Remaining Beads (9s Comp): ${remainingBeads}<br>
+                                  <strong>Answer: -(${remainingBeads} + 1) = -${remainingBeads + 1}</strong>` : null, 
+                            changes: [] 
+                        });
+
+                    } else {
+                        const sNum = num2.toString();
+                        const startPower = sNum.length - 1;
+                        for (let i = 0; i < sNum.length; i++) {
+                            const digit = parseInt(sNum[i]);
+                            const power = startPower - i;
+                            const rodIdx = centerRodIndex - power;
+                            if (digit > 0 && rodIdx >= 0 && rodIdx < columns) {
+                                if (log) animationQueue.push({ msg: `<strong>Subtracting ${digit} from ${getRodName(power)}</strong>`, changes: [] });
+                                subtractRod(rodIdx, digit, log);
+                            }
+                        }
+                        animationQueue.push({ msg: log ? `<strong>Result is ${num1 - num2}</strong>` : null, changes: [] });
+                    }
+                }
+                else if (op === '*' || op === 'x') {
+                    if (log) animationQueue.push({ msg: `Multiplying ${num1} x ${num2}...`, changes: [] });
+
+                    const sNum1 = num1.toString();
+                    const sNum2 = num2.toString(); 
+                    const totalDigits = sNum1.length + sNum2.length;
+
+                    if (log) {
+                         animationQueue.push({ msg: `Take answer from ${getRodName(totalDigits - 1)}`, changes: [] });
+                    }
+
+                    // Determine Iterator and Block
+                    let sIter = sNum1;
+                    let sBlock = sNum2;
+                    let swapped = false;
+
+                    // Ensure we iterate through the longer number
+                    if (sNum2.length > sNum1.length) {
+                        sIter = sNum2;
+                        sBlock = sNum1;
+                        swapped = true;
+                    }
+
+                    const valBlock = parseInt(sBlock);
+
+                    // UPDATED LOGIC: Iterate longer number digits x Block
+                    for (let i = 0; i < sIter.length; i++) {
+                        const digit1 = parseInt(sIter[i]);
+                        
+                        // Multiply this single digit by the entire block number
+                        const subProduct = digit1 * valBlock;
+                        
+                        const pStr = subProduct.toString().padStart(sBlock.length + 1, '0');
+                        
+                        if (log) {
+                            animationQueue.push({ msg: `<strong>${digit1} x ${sBlock} = ${parseInt(pStr)}</strong>`, changes: [] });
+                        }
+
+                        // Determine start power for this specific sub-product
+                        const startStepPower = (sIter.length - 1 - i) + sBlock.length;
+
+                        for (let j = 0; j < pStr.length; j++) {
+                            const val = parseInt(pStr[j]);
+                            const power = startStepPower - j;
+                            const rodIdx = centerRodIndex - power;
+                            
+                            if (val > 0) {
+                                if (log) animationQueue.push({ msg: `Add ${val} to ${getRodName(power)}`, changes: [] });
+                                addRod(rodIdx, val, false);
+                            }
+                        }
+                    }
+                    animationQueue.push({ msg: log ? `<strong>Result is ${num1 * num2}</strong>` : null, changes: [] });
+                }
+            }, 600);
+        }
+
+        function setNumberDirectly(num) {
+            const sNum = num.toString();
+            const startPower = sNum.length - 1;
+            for (let i = 0; i < sNum.length; i++) {
+                const digit = parseInt(sNum[i]);
+                const power = startPower - i;
+                const rodIdx = centerRodIndex - power;
+                if (rodIdx >= 0 && rodIdx < columns) {
+                    logicalState[rodIdx] = digit;
+                }
+            }
+        }
+
+        function getFullStateChanges() {
+            const changes = [];
+            for(let i=0; i<columns; i++) changes.push({ rod: i, val: logicalState[i] });
+            return changes;
+        }
+
+        sendBtn.addEventListener('click', () => {
+            const txt = chatInput.value;
+            if(!txt) return;
+            addUserMessage(txt);
+            processCommand(txt);
+            chatInput.value = '';
+        });
+        chatInput.addEventListener('keypress', (e) => { if(e.key==='Enter') sendBtn.click(); });
+        document.getElementById('reset-btn').addEventListener('click', () => resetAbacusVisuals());
+        document.getElementById('replay-btn').addEventListener('click', () => {
+            if (lastCalculation) prepareCalculation(lastCalculation.n1, lastCalculation.op, lastCalculation.n2, true);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateBeadAnimations();
+            renderer.render(scene, camera);
+        }
+        window.addEventListener('resize', () => {
+            const h = container.clientHeight; const w = container.clientWidth;
+            camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h);
+        });
+        
+        resetAbacusVisuals();
+        animate();
+    </script>
+</body>
+</html>
