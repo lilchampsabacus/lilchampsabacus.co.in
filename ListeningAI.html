@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Li'l Champs AI Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom animations */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .pop-in { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .countdown-anim { animation: countdownPulse 0.8s ease-out; }
+        @keyframes countdownPulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-teal-700 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center relative">
+            <!-- Logo & Title (Centered) -->
+            <div class="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2">
+                <!-- Modern Tech Logo -->
+                <div class="relative flex items-center justify-center w-12 h-12 bg-teal-800 rounded-xl shadow-md border border-teal-500/30 overflow-hidden">
+                    <!-- Brain/Circuit Icon -->
+                    <i class="fa-solid fa-brain-circuit text-cyan-300 text-2xl absolute opacity-90"></i>
+                    <!-- Sound Wave Overlay -->
+                    <i class="fa-solid fa-wave-square text-teal-200 text-xl absolute bottom-1 opacity-70 animate-pulse"></i>
+                    <!-- Subtle Tech Pattern -->
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-500/10 via-transparent to-transparent opacity-50"></div>
+                </div>
+                
+                <h1 class="text-xl md:text-2xl font-black tracking-wide text-center">Li'l Champs Voicebot</h1>
+            </div>
+            
+            <!-- Empty div for spacing on left on larger screens -->
+            <div class="hidden md:block"></div>
+            
+            <div id="status-indicator" class="hidden text-xs md:text-sm bg-teal-600 px-3 py-1 rounded-full mt-3 md:mt-0">
+                <i class="fa-solid fa-volume-high mr-1"></i> Voice Ready
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        
+        <!-- Screen 1: Configuration -->
+        <div id="config-screen" class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b border-gray-200 pb-2">Practice Settings</h2>
+            
+            <div class="space-y-5">
+                <!-- Digits Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Difficulty Level</label>
+                    <div class="relative">
+                        <select id="digit-select" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-3 appearance-none">
+                            <option value="1">1 Digit (20 Rows)</option>
+                            <option value="2">2 Digits (20 Rows)</option>
+                            <option value="3">3 Digits (20 Rows)</option>
+                            <option value="4">4 Digits (20 Rows)</option>
+                            <option value="5">5 Digits (20 Rows)</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speed Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Voice Speed</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="speed" value="3000" data-rate="0.9" class="peer sr-only" checked>
+                            <div class="text-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 peer-checked:bg-teal-100 peer-checked:border-teal-500 peer-checked:text-teal-800 transition">
+                                <div class="font-bold">Slow</div>
+                                <div class="text-xs text-gray-500">3 sec</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="speed" value="1000" data-rate="1.1" class="peer sr-only">
+                            <div class="text-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 peer-checked:bg-teal-100 peer-checked:border-teal-500 peer-checked:text-teal-800 transition">
+                                <div class="font-bold">Fast</div>
+                                <div class="text-xs text-gray-500">1 sec</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="speed" value="700" data-rate="1.25" class="peer sr-only">
+                            <div class="text-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 peer-checked:bg-rose-100 peer-checked:border-rose-500 peer-checked:text-rose-800 transition">
+                                <div class="font-bold">Turbo</div>
+                                <div class="text-xs text-gray-500">0.7 sec</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Voice Selection (Auto-populated) -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Voice Preference</label>
+                    <select id="voice-select" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Auto-detect Female AI</option>
+                    </select>
+                </div>
+
+                <button onclick="app.startSession()" class="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 rounded-xl shadow-md transform transition hover:scale-[1.01] flex justify-center items-center gap-2">
+                    Start Mission <i class="fa-solid fa-rocket"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Game Interface -->
+        <div id="game-screen" class="hidden w-full max-w-2xl fade-in">
+            <!-- Progress Header -->
+            <div class="flex justify-between items-end mb-4 px-2">
+                <div>
+                    <span class="text-sm font-bold text-teal-700 tracking-wider uppercase">Question</span>
+                    <h2 class="text-3xl md:text-4xl font-black text-gray-800"><span id="current-q-num">1</span><span class="text-gray-400 text-2xl">/20</span></h2>
+                </div>
+                <!-- Back Button in Header for safety (optional, but good for UX) -->
+            </div>
+
+            <!-- Active Zone -->
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden relative min-h-[350px] md:min-h-[400px] flex flex-col">
+                <!-- Visualizer -->
+                <div id="visual-container" class="flex-grow flex flex-col justify-center items-center bg-slate-800 p-4 md:p-8 relative transition-colors duration-200 text-center">
+                    
+                    <!-- Intro Message -->
+                    <div id="intro-message" class="hidden fade-in px-4">
+                        <h3 class="text-3xl md:text-5xl font-bold text-slate-100 mb-4 leading-tight">For best result<br><span class="text-teal-400">use Abacus</span></h3>
+                        <div class="mt-8 animate-bounce text-teal-300 text-2xl"><i class="fa-solid fa-headphones"></i></div>
+                    </div>
+
+                    <!-- Number Display -->
+                    <div id="number-display" class="hidden text-7xl md:text-9xl font-black text-slate-100 pop-in drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                        <!-- Number injected here -->
+                    </div>
+
+                    <!-- Countdown Display -->
+                    <div id="countdown-display" class="hidden text-7xl md:text-8xl font-black text-amber-400 countdown-anim drop-shadow-lg text-center leading-tight">
+                        <!-- 3.. 2.. 1.. -->
+                    </div>
+
+                    <!-- Waiting State (Initial buffer) -->
+                    <div id="waiting-visual" class="hidden flex-col items-center justify-center opacity-60">
+                        <div class="w-16 h-16 rounded-full border-4 border-teal-500 border-t-transparent animate-spin mb-4"></div>
+                        <p class="text-teal-200 font-medium">Ready...</p>
+                    </div>
+
+                    <!-- Input Area (Hidden while speaking) -->
+                    <div id="input-area" class="hidden w-full max-w-xs text-center z-10 flex-col gap-3">
+                        <label class="text-slate-400 text-sm block">Enter the Sum</label>
+                        <input type="number" id="user-answer" class="w-full bg-slate-700 border-2 border-teal-500 text-slate-100 text-center text-4xl md:text-5xl font-bold rounded-xl py-6 focus:outline-none focus:ring-4 focus:ring-teal-500/30 transition placeholder-slate-500" placeholder="?" onkeydown="if(event.key === 'Enter') app.submitAnswer()">
+                        
+                        <button onclick="app.submitAnswer()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-lg transition text-lg">
+                            Submit Answer
+                        </button>
+                        
+                        <!-- Back Button -->
+                        <button onclick="app.backToSettings()" class="w-full bg-transparent border border-slate-600 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 font-semibold py-2 rounded-lg transition text-sm">
+                            <i class="fa-solid fa-gear mr-2"></i> Back to Settings
+                        </button>
+                    </div>
+
+                    <!-- Feedback Overlay -->
+                    <div id="feedback-overlay" class="absolute inset-0 bg-white z-20 hidden flex-col items-center justify-center text-center p-6 fade-in">
+                        <div id="feedback-icon" class="text-6xl mb-4"></div>
+                        <h3 id="feedback-text" class="text-3xl font-bold mb-2"></h3>
+                        <p id="feedback-detail" class="text-gray-500 mb-8"></p>
+                        
+                        <div class="flex flex-col md:flex-row gap-3 w-full max-w-sm">
+                            <button onclick="app.backToSettings()" class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition">
+                                Settings
+                            </button>
+                            <button onclick="app.handleNext()" class="flex-1 px-6 py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 shadow-lg transition flex items-center justify-center gap-2">
+                                Next Sum <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="h-2 bg-gray-200 w-full">
+                    <div id="progress-bar" class="h-full bg-teal-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Report -->
+        <div id="report-screen" class="hidden w-full max-w-4xl fade-in pb-10">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-teal-700 p-8 text-white text-center">
+                    <h2 class="text-3xl font-black mb-3">CONGRATULATIONS!</h2>
+                    <p class="text-teal-100 text-lg md:text-xl font-medium" id="report-summary-text">
+                        With Daily practice on abacus you can do Mental sums
+                    </p>
+                </div>
+                
+                <!-- Stats Header -->
+                <div class="grid grid-cols-2 gap-4 p-6 border-b border-gray-200 bg-stone-50 justify-center">
+                    <div class="text-center border-r border-gray-300">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Difficulty</div>
+                        <div class="text-xl md:text-2xl font-bold text-gray-800" id="report-difficulty">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Total Score</div>
+                        <div class="text-xl md:text-2xl font-bold text-teal-700" id="report-score">-</div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th class="px-4 md:px-6 py-3">Q#</th>
+                                <th class="px-4 md:px-6 py-3">Correct</th>
+                                <th class="px-4 md:px-6 py-3">You</th>
+                                <th class="px-4 md:px-6 py-3 text-center">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-6 bg-stone-50 flex justify-center">
+                    <button onclick="location.reload()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow-md transition">
+                        Start New Assessment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center p-4 text-gray-500 text-sm font-semibold bg-stone-100">
+        Contact: 9730482620
+    </footer>
+
+    <script>
+        class AbacusApp {
+            constructor() {
+                this.voices = [];
+                this.currentUtterance = null; // Important: prevents garbage collection
+                this.timeouts = []; // Store timeouts to clear them
+                
+                this.config = {
+                    digits: 1,
+                    rows: 20,
+                    speed: 3000,
+                    rate: 0.9, // Default voice rate
+                    negativeIndices: [2, 5, 8, 11, 14, 17] // 0-indexed (3rd, 6th...)
+                };
+
+                this.state = {
+                    currentQuestion: 0,
+                    totalQuestions: 20,
+                    results: [],
+                    currentSumData: null,
+                };
+
+                this.synth = window.speechSynthesis;
+                this.initVoice();
+            }
+
+            // --- Utility: Safe Timeout ---
+            setTimeout(fn, delay) {
+                const id = window.setTimeout(fn, delay);
+                this.timeouts.push(id);
+                return id;
+            }
+
+            clearAllTimeouts() {
+                this.timeouts.forEach(id => window.clearTimeout(id));
+                this.timeouts = [];
+            }
+
+            // --- Voice Handling ---
+            
+            initVoice() {
+                if (this.synth.onvoiceschanged !== undefined) {
+                    this.synth.onvoiceschanged = () => this.populateVoices();
+                }
+                this.setTimeout(() => this.populateVoices(), 500); 
+            }
+
+            populateVoices() {
+                const allVoices = this.synth.getVoices();
+                // Filter: Keep only voices that contain 'en' in lang (e.g., en-US, en-GB)
+                this.voices = allVoices.filter(voice => voice.lang.includes('en') || voice.lang.startsWith('en'));
+                
+                const voiceSelect = document.getElementById('voice-select');
+                voiceSelect.innerHTML = '<option value="">Auto-detect Female AI</option>';
+                
+                // Sort generally to put preferred regions (US/UK) at the top
+                this.voices.sort((a, b) => {
+                    const aUS = a.lang.includes('US') || a.lang.includes('GB');
+                    const bUS = b.lang.includes('US') || b.lang.includes('GB');
+                    if(aUS && !bUS) return -1;
+                    if(!aUS && bUS) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
+                this.voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+
+                // Heuristic to find a good female voice within the English subset
+                const femaleKeywords = ['female', 'zira', 'google us english', 'samantha', 'victoria', 'susan'];
+                this.femaleVoiceIndex = this.voices.findIndex(v => 
+                    femaleKeywords.some(k => v.name.toLowerCase().includes(k))
+                );
+                
+                if (this.voices.length > 0) {
+                    document.getElementById('status-indicator').classList.remove('hidden');
+                }
+            }
+
+            getPreferredVoice() {
+                const manualIdx = document.getElementById('voice-select').value;
+                if (manualIdx !== "") return this.voices[manualIdx];
+                if (this.femaleVoiceIndex !== -1) return this.voices[this.femaleVoiceIndex];
+                return this.voices[0];
+            }
+
+            speak(text, callback, overrideRate = null) {
+                if (this.synth.speaking) this.synth.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = this.getPreferredVoice();
+                
+                // Use override rate if provided, otherwise use config rate
+                utterance.rate = overrideRate !== null ? overrideRate : this.config.rate; 
+                utterance.pitch = 1.0;
+                
+                this.currentUtterance = utterance;
+
+                utterance.onend = () => {
+                    this.currentUtterance = null;
+                    if (callback) callback();
+                };
+
+                utterance.onerror = (e) => {
+                    console.error("Speech error", e);
+                    this.currentUtterance = null;
+                    if (callback) callback();
+                };
+
+                this.synth.speak(utterance);
+            }
+
+            // --- Number Text Formatting (No "And") ---
+            formatNumberText(num) {
+                const absNum = Math.abs(num);
+                const prefix = num < 0 ? "Minus " : "";
+                
+                // For small numbers, default to string is fine usually, but to be safe:
+                if (absNum < 100) return prefix + absNum.toString();
+
+                const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+                const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+                const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+                function convertChunk(n) {
+                    let str = "";
+                    if (n >= 100) {
+                        str += ones[Math.floor(n / 100)] + " hundred ";
+                        n %= 100;
+                    }
+                    if (n >= 20) {
+                        str += tens[Math.floor(n / 10)] + " ";
+                        n %= 10;
+                    }
+                    if (n >= 10) {
+                        str += teens[n - 10] + " ";
+                        n = 0;
+                    }
+                    if (n > 0) {
+                        str += ones[n] + " ";
+                    }
+                    return str.trim();
+                }
+
+                let text = "";
+                // Handle Thousands
+                if (absNum >= 1000) {
+                    const th = Math.floor(absNum / 1000);
+                    const rem = absNum % 1000;
+                    text += convertChunk(th) + " thousand ";
+                    if (rem > 0) text += convertChunk(rem);
+                } else {
+                    text += convertChunk(absNum);
+                }
+
+                return prefix + text.trim();
+            }
+
+            // --- Game Logic ---
+
+            generateNumbers() {
+                const digits = parseInt(this.config.digits);
+                const min = Math.pow(10, digits - 1);
+                const max = Math.pow(10, digits) - 1;
+                let numbers = [];
+                let validSet = false;
+                let attempts = 0;
+
+                while (!validSet && attempts < 1000) {
+                    numbers = [];
+                    let runningTotal = 0;
+                    let isValid = true;
+
+                    for (let i = 0; i < this.config.rows; i++) {
+                        let num = Math.floor(Math.random() * (max - min + 1)) + min;
+                        
+                        if (this.config.negativeIndices.includes(i)) {
+                            num = -num;
+                        }
+
+                        if (i === 0 || i === 1) {
+                             if(digits === 1) num = Math.floor(Math.random() * 5) + 5; 
+                        }
+
+                        if (runningTotal + num < 0) {
+                            if (num < 0) {
+                                isValid = false; 
+                                break; 
+                            }
+                        }
+
+                        runningTotal += num;
+                        numbers.push(num);
+                    }
+
+                    if (isValid && runningTotal > 0) {
+                        validSet = true;
+                    }
+                    attempts++;
+                }
+
+                return { numbers, correctSum: numbers.reduce((a, b) => a + b, 0) };
+            }
+
+            startSession() {
+                this.clearAllTimeouts(); // Fix: Clear overlapping sequences
+
+                this.config.digits = document.getElementById('digit-select').value;
+                
+                const speedEls = document.getElementsByName('speed');
+                for(let el of speedEls) { 
+                    if(el.checked) {
+                        this.config.speed = parseInt(el.value);
+                        this.config.rate = parseFloat(el.getAttribute('data-rate'));
+                    } 
+                }
+
+                // Force Reset UI
+                document.getElementById('number-display').classList.add('hidden');
+                document.getElementById('countdown-display').classList.add('hidden');
+                document.getElementById('waiting-visual').classList.add('hidden');
+                document.getElementById('waiting-visual').classList.remove('flex');
+                document.getElementById('input-area').classList.add('hidden');
+                document.getElementById('input-area').classList.remove('flex');
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                document.getElementById('feedback-overlay').classList.remove('flex');
+                document.getElementById('progress-bar').style.width = '0%';
+                document.getElementById('intro-message').classList.add('hidden');
+
+                document.getElementById('config-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                document.getElementById('game-screen').classList.add('flex', 'flex-col');
+
+                if (this.synth.speaking) this.synth.cancel();
+
+                this.state.currentQuestion = 0;
+                this.state.results = [];
+
+                this.playIntro();
+            }
+
+            playIntro() {
+                const introEl = document.getElementById('intro-message');
+                introEl.classList.remove('hidden');
+                
+                this.speak("For best result, use Abacus", () => {
+                    this.setTimeout(() => {
+                        introEl.classList.add('hidden');
+                        this.nextQuestion();
+                    }, 1000);
+                }, 1.1);
+            }
+
+            backToSettings() {
+                this.clearAllTimeouts(); // Critical: Stop any pending Next Question logic
+                if (this.synth.speaking) this.synth.cancel();
+
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('flex');
+                document.getElementById('config-screen').classList.remove('hidden');
+            }
+
+            handleNext() {
+                this.state.currentQuestion++;
+                if (this.state.currentQuestion >= this.state.totalQuestions) {
+                    this.endSession();
+                } else {
+                    this.nextQuestion();
+                }
+            }
+
+            nextQuestion() {
+                document.getElementById('current-q-num').textContent = this.state.currentQuestion + 1;
+                
+                // Reset View
+                document.getElementById('input-area').classList.add('hidden');
+                document.getElementById('input-area').classList.remove('flex');
+                document.getElementById('waiting-visual').classList.remove('hidden');
+                document.getElementById('waiting-visual').classList.add('flex');
+                document.getElementById('number-display').classList.add('hidden');
+                document.getElementById('countdown-display').classList.add('hidden');
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                document.getElementById('feedback-overlay').classList.remove('flex');
+                document.getElementById('progress-bar').style.width = '0%';
+                document.getElementById('user-answer').value = '';
+
+                this.state.currentSumData = this.generateNumbers();
+
+                this.setTimeout(() => {
+                    this.startCountdown();
+                }, 500);
+            }
+
+            startCountdown() {
+                const visualContainer = document.getElementById('waiting-visual');
+                const countdownContainer = document.getElementById('countdown-display');
+                
+                visualContainer.classList.add('hidden');
+                visualContainer.classList.remove('flex');
+                countdownContainer.classList.remove('hidden');
+
+                const sequence = [
+                    { text: "3", color: "text-amber-400" },
+                    { text: "2", color: "text-amber-400" },
+                    { text: "1", color: "text-amber-400" },
+                    { text: "Start!", color: "text-emerald-400" }
+                ];
+
+                let step = 0;
+
+                const runStep = () => {
+                    if (step >= sequence.length) {
+                        countdownContainer.classList.add('hidden');
+                        document.getElementById('number-display').classList.remove('hidden');
+                        this.speakSequence(0);
+                        return;
+                    }
+
+                    const item = sequence[step];
+                    countdownContainer.textContent = item.text;
+                    
+                    countdownContainer.classList.remove('countdown-anim');
+                    countdownContainer.className = `hidden text-7xl md:text-8xl font-black ${item.color} countdown-anim drop-shadow-lg text-center leading-tight`;
+                    void countdownContainer.offsetWidth; // trigger reflow
+                    countdownContainer.classList.remove('hidden');
+                    
+                    this.setTimeout(runStep, 1000); 
+
+                    step++;
+                };
+
+                runStep();
+            }
+
+            speakSequence(index) {
+                const numbers = this.state.currentSumData.numbers;
+
+                if (index >= numbers.length) {
+                    this.enableInput();
+                    return;
+                }
+
+                const progress = ((index + 1) / numbers.length) * 100;
+                document.getElementById('progress-bar').style.width = `${progress}%`;
+
+                let num = numbers[index];
+                
+                // Use new formatter
+                let text = this.formatNumberText(num);
+                
+                // Visual Update
+                const numDisplay = document.getElementById('number-display');
+                numDisplay.classList.remove('pop-in');
+                void numDisplay.offsetWidth; 
+                numDisplay.classList.add('pop-in');
+                
+                if(num < 0) {
+                    numDisplay.classList.remove('text-slate-100');
+                    numDisplay.classList.add('text-rose-400');
+                    numDisplay.textContent = num; 
+                } else {
+                    numDisplay.classList.remove('text-rose-400');
+                    numDisplay.classList.add('text-slate-100');
+                    numDisplay.textContent = num;
+                }
+
+                this.speak(text, () => {
+                    if (this.config.speed < 800) {
+                        this.setTimeout(() => this.speakSequence(index + 1), 100);
+                    } else {
+                        this.setTimeout(() => this.speakSequence(index + 1), this.config.speed * 0.5); 
+                    }
+                });
+            }
+
+            enableInput() {
+                document.getElementById('number-display').classList.add('hidden');
+                const inputArea = document.getElementById('input-area');
+                inputArea.classList.remove('hidden');
+                inputArea.classList.add('flex');
+                
+                this.setTimeout(() => {
+                   document.getElementById('user-answer').focus();
+                }, 100);
+            }
+
+            submitAnswer() {
+                const input = document.getElementById('user-answer');
+                const val = parseInt(input.value);
+                const correct = this.state.currentSumData.correctSum;
+                
+                if (isNaN(val)) return;
+
+                const isCorrect = val === correct;
+
+                this.state.results.push({
+                    qNum: this.state.currentQuestion + 1,
+                    correct: isCorrect,
+                    userAnswer: val,
+                    correctAnswer: correct
+                });
+
+                this.showFeedback(isCorrect, correct);
+            }
+
+            showFeedback(isCorrect, correctAnswer) {
+                const overlay = document.getElementById('feedback-overlay');
+                const icon = document.getElementById('feedback-icon');
+                const text = document.getElementById('feedback-text');
+                const detail = document.getElementById('feedback-detail');
+
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+
+                if (isCorrect) {
+                    icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i>';
+                    text.textContent = "Correct!";
+                    text.className = "text-3xl font-bold mb-2 text-emerald-600";
+                    detail.textContent = "";
+                } else {
+                    icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+                    text.textContent = "Wrong!";
+                    text.className = "text-3xl font-bold mb-2 text-rose-600";
+                    detail.innerHTML = `Correct answer was <span class="font-bold text-gray-800">${correctAnswer}</span>`;
+                }
+            }
+
+            endSession() {
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('flex');
+                document.getElementById('report-screen').classList.remove('hidden');
+
+                const correctCount = this.state.results.filter(r => r.correct).length;
+
+                document.getElementById('report-difficulty').textContent = `${this.config.digits} Digit`;
+                document.getElementById('report-score').textContent = `${correctCount}/20`;
+
+                const tbody = document.getElementById('report-body');
+                tbody.innerHTML = '';
+                
+                this.state.results.forEach(r => {
+                    const row = document.createElement('tr');
+                    row.className = "bg-white border-b border-gray-200 hover:bg-gray-50";
+                    row.innerHTML = `
+                        <td class="px-4 md:px-6 py-4 font-medium text-gray-900">#${r.qNum}</td>
+                        <td class="px-4 md:px-6 py-4">${r.correctAnswer}</td>
+                        <td class="px-4 md:px-6 py-4 ${r.correct ? 'text-emerald-600' : 'text-rose-600 font-bold'}">${r.userAnswer}</td>
+                        <td class="px-4 md:px-6 py-4 text-center">
+                            ${r.correct ? '<i class="fa-solid fa-check text-emerald-500"></i>' : '<i class="fa-solid fa-xmark text-rose-500"></i>'}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        const app = new AbacusApp();
+
+    </script>
+</body>
+</html>
