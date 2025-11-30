@@ -515,6 +515,11 @@
                 avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
             }
 
+			// --- DEFINE FORMATTED NAME (This was missing!) ---
+            const rawName = document.getElementById('student-identifier-input').value;
+            const formattedName = formatStudentName(rawName);
+            // ------------------------------------------------
+
             // Fill Report
             const now = new Date();
             document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -593,6 +598,7 @@
     </script>
 </body>
 </html>
+
 
 
 
