@@ -490,7 +490,7 @@
                 const isAttempted = data.studentAnswer !== null;
                 if (isAttempted) {
                     attemptedCount++;
-                    const isCorrect = data.studentAnswer === data.product;
+                    const isCorrect = data.studentAnswer === data.quotient;
                     data.isCorrect = isCorrect;
                     if (isCorrect) correctCount++;
                     else solvedWrongCount++;
@@ -600,5 +600,6 @@
     </script>
 </body>
 </html>
+
 
 
