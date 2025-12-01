@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Formula Practice - Li'l Champs Abacus</title>
+    <title>Practice Sums 1st and 2nd Level</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -98,12 +98,16 @@
 
         <section class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border-t-4 border-orange-400 text-center">
             
+            <div class="mb-6 hidden"> 
+                <input type="text" id="student-identifier-input" class="w-full" readonly>
+            </div>
+
             <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
                 Pilot: <span id="auto-student-name-display">... Loading ...</span>
             </div>
 
             <div class="mb-4 text-left">
-                <label class="block text-sm font-bold text-gray-700 mb-2">1. Select Formula for practice</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">1. Select Category (In Teaching Order)</label>
                 <select id="category-select" onchange="populateFormulas()" class="w-full p-3 border-2 border-blue-200 rounded-lg bg-gray-50 text-lg font-semibold focus:border-blue-500 outline-none">
                     <option value="">-- Choose Category --</option>
                     <option value="1_sf_add">1. Small Friend (Plus)</option>
@@ -198,10 +202,321 @@
     </footer>
 
     <script>
-        // --- 1. LOGIN & IDENTIFICATION LOGIC ---
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'index.html'; 
-        }
-
+        // --- 1. LOGIN & IDENTIFICATION LOGIC (Refer 1x1.html) ---
+        
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
+            const namePart = identifier.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('student-identifier-input');
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            
+            if (studentIdentifier) {
+                // Logged In User
+                const displayStudentName = formatStudentName(studentIdentifier);
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+            } else {
+                // Laptop / Guest User (Fallback to prevent "Loading..." stuck)
+                nameInput.value = "Guest_Pilot";
+                document.getElementById('auto-student-name-display').textContent = "Guest Pilot";
+            }
+        });
+
+        // --- 2. FORMULA DATA ---
+        const FORMULA_DATA = {
+            '1_sf_add': [ 
+                { id: 'sf_p4', name: '+4 Formula (+5-1)', trigger: 4, setup: [1,2,3,4] }, 
+                { id: 'sf_p3', name: '+3 Formula (+5-2)', trigger: 3, setup: [2,3,4] }, 
+                { id: 'sf_p2', name: '+2 Formula (+5-3)', trigger: 2, setup: [3,4] }, 
+                { id: 'sf_p1', name: '+1 Formula (+5-4)', trigger: 1, setup: [4] } 
+            ],
+            '2_sf_sub': [ 
+                { id: 'sf_m4', name: '-4 Formula (+1-5)', trigger: -4, setup: [5,6,7,8] }, 
+                { id: 'sf_m3', name: '-3 Formula (+2-5)', trigger: -3, setup: [5,6,7] }, 
+                { id: 'sf_m2', name: '-2 Formula (+3-5)', trigger: -2, setup: [5,6] }, 
+                { id: 'sf_m1', name: '-1 Formula (+4-5)', trigger: -1, setup: [5] } 
+            ],
+            '3_bf_add': [ 
+                { id: 'bf_p9', name: '+9 Formula (-1+10)', trigger: 9, setup: [1,2,3,4, 6,7,8,9] },
+                { id: 'bf_p8', name: '+8 Formula (-2+10)', trigger: 8, setup: [2,3,4, 7,8,9] },
+                { id: 'bf_p7', name: '+7 Formula (-3+10)', trigger: 7, setup: [3,4, 8,9] },
+                { id: 'bf_p6', name: '+6 Formula (-4+10)', trigger: 6, setup: [4, 9] },
+                { id: 'bf_p5', name: '+5 Formula (-5+10)', trigger: 5, setup: [5,6,7,8,9] }, 
+                { id: 'bf_p4', name: '+4 Formula (-6+10)', trigger: 4, setup: [6,7,8,9] }, 
+                { id: 'bf_p3', name: '+3 Formula (-7+10)', trigger: 3, setup: [7,8,9] }, 
+                { id: 'bf_p2', name: '+2 Formula (-8+10)', trigger: 2, setup: [8,9] }, 
+                { id: 'bf_p1', name: '+1 Formula (-9+10)', trigger: 1, setup: [9] } 
+            ],
+            '4_bf_sub': [ 
+                { id: 'bf_m9', name: '-9 Formula (-10+1)', trigger: -9, setup: [0,1,2,3, 5,6,7,8] },
+                { id: 'bf_m8', name: '-8 Formula (-10+2)', trigger: -8, setup: [0,1,2, 5,6,7] },
+                { id: 'bf_m7', name: '-7 Formula (-10+3)', trigger: -7, setup: [0,1, 5,6] },
+                { id: 'bf_m6', name: '-6 Formula (-10+4)', trigger: -6, setup: [0, 5] },
+                { id: 'bf_m5', name: '-5 Formula (-10+5)', trigger: -5, setup: [0,1,2,3,4] }, 
+                { id: 'bf_m4', name: '-4 Formula (-10+6)', trigger: -4, setup: [0,1,2,3] }, 
+                { id: 'bf_m3', name: '-3 Formula (-10+7)', trigger: -3, setup: [0,1,2] }, 
+                { id: 'bf_m2', name: '-2 Formula (-10+8)', trigger: -2, setup: [0,1] }, 
+                { id: 'bf_m1', name: '-1 Formula (-10+9)', trigger: -1, setup: [0] } 
+            ],
+            '5_mix_add': [ 
+                { id: 'mix_p6', name: 'Mix +6 (+1-5+10)', trigger: 6, setup: [5,6,7,8] }, 
+                { id: 'mix_p7', name: 'Mix +7 (+2-5+10)', trigger: 7, setup: [5,6,7] }, 
+                { id: 'mix_p8', name: 'Mix +8 (+3-5+10)', trigger: 8, setup: [5,6] }, 
+                { id: 'mix_p9', name: 'Mix +9 (+4-5+10)', trigger: 9, setup: [5] } 
+            ],
+            '6_mix_sub': [ 
+                { id: 'mix_m6', name: 'Mix -6 (-10+5-1)', trigger: -6, setup: [1,2,3,4] }, 
+                { id: 'mix_m7', name: 'Mix -7 (-10+5-2)', trigger: -7, setup: [2,3,4] }, 
+                { id: 'mix_m8', name: 'Mix -8 (-10+5-3)', trigger: -8, setup: [3,4] }, 
+                { id: 'mix_m9', name: 'Mix -9 (-10+5-4)', trigger: -9, setup: [4] } 
+            ]
+        };
+
+        let currentQuestions = [], currentQIndex = 0, score = 0, startTime, selectedFormulaObj = null;
+
+        function populateFormulas() {
+            const cat = document.getElementById('category-select').value;
+            const formSelect = document.getElementById('formula-select');
+            const btn = document.getElementById('launch-btn');
+            formSelect.innerHTML = '<option value="">-- Select Formula --</option>';
+            if (cat && FORMULA_DATA[cat]) {
+                FORMULA_DATA[cat].forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id; opt.textContent = f.name; formSelect.appendChild(opt);
+                });
+                formSelect.disabled = false;
+            } else { formSelect.disabled = true; }
+            btn.disabled = true;
+        }
+
+        document.getElementById('formula-select').addEventListener('change', function() {
+            document.getElementById('launch-btn').disabled = (this.value === "");
+        });
+
+        // --- 3. STRICT BEAD LOGIC FOR FILLER ROWS ---
+        function isStrictDirectMove(current, val) {
+            const unitCurr = current % 10;
+            const unitRes = unitCurr + val;
+            
+            // 1. Must stay within 0-9
+            if (unitRes < 0 || unitRes > 9) return false; 
+            
+            const upperBeadCurr = unitCurr >= 5;
+            const upperBeadRes = unitRes >= 5;
+            const lowerBeadCurr = unitCurr % 5;
+            
+            // 2. Bead Availability Check
+            if (val > 0) {
+                const valLower = val % 5;
+                const valUpper = val >= 5;
+                
+                if (valUpper && upperBeadCurr) return false;
+                if (lowerBeadCurr + valLower > 4) return false; 
+                
+                return true;
+
+            } else {
+                const valAbs = Math.abs(val);
+                const valLower = valAbs % 5;
+                const valUpper = valAbs >= 5;
+
+                if (valUpper && !upperBeadCurr) return false;
+                if (lowerBeadCurr < valLower) return false;
+
+                return true;
+            }
+        }
+
+        function generateRandomDirect(currentTotal) {
+            const options = [];
+            for (let i = -9; i <= 9; i++) {
+                if (i === 0) continue;
+                if (currentTotal + i < 0) continue;
+                if (isStrictDirectMove(currentTotal, i)) options.push(i);
+            }
+            if (options.length === 0) return 0; 
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        function generateQuestionSet(formulaObj) {
+            let rows = [], total = 0;
+            const NUM_ROWS = 5; 
+            const triggerIdx = Math.floor(Math.random() * (NUM_ROWS - 1)) + 1; 
+            const cat = document.getElementById('category-select').value;
+
+            // --- 3a. SET START NUMBER ---
+            let startNum;
+            const levelIndex = parseInt(cat.charAt(0));
+            if (levelIndex >= 3) {
+                startNum = Math.floor(Math.random() * 89) + 10; 
+            } else {
+                startNum = Math.floor(Math.random() * 9) + 1;
+            }
+            
+            rows.push(startNum); total = startNum;
+
+            // --- 3b. FILL UP TO TRIGGER ---
+            for (let i = 1; i < triggerIdx; i++) {
+                let next = generateRandomDirect(total);
+                rows.push(next); total += next;
+            }
+
+            // --- 3c. FORCE SETUP CONDITION ---
+            let lastRow = rows.pop();
+            total -= lastRow;
+            const targetUnit = formulaObj.setup[Math.floor(Math.random() * formulaObj.setup.length)];
+            
+            let rangeMin = -9, rangeMax = 9;
+            if (levelIndex >= 3) { rangeMin = -19; rangeMax = 19; }
+
+            let validForced = [];
+            for(let k=rangeMin; k<=rangeMax; k++) {
+                if(k==0) continue;
+                if((total + k) < 0) continue; 
+                if((total + k + formulaObj.trigger) < 0) continue; 
+
+                if((total + k) % 10 === targetUnit) {
+                    if(!isStrictDirectMove(total, k)) continue;
+                    validForced.push(k);
+                }
+            }
+
+            if(validForced.length === 0) return generateQuestionSet(formulaObj); 
+            
+            let forcedNum = validForced[Math.floor(Math.random() * validForced.length)];
+            rows.push(forcedNum); total += forcedNum;
+
+            // --- 3d. APPLY TRIGGER ---
+            rows.push(formulaObj.trigger); total += formulaObj.trigger;
+
+            // --- 3e. FILL REMAINDER ---
+            for (let i = triggerIdx + 1; i < NUM_ROWS; i++) {
+                 let next = generateRandomDirect(total);
+                 rows.push(next); total += next;
+            }
+
+            return { numbers: rows, answer: total };
+        }
+
+        function startGame() {
+            const cat = document.getElementById('category-select').value;
+            const fid = document.getElementById('formula-select').value;
+            selectedFormulaObj = FORMULA_DATA[cat].find(f => f.id === fid);
+            
+            document.body.classList.add('focus-mode');
+            document.querySelector('.config-section').classList.add('hidden');
+            const gameUi = document.getElementById('game-ui');
+            gameUi.classList.remove('hidden');
+            gameUi.style.display = "flex";
+
+            currentQuestions = [];
+            for(let i=0; i<10; i++) currentQuestions.push(generateQuestionSet(selectedFormulaObj));
+
+            currentQIndex = 0; score = 0; startTime = Date.now();
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const qData = currentQuestions[currentQIndex];
+            const container = document.getElementById('question-container');
+            document.getElementById('q-idx').textContent = currentQIndex + 1;
+            
+            let html = '<table class="sum-table">';
+            qData.numbers.forEach((num, idx) => {
+                const colorClass = num < 0 ? 'negative-number' : '';
+                html += `<tr><td class="row-index">${idx+1}</td><td class="number-cell ${colorClass}">${num}</td></tr>`;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+            
+            const input = document.getElementById('answer-input');
+            input.value = ''; input.focus();
+            document.getElementById('feedback-msg').textContent = '';
+            
+            const btn = document.getElementById('action-btn');
+            btn.textContent = "Check (Enter)";
+            btn.className = "w-full bg-blue-600 text-white font-bold py-4 rounded-lg shadow-md text-xl active:bg-blue-800";
+            btn.onclick = handleAction;
+        }
+
+        function handleAction() {
+            const input = document.getElementById('answer-input');
+            const val = parseInt(input.value);
+            if (isNaN(val)) return;
+            const correct = currentQuestions[currentQIndex].answer;
+            const feedback = document.getElementById('feedback-msg');
+            const btn = document.getElementById('action-btn');
+
+            if (val === correct) {
+                score++;
+                feedback.textContent = "Correct! 🎉";
+                feedback.className = "text-green-600 font-bold text-lg mb-2 h-6";
+                input.classList.add('bg-green-50', 'border-green-500');
+            } else {
+                feedback.innerHTML = `Wrong. Ans: <span class="text-black">${correct}</span>`;
+                feedback.className = "text-red-500 font-bold text-lg mb-2 h-6 shake";
+                input.classList.add('bg-red-50', 'border-red-500');
+            }
+            updateProgress();
+            btn.textContent = "Next ➡";
+            btn.className = "w-full bg-orange-500 text-white font-bold py-4 rounded-lg shadow-md text-xl";
+            btn.onclick = nextQuestion;
+            setTimeout(() => { document.getElementById('action-btn').focus(); }, 100);
+        }
+
+        function nextQuestion() {
+            const input = document.getElementById('answer-input');
+            input.classList.remove('bg-green-50', 'border-green-500', 'bg-red-50', 'border-red-500');
+            currentQIndex++;
+            if (currentQIndex < 10) renderQuestion(); else endGame();
+        }
+
+        function updateProgress() {
+            const pct = ((currentQIndex + 1) / 10) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').textContent = `${currentQIndex+1}/10`;
+        }
+
+        function endGame() {
+            document.body.classList.remove('focus-mode');
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            const totalTime = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(totalTime / 60);
+            const secs = totalTime % 60;
+            
+            // --- 4. REPORT CARD DATA POPULATION ---
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Get name from hidden input (which was set at start)
+            const studentName = formatStudentName(document.getElementById('student-identifier-input').value);
+            
+            document.getElementById('report-datetime').textContent = dateTimeStr;
+            document.getElementById('report-student-name').textContent = studentName;
+            document.getElementById('report-formula-name').textContent = selectedFormulaObj.name;
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('time-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function downloadReport() {
+            const element = document.getElementById('report-card');
+            html2canvas(element).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Formula_Report_${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+        
+        document.getElementById('answer-input').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") { event.preventDefault(); document.getElementById("action-btn").click(); }
+        });
+    </script>
+</body>
+</html>
