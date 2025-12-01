@@ -202,8 +202,12 @@
     </footer>
 
     <script>
-        // --- 1. LOGIN & IDENTIFICATION LOGIC (Refer 1x1.html) ---
-        
+        // --- 1. STRICT LOGIN ENFORCEMENT ---
+        // If not logged in, immediately redirect to index.html
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
+
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
@@ -219,10 +223,6 @@
                 const displayStudentName = formatStudentName(studentIdentifier);
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
-            } else {
-                // Laptop / Guest User (Fallback to prevent "Loading..." stuck)
-                nameInput.value = "Guest_Pilot";
-                document.getElementById('auto-student-name-display').textContent = "Guest Pilot";
             }
         });
 
@@ -494,8 +494,8 @@
             const now = new Date();
             const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            // Get name from hidden input (which was set at start)
-            const studentName = formatStudentName(document.getElementById('student-identifier-input').value);
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            const studentName = formatStudentName(studentIdentifier);
             
             document.getElementById('report-datetime').textContent = dateTimeStr;
             document.getElementById('report-student-name').textContent = studentName;
