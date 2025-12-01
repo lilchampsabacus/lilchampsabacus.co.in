@@ -80,6 +80,12 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div onclick="showPractice('level3')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-3xl">⚡</div>
+                        <h4 class="text-xl font-bold text-gray-800">3rd Level</h4>
+                        <p class="text-gray-400 text-sm mt-2">1 Digit &times; 1 Digit</p>
+                    </div>
+                    
                     <div onclick="showPractice('level4')" class="level-card cursor-pointer bg-white rounded-2xl p-8 shadow-md flex flex-col items-center text-center group">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-3xl">⚡</div>
                         <h4 class="text-xl font-bold text-gray-800">4th Level</h4>
@@ -119,6 +125,12 @@
                     <div class="w-24"></div> </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <a href="1x1.html" class="practice-card group-level3 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
+                        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4">🧿</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">1 Digit &times; 1 Digit</h4>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold badge-level-4 mb-4">3rd Level</span>
+                        <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">Start Practice &rarr;</span>
+                    </a>
 
                     <a href="2x1.html" class="practice-card group-level4 hidden bg-white rounded-2xl p-6 shadow-md flex flex-col items-center text-center group cursor-pointer no-underline">
                         <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4">⚡</div>
@@ -198,6 +210,7 @@
             practiceContainer.classList.add('fade-in');
 
             // 3. Update Title based on selection
+            if(groupClass === 'level3') levelTitle.innerText = "3rd Level Practice";
             if(groupClass === 'level4') levelTitle.innerText = "4th Level Practice";
             if(groupClass === 'level5') levelTitle.innerText = "5th Level Practice";
             if(groupClass === 'level6') levelTitle.innerText = "6th Level Practice";
@@ -227,3 +240,4 @@
     </script>
 </body>
 </html>
+
