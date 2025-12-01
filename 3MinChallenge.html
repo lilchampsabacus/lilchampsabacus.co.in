@@ -50,11 +50,11 @@
 
     <main class="flex-grow w-full p-4 flex flex-col items-center justify-center">
 
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (3 Mins)</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (1 Mins)</h2>
 
         <div id="config-panel" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl">
             <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 3 minutes!</p>
+                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 1 minutes!</p>
             </div>
             
             <div class="space-y-4">
@@ -84,7 +84,7 @@
                     <span id="display-student-name">Player</span>
                 </div>
                 <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-mono font-bold text-xl border-2 border-gray-300">
-                    ⏱️ <span id="timer-display">3:00</span>
+                    ⏱️ <span id="timer-display">1:00</span>
                 </div>
             </div>
 
@@ -268,7 +268,7 @@
                     do { b = getNum(dB); } while (b % 10 === 0); // Avoid round numbers for difficulty
                 }
 
-                // Quotient limits based on level (Approximations for valid 3min challenge)
+                // Quotient limits based on level (Approximations for valid 1min challenge)
                 let maxQ = 99;
                 if(level === '3÷1') maxQ = 111;
                 else if(level === '4÷1') maxQ = 1111;
