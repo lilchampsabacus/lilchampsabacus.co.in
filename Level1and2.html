@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Formula Practice - Li'l Champs Abacus</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* --- CORE STYLES --- */
+        body { touch-action: manipulation; } 
+
+        /* --- TABLE STYLES --- */
+        .sum-table {
+            width: 100%;
+            border-collapse: collapse; 
+            margin: 0 auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .number-cell {
+            text-align: center;
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            padding: 0.1rem 0;
+            border-bottom: 1px solid #e5e7eb; 
+            color: #374151;
+            line-height: 1.1;
+        }
+
+        .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
+        
+        .row-index {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-align: right;
+            padding-right: 10px;
+            width: 30px;
+            border: none;
+            vertical-align: middle;
+        }
+
+        .negative-number { color: #dc2626; } 
+
+        /* --- LAYOUT --- */
+        #question-area-box {
+            height: 40vh; 
+            overflow-y: auto; 
+            background: white;
+            border-bottom: 2px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            #question-area-box {
+                height: auto !important; 
+                min-height: 300px;
+                border: 2px solid #bfdbfe;
+                border-radius: 1rem;
+                overflow-y: visible !important; 
+                padding: 20px 0;
+            }
+            .number-cell { font-size: 2.5rem; } 
+        }
+
+        body.focus-mode header, 
+        body.focus-mode footer, 
+        body.focus-mode .config-section { 
+            display: none !important;
+        }
+        
+        body.focus-mode #game-ui {
+            display: flex !important;
+        }
+
+        .shake { animation: shake 0.3s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-yellow-200 text-black p-4 shadow-md z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full p-4 flex flex-col items-center config-section">
+        <h2 class="text-2xl font-extrabold text-blue-900 mb-4 text-center">Practice Sums 1st and 2nd Level</h2>
+
+        <section class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border-t-4 border-orange-400 text-center">
+            
+            <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
+                Pilot: <span id="auto-student-name-display">... Loading ...</span>
+            </div>
+
+            <div class="mb-4 text-left">
+                <label class="block text-sm font-bold text-gray-700 mb-2">1. Select Formula for practice</label>
+                <select id="category-select" onchange="populateFormulas()" class="w-full p-3 border-2 border-blue-200 rounded-lg bg-gray-50 text-lg font-semibold focus:border-blue-500 outline-none">
+                    <option value="">-- Choose Category --</option>
+                    <option value="1_sf_add">1. Small Friend (Plus)</option>
+                    <option value="2_sf_sub">2. Small Friend (Minus)</option>
+                    <option value="3_bf_add">3. Big Friend (Plus)</option>
+                    <option value="4_bf_sub">4. Big Friend (Minus)</option>
+                    <option value="5_mix_add">5. Mix/Combination (Plus)</option>
+                    <option value="6_mix_sub">6. Mix/Combination (Minus)</option>
+                </select>
+            </div>
+
+            <div class="mb-6 text-left">
+                <label class="block text-sm font-bold text-gray-700 mb-2">2. Select Formula</label>
+                <select id="formula-select" disabled class="w-full p-3 border-2 border-blue-200 rounded-lg bg-gray-50 text-lg font-semibold disabled:opacity-50 focus:border-blue-500 outline-none">
+                    <option value="">-- Select Category First --</option>
+                </select>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded mb-6 text-sm text-blue-800 text-center font-medium border border-blue-200">
+                Note: For formula help check your book or contact teacher.
+            </div>
+            
+            <button id="launch-btn" onclick="startGame()" disabled class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 rounded-full shadow-lg transition-transform transform active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                🚀 Launch Mission
+            </button>
+        </section>
+    </main>
+
+    <div id="game-ui" class="hidden w-full h-screen md:h-auto max-w-5xl mx-auto flex-col md:flex-row md:items-start md:justify-center md:gap-8 md:p-6 md:mt-10">
+        
+        <div class="w-full md:w-1/2 order-1">
+            <div id="question-area-box" class="shadow-sm md:shadow-lg bg-white">
+                <div id="question-container" class="w-full px-4">
+                    </div>
+            </div>
+            <div class="text-center mt-2 text-gray-400 text-xs font-bold uppercase">Question <span id="q-idx">1</span> / 10</div>
+        </div>
+
+        <div class="w-full md:w-1/2 order-2 p-4 flex flex-col justify-start">
+            
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm mb-4">
+                <label class="block text-blue-900 font-bold mb-2 text-center md:text-left">Enter Answer:</label>
+                <input type="number" id="answer-input" placeholder="?" class="w-full p-4 border-2 border-blue-300 rounded-lg text-center text-4xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-3 shadow-inner" inputmode="numeric" pattern="[0-9]*">
+                <div id="feedback-msg" class="h-6 text-center font-bold text-lg mb-2"></div>
+                <button id="action-btn" onclick="handleAction()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-lg shadow-md text-xl active:bg-blue-800">Check (Enter)</button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-orange-400">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
+                    <span id="progress-text" class="text-gray-500 font-bold text-xs">0/10</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="progress-bar" class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="report-area" class="hidden flex-grow flex justify-center items-center p-4">
+        <div id="report-card" class="bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl max-w-md w-full text-center">
+            
+            <div class="border-b border-gray-100 pb-4 mb-4">
+                <h2 class="text-2xl font-extrabold text-gray-700" id="report-title">Formula Practice</h2>
+                <p class="text-sm text-gray-500 mt-1" id="report-formula-name">Small Friend +4</p>
+            </div>
+
+            <h3 class="text-3xl font-black text-blue-800 mb-2">Mission Complete!</h3>
+            
+            <p class="text-center text-gray-500 mb-6 border-b pb-4">
+                <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
+            </p>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                    <p class="text-xs text-green-600 uppercase font-bold">Score</p>
+                    <p class="text-4xl font-black text-green-700"><span id="score-display">0</span>/10</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                    <p class="text-xs text-purple-600 uppercase font-bold">Time</p>
+                    <p class="text-4xl font-black text-purple-800" id="time-display">0:00</p>
+                </div>
+            </div>
+            
+            <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg">📥 Download Badge</button>
+            <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">🔄 Replay</button>
+        </div>
+    </section>
+
+    <footer class="bg-yellow-200 text-center p-3 mt-auto">
+        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
+    </footer>
+
+    <script>
+        // --- 1. LOGIN & IDENTIFICATION LOGIC ---
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html'; 
+        }
+
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') return 'Pilot';
