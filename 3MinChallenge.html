@@ -196,17 +196,49 @@
             const mode = opSelect.value;
             const level = diffSelect.value;
             let a, b, displayStr, ans;
-            const getNum = (d) => { if(d===1) return getRandomInt(2,9); return getRandomInt(Math.pow(10, d-1), Math.pow(10,d)-1); };
+
+            // Helper to get random ranges (used for divisors/multipliers)
+            const getNum = (d) => { 
+                if(d===1) return getRandomInt(2,9); 
+                return getRandomInt(Math.pow(10, d-1), Math.pow(10,d)-1); 
+            };
 
             if (mode === 'multiplication') {
                 const [dA, dB] = level.split('x').map(s => parseInt(s[0]));
-                a = getNum(dA); b = getNum(dB); ans = a * b; displayStr = `${a} × ${b}`;
+                a = getNum(dA); 
+                b = getNum(dB); 
+                ans = a * b; 
+                displayStr = `${a} × ${b}`;
             } else {
+                // --- UNIVERSAL DIVISION LOGIC ---
                 const [dA, dB] = level.split('÷').map(s => parseInt(s[0]));
-                if (dB === 1) b = getRandomInt(2, 9); else { do { b = getNum(dB); } while (b % 10 === 0); }
-                let maxQ = 99;
-                if(level === '3÷1') maxQ = 111; else if(level === '4÷1') maxQ = 1111; else if(level === '5÷1') maxQ = 11111;
-                let q = getRandomInt(11, maxQ); a = q * b; ans = q; displayStr = `${a} ÷ ${b}`;
+                
+                // 1. Generate Divisor (b)
+                if (dB === 1) {
+                    b = getRandomInt(2, 9);
+                } else {
+                    do { 
+                        b = getNum(dB); 
+                    } while (b % 10 === 0); // Avoid divisors ending in 0 (optional preference)
+                }
+
+                // 2. Define Strict Dividend Range (a) based on digits requested
+                // dA=3 -> 100 to 999
+                // dA=4 -> 1000 to 9999
+                // dA=5 -> 10000 to 99999
+                const minDividend = Math.pow(10, dA - 1);
+                const maxDividend = Math.pow(10, dA) - 1;
+
+                // 3. Calculate Valid Quotient Range to satisfy dividend digits
+                const minQ = Math.ceil(minDividend / b);
+                const maxQ = Math.floor(maxDividend / b);
+
+                // 4. Generate Quotient and Calculate Dividend
+                let q = getRandomInt(minQ, maxQ);
+                a = q * b;
+                ans = q;
+                
+                displayStr = `${a} ÷ ${b}`;
             }
             problemDisplay.textContent = displayStr;
             correctAnswer = ans;
