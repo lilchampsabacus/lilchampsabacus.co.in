@@ -126,6 +126,8 @@
                     <option value="1">2-Digit 10 Rows</option>
                     <option value="2">3-Digit 10 Rows</option>
                     <option value="3">1-Digit 10 Rows</option>
+					<option value="4">4-Digit 10 Rows</option>
+					<option value="5">5-Digit 10 Rows</option>
                 </select>
             </div>
             
@@ -291,7 +293,13 @@
                 if (optionValue === 3) { min = 1; max = 9; } 
                 else if (optionValue === 1) { 
                     if (i <= 2) { min = 55; max = 99; } else { min = 10; max = 99; }
-                } 
+                }
+				else if (optionValue === 4) { 
+                    if (i <= 2) { min = 5555; max = 9999; } else { min = 1000; max = 9999; }
+                } 	
+				else if (optionValue === 5) { 
+                    if (i <= 2) { min = 55555; max = 99999; } else { min = 10000; max = 99999; }
+                } 	
                 else if (optionValue === 2) { 
                     if (i <= 2) { min = 555; max = 999; } else { min = 100; max = 999; }
                 } else { min = 1; max = 9; }
@@ -480,7 +488,6 @@
             const now = new Date();
             document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             document.getElementById('report-student-name').textContent = formatStudentName(document.getElementById('student-identifier-input').value);
-            
             document.getElementById('report-correct').textContent = correctCount;
             document.getElementById('report-time-elapsed').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             document.getElementById('report-avg-time').textContent = `${(totalTime / TOTAL_SUMS).toFixed(2)}s`;
