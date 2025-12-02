@@ -7,37 +7,16 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="gamify.js" defer></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         html { scroll-padding-top: 50px; }
-        
-        /* Focus Mode Styles */
-        body.focus-mode {
-            background-color: #fbf0d9; /* Kindle Sepia */
-            color: #433422;
-        }
-        
-        /* Animations */
-        @keyframes flashGreen {
-            0% { background-color: #86efac; } /* Green-300 */
-            100% { background-color: white; }
-        }
-        @keyframes flashRed {
-            0% { background-color: #fca5a5; } /* Red-300 */
-            100% { background-color: white; }
-        }
-        
+        body.focus-mode { background-color: #fbf0d9; color: #433422; }
+        @keyframes flashGreen { 0% { background-color: #86efac; } 100% { background-color: white; } }
+        @keyframes flashRed { 0% { background-color: #fca5a5; } 100% { background-color: white; } }
         .flash-correct { animation: flashGreen 0.3s ease-out; }
         .flash-wrong { animation: flashRed 0.3s ease-out; }
-
-        /* Big Input */
-        .math-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3);
-        }
+        .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
     </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col font-sans">
@@ -50,11 +29,11 @@
 
     <main class="flex-grow w-full p-4 flex flex-col items-center justify-center">
 
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (1 Mins)</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (3 Mins)</h2>
 
         <div id="config-panel" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl">
             <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 1 minutes!</p>
+                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 3 minutes!</p>
             </div>
             
             <div class="space-y-4">
@@ -84,7 +63,7 @@
                     <span id="display-student-name">Player</span>
                 </div>
                 <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-mono font-bold text-xl border-2 border-gray-300">
-                    ⏱️ <span id="timer-display">1:00</span>
+                    ⏱️ <span id="timer-display">3:00</span>
                 </div>
             </div>
 
@@ -104,7 +83,6 @@
 
         <section id="results-panel" class="hidden mt-6">
             <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-                
                 <div class="text-center border-b border-gray-100 pb-2 mb-4">
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                         Speed Mastery
@@ -113,11 +91,9 @@
                 </div>
 
                 <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Report</h3>
-                
                 <p class="text-center text-gray-500 mb-6 border-b pb-4">
                     <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
                 </p>
-                
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
                         <p class="text-xs text-green-600 uppercase font-bold tracking-wider">Correct</p>
@@ -128,37 +104,20 @@
                         <p class="text-4xl font-black text-purple-800" id="final-solved">0</p>
                     </div>
                 </div>
-
                 <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
                     Save Badge (Download)
                 </button>
-                                
                 <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
                     🔄 Replay Mission
                 </button>
             </div>
         </section>
-
     </main>
-
-    <footer class="bg-yellow-200 text-center p-3 mt-auto">
-        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
-    </footer>
-
-    <div id="message-box" class="fixed top-10 left-1/2 transform -translate-x-1/2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg hidden z-50">
-        <p id="message-text" class="font-bold"></p>
-    </div>
+    <footer class="bg-yellow-200 text-center p-3 mt-auto"><p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p></footer>
 
     <script>
-        // --- Login Check ---
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'index.html'; 
-        }
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';
 
-        // --- UTILITIES ---
         function formatStudentName(identifier) {
             if (!identifier) return 'Student';
             const namePart = identifier.split('@')[0];
@@ -176,9 +135,8 @@
             });
         }
 
-        // --- VARIABLES ---
         let timerInterval;
-        let TOTAL_TIME = 60; 
+        let TOTAL_TIME = 180; // Changed to 3 Minutes (180s) based on filename
         let timeRemaining = TOTAL_TIME; 
         let isGameActive = false;
         let correctAnswer = 0;
@@ -186,9 +144,8 @@
         let correctCount = 0;
         let wrongCount = 0;
         let currentStreak = 0;
-        let problemHistory = new Set();
+        let mistakesLog = []; // NEW: To store wrong answers
 
-        // --- DOM ---
         const configPanel = document.getElementById('config-panel');
         const gamePanel = document.getElementById('game-panel');
         const resultsPanel = document.getElementById('results-panel');
@@ -197,7 +154,6 @@
         const opSelect = document.getElementById('operation-select');
         const diffSelect = document.getElementById('difficulty-select');
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (studentIdentifier) {
@@ -232,73 +188,39 @@
             const options = difficultyOptions[mode];
             diffSelect.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
         }
-
         opSelect.addEventListener('change', updateDifficultyOptions);
 
-        // --- MATH LOGIC ---
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
         function generateProblem() {
             const mode = opSelect.value;
             const level = diffSelect.value;
             let a, b, displayStr, ans;
-            
-            // Helper for digits
-            const getNum = (d) => {
-                if(d===1) return getRandomInt(2,9);
-                return getRandomInt(Math.pow(10, d-1), Math.pow(10,d)-1);
-            };
+            const getNum = (d) => { if(d===1) return getRandomInt(2,9); return getRandomInt(Math.pow(10, d-1), Math.pow(10,d)-1); };
 
-            // Generate
             if (mode === 'multiplication') {
-                const [dA, dB] = level.split('x').map(s => parseInt(s[0])); // extract digits
-                a = getNum(dA);
-                b = getNum(dB);
-                ans = a * b;
-                displayStr = `${a} × ${b}`;
+                const [dA, dB] = level.split('x').map(s => parseInt(s[0]));
+                a = getNum(dA); b = getNum(dB); ans = a * b; displayStr = `${a} × ${b}`;
             } else {
-                // Division Logic
                 const [dA, dB] = level.split('÷').map(s => parseInt(s[0]));
-                
-                // Divisor logic
-                if (dB === 1) b = getRandomInt(2, 9);
-                else {
-                    do { b = getNum(dB); } while (b % 10 === 0); // Avoid round numbers for difficulty
-                }
-
-                // Quotient limits based on level (Approximations for valid 1min challenge)
+                if (dB === 1) b = getRandomInt(2, 9); else { do { b = getNum(dB); } while (b % 10 === 0); }
                 let maxQ = 99;
-                if(level === '3÷1') maxQ = 111;
-                else if(level === '4÷1') maxQ = 1111;
-                else if(level === '5÷1') maxQ = 11111;
-                
-                let q = getRandomInt(11, maxQ);
-                a = q * b; // Dividend
-                ans = q;
-                displayStr = `${a} ÷ ${b}`;
+                if(level === '3÷1') maxQ = 111; else if(level === '4÷1') maxQ = 1111; else if(level === '5÷1') maxQ = 11111;
+                let q = getRandomInt(11, maxQ); a = q * b; ans = q; displayStr = `${a} ÷ ${b}`;
             }
-
             problemDisplay.textContent = displayStr;
             correctAnswer = ans;
         }
 
-        // --- GAMEPLAY ---
         function startGame() {
             isGameActive = true;
-            solvedCount = 0; correctCount = 0; wrongCount = 0; currentStreak = 0;
+            solvedCount = 0; correctCount = 0; wrongCount = 0; currentStreak = 0; mistakesLog = []; // Reset log
             timeRemaining = TOTAL_TIME;
-            
             configPanel.classList.add('hidden');
             gamePanel.classList.remove('hidden');
             resultsPanel.classList.add('hidden');
             document.querySelector('.back-link').classList.add('hidden');
-
-            answerInput.value = '';
-            answerInput.disabled = false;
-            answerInput.focus();
-            
+            answerInput.value = ''; answerInput.disabled = false; answerInput.focus();
             generateProblem();
             timerInterval = setInterval(updateTimer, 1000);
         }
@@ -308,22 +230,19 @@
             const m = Math.floor(timeRemaining / 60);
             const s = timeRemaining % 60;
             document.getElementById('timer-display').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-            
             if (timeRemaining <= 0) endGame();
         }
 
         function flashFeedback(isCorrect) {
             const panel = document.getElementById('game-panel');
             panel.classList.remove('flash-correct', 'flash-wrong');
-            void panel.offsetWidth; // Trigger reflow
-            
+            void panel.offsetWidth;
             if (isCorrect) panel.classList.add('flash-correct');
             else panel.classList.add('flash-wrong');
         }
 
         function checkAnswer(e) {
             if (e.key !== 'Enter' || !isGameActive) return;
-            
             const val = parseInt(answerInput.value);
             if (isNaN(val)) return;
 
@@ -331,24 +250,17 @@
             document.getElementById('solved-count').textContent = solvedCount;
 
             if (val === correctAnswer) {
-                correctCount++;
-                currentStreak++;
-                flashFeedback(true);
-                // Play simple ding if possible (optional)
+                correctCount++; currentStreak++; flashFeedback(true);
             } else {
-                wrongCount++;
-                currentStreak = 0;
-                flashFeedback(false);
+                wrongCount++; currentStreak = 0; flashFeedback(false);
+                // LOG MISTAKE
+                const problemText = problemDisplay.textContent;
+                mistakesLog.push(`${problemText} = ${val} (Ans: ${correctAnswer})`);
             }
 
-            // Update Streak UI
             const streakCont = document.getElementById('streak-container');
-            if (currentStreak > 1) {
-                streakCont.classList.remove('hidden');
-                document.getElementById('streak-count').textContent = currentStreak;
-            } else {
-                streakCont.classList.add('hidden');
-            }
+            if (currentStreak > 1) { streakCont.classList.remove('hidden'); document.getElementById('streak-count').textContent = currentStreak; }
+            else { streakCont.classList.add('hidden'); }
 
             answerInput.value = '';
             generateProblem();
@@ -357,34 +269,48 @@
         function endGame() {
             isGameActive = false;
             clearInterval(timerInterval);
-            
             gamePanel.classList.add('hidden');
             resultsPanel.classList.remove('hidden');
             
-            // Report Data
             const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('report-student-name').textContent = document.getElementById('display-student-name').textContent;
+            const timeFormatted = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('report-datetime').textContent = timeFormatted;
             
+            const studentName = document.getElementById('display-student-name').textContent;
+            document.getElementById('report-student-name').textContent = studentName;
             document.getElementById('final-correct').textContent = correctCount;
             document.getElementById('final-solved').textContent = solvedCount;
             
-            // Set Title
             const opText = opSelect.options[opSelect.selectedIndex].text.split(' ')[0];
             const diffText = diffSelect.options[diffSelect.selectedIndex].text;
-            document.getElementById('result-title-text').textContent = `${opText} (${diffText})`;
+            const CHALLENGE_NAME = `${opText} (${diffText})`;
+            document.getElementById('result-title-text').textContent = CHALLENGE_NAME;
 
-            // Celebration
-            if (correctCount > 0 && typeof window.lilChampUtils !== 'undefined') {
-                window.lilChampUtils.celebrate();
-                window.lilChampUtils.playCorrect();
+            // --- SEND DATA TO GOOGLE SHEET ---
+            const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
+            const accuracyVal = solvedCount > 0 ? Math.round((correctCount / solvedCount) * 100) + "%" : "0%";
+            
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
+
+            if(SCRIPT_URL.includes("script.google.com")) {
+                const payload = {
+                    challengeType: CHALLENGE_NAME,
+                    name: studentName,
+                    score: correctCount + "/" + solvedCount,
+                    timeTaken: Math.floor(TOTAL_TIME / 60) + " Mins",
+                    accuracy: accuracyVal,
+                    mistakes: mistakesString
+                };
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => console.log("Report sent!")).catch(err => console.error("Error:", err));
             }
         }
-
-        // Event Listeners
+        
         document.getElementById('start-button').addEventListener('click', startGame);
         answerInput.addEventListener('keydown', checkAnswer);
-
     </script>
 </body>
 </html>
