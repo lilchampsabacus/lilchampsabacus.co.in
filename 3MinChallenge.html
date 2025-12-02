@@ -29,11 +29,11 @@
 
     <main class="flex-grow w-full p-4 flex flex-col items-center justify-center">
 
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (3 Mins)</h2>
+        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (1 Mins)</h2>
 
         <div id="config-panel" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl">
             <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 3 minutes!</p>
+                <p class="text-gray-700 font-medium">🧠 Challenge: Solve as many as you can in 1 minutes!</p>
             </div>
             
             <div class="space-y-4">
@@ -63,7 +63,7 @@
                     <span id="display-student-name">Player</span>
                 </div>
                 <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-mono font-bold text-xl border-2 border-gray-300">
-                    ⏱️ <span id="timer-display">3:00</span>
+                    ⏱️ <span id="timer-display">1:00</span>
                 </div>
             </div>
 
@@ -87,7 +87,7 @@
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                         Speed Mastery
                     </span>
-                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="result-title-text">3-Minute Challenge</h2>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="result-title-text">1-Minute Challenge</h2>
                 </div>
 
                 <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Report</h3>
@@ -136,7 +136,7 @@
         }
 
         let timerInterval;
-        let TOTAL_TIME = 180; // Changed to 3 Minutes (180s) based on filename
+        let TOTAL_TIME = 60; // Changed to 1 Minutes (60s) based on filename
         let timeRemaining = TOTAL_TIME; 
         let isGameActive = false;
         let correctAnswer = 0;
