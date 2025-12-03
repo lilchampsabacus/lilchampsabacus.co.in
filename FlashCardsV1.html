@@ -294,26 +294,40 @@
 
         <!-- SCREEN: RESULTS -->
         <div id="result-screen" class="hidden bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-lg text-center border-b-8 border-green-400 card-enter mt-4">
-            <div id="new-record-msg" class="hidden mb-4">
-                <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-bold border border-yellow-400 animate-bounce inline-block">
-                    <i class="fa-solid fa-crown mr-1"></i> New High Score!
-                </span>
-            </div>
+    <div id="new-record-msg" class="hidden mb-4">
+        <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-bold border border-yellow-400 animate-bounce inline-block">
+            <i class="fa-solid fa-crown mr-1"></i> New High Score!
+        </span>
+    </div>
 
-            <i class="fa-solid fa-trophy text-5xl md:text-6xl text-yellow-400 mb-4 floating-title"></i>
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Great Job!</h2>
-            <p class="text-gray-500 mb-6">Session Complete</p>
-            
-            <div class="bg-blue-50 rounded-xl p-6 mb-8">
-                <div class="text-xs md:text-sm text-gray-500 uppercase tracking-wide font-bold">Final Score</div>
-                <div class="text-5xl md:text-6xl font-bold text-blue-600 my-2"><span id="final-score">0</span><span class="text-2xl md:text-3xl text-gray-400">/20</span></div>
-                <div id="feedback-text" class="text-base md:text-lg font-semibold text-blue-400">Master of the beads!</div>
+    <i class="fa-solid fa-trophy text-5xl md:text-6xl text-yellow-400 mb-4 floating-title"></i>
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Great Job!</h2>
+    
+    <p class="text-gray-400 text-sm mb-6 font-semibold">
+        <i class="fa-regular fa-calendar mr-1"></i> <span id="report-date">Loading...</span>
+    </p>
+    
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <div class="text-xs text-blue-400 uppercase tracking-wide font-bold">Score</div>
+            <div class="text-3xl md:text-4xl font-bold text-blue-600">
+                <span id="final-score">0</span><span class="text-lg text-gray-400">/20</span>
             </div>
-
-            <button onclick="location.reload()" class="w-full py-3 md:py-4 rounded-full bg-green-500 hover:bg-green-600 text-white font-bold text-xl shadow-lg transform hover:scale-105 transition-all">
-                Practice Again
-            </button>
         </div>
+        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
+            <div class="text-xs text-purple-400 uppercase tracking-wide font-bold">Difficulty</div>
+            <div class="text-3xl md:text-4xl font-bold text-purple-600">
+                <span id="report-digits">0</span> <span class="text-base">Digits</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedback-text" class="text-base md:text-lg font-semibold text-gray-600 mb-8">Master of the beads!</div>
+
+    <button onclick="location.reload()" class="w-full py-3 md:py-4 rounded-full bg-green-500 hover:bg-green-600 text-white font-bold text-xl shadow-lg transform hover:scale-105 transition-all">
+        Practice Again
+    </button>
+</div>
 
     </main>
 
@@ -668,29 +682,44 @@
         });
 
         function endGame() {
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-            document.getElementById('final-score').innerText = state.score;
-            
-            // Check and Save High Score (Only in Quiz mode usually, but logic works for both)
-            if (state.mode === 'quiz') {
-                const isNewRecord = saveHighScore(state.digits, state.score);
-                if(isNewRecord) {
-                    document.getElementById('new-record-msg').classList.remove('hidden');
-                    createConfetti(); // Extra confetti for high score
-                } else {
-                    document.getElementById('new-record-msg').classList.add('hidden');
-                }
-            }
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    // 1. Set Score
+    document.getElementById('final-score').innerText = state.score;
 
-            const msg = document.getElementById('feedback-text');
-            const pct = state.score / state.totalCards;
-            if(pct === 1) msg.innerText = "Perfect Score! You are a Soroban Master! 🏆";
-            else if(pct > 0.8) msg.innerText = "Amazing work! Almost perfect! 🌟";
-            else if(pct > 0.5) msg.innerText = "Good practice! Keep going! 👍";
-            else msg.innerText = "Keep practicing, you'll get it! 💪";
+    // 2. Set Digits (NEW)
+    document.getElementById('report-digits').innerText = state.digits;
+
+    // 3. Set Date and Time (NEW)
+    const now = new Date();
+    const dateOptions = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    };
+    document.getElementById('report-date').innerText = now.toLocaleString('en-US', dateOptions);
+    
+    // Check and Save High Score
+    if (state.mode === 'quiz') {
+        const isNewRecord = saveHighScore(state.digits, state.score);
+        if(isNewRecord) {
+            document.getElementById('new-record-msg').classList.remove('hidden');
+            createConfetti(); 
+        } else {
+            document.getElementById('new-record-msg').classList.add('hidden');
         }
+    }
 
+    const msg = document.getElementById('feedback-text');
+    const pct = state.score / state.totalCards;
+    if(pct === 1) msg.innerText = "Perfect Score! You are a Soroban Master! 🏆";
+    else if(pct > 0.8) msg.innerText = "Amazing work! Almost perfect! 🌟";
+    else if(pct > 0.5) msg.innerText = "Good practice! Keep going! 👍";
+    else msg.innerText = "Keep practicing, you'll get it! 💪";
+}
         function createConfetti() {
             for(let i=0; i<30; i++) {
                 const conf = document.createElement('div');
@@ -705,3 +734,4 @@
     </script>
 </body>
 </html>
+
