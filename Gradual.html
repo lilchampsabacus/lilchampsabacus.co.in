@@ -128,6 +128,7 @@
 
                     <div class="space-y-3 p-4 bg-gray-50 rounded-lg">
                         <p class="text-sm font-medium text-gray-700"><strong>Student:</strong> <span id="report-name" class="font-semibold text-gray-900"></span></p>
+                         <p class="text-sm font-medium text-gray-700"><strong>Date & Time:</strong> <span id="report-datetime" class="font-semibold text-gray-900"></span></p>
                         <p class="text-sm font-medium text-gray-700"><strong>Mode:</strong> <span id="report-mode" class="font-semibold text-gray-900"></span></p>
                         <p class="text-sm font-medium text-gray-700"><strong>Total Steps:</strong> <span class="font-semibold text-gray-900">100</span></p>
                         <p class="text-sm font-medium text-gray-700"><strong>Time Taken:</strong> <span id="report-time" class="font-semibold text-gray-900"></span></p>
@@ -293,27 +294,32 @@
         });
 
         function generateReport() {
-            const endTime = Date.now();
-            const timeDifference = endTime - startTime; 
+              const endTime = Date.now();
+              const timeDifference = endTime - startTime; 
+              const totalSeconds = Math.round(timeDifference / 1000);
+              const minutes = Math.floor(totalSeconds / 60);
+              const seconds = totalSeconds % 60;
+              const timeString = `${minutes} minutes and ${seconds} seconds`;
 
-            const totalSeconds = Math.round(timeDifference / 1000);
-            const minutes = Math.floor(totalSeconds / 60);
-            const seconds = totalSeconds % 60;
-            
-            const timeString = `${minutes} minutes and ${seconds} seconds`;
+              // --- NEW CODE: Get current Date and Time ---
+              const now = new Date();
+              // This formats it nicely based on local settings (e.g., 03/12/2025, 10:00:00 am)
+              const dateTimeString = now.toLocaleString(); 
+              document.getElementById('report-datetime').textContent = dateTimeString;
+              // -------------------------------------------
 
-            document.getElementById('report-time').textContent = timeString;
-            
-            console.log('--- FINAL REPORT ---');
-            console.log(`Student: ${studentName}`);
-            console.log(`Mode: ${mode}`);
-            console.log(`Time Taken: ${timeString}`);
-            console.log('--- END REPORT ---');
-            
-            exerciseScreen.style.display = 'none';
-            reportScreen.style.display = 'block';
-        }
-
+              document.getElementById('report-time').textContent = timeString;
+    
+              console.log('--- FINAL REPORT ---');
+              console.log(`Student: ${studentName}`);
+              console.log(`Date: ${dateTimeString}`);
+              console.log(`Mode: ${mode}`);
+              console.log(`Time Taken: ${timeString}`);
+              console.log('--- END REPORT ---');
+    
+              exerciseScreen.style.display = 'none';
+              reportScreen.style.display = 'block';
+     }
         // --- 4. Initial Check and Setup ---
         // Ensure the screens are hidden when the page loads
         document.addEventListener('DOMContentLoaded', () => {
@@ -325,4 +331,5 @@
     </script>
 </body>
 </html>
+
 
