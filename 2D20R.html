@@ -181,7 +181,8 @@
             for (let i = 1; i <= 10; i++) {
                 let min, max;
                 if (optionValue === 3) { // 1 Digit
-                    min = 1; max = 9; 
+                    if (i <= 2) { min = 6; max = 9; } 
+        				else { min = 1; max = 9; }
                 } 
                 else if (optionValue === 1) { // 2 Digits
                     if (i <= 2) { min = 55; max = 99; } else { min = 10; max = 99; }
