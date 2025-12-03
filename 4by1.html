@@ -121,7 +121,7 @@
             <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
                 <div class="flex justify-between items-center mb-2">
                     <div class="text-gray-600 font-semibold">Progress</div>
-                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden">
+                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden" style="display:none">
                         🔥 Streak: <span id="streak-count">0</span>
                     </div>
                 </div>
@@ -349,7 +349,7 @@
             setupInputInteraction();
         }
 
-        // --- INTERACTION LOGIC (IMMEDIATE FEEDBACK) ---
+        // --- UPDATED INTERACTION LOGIC (NO FEEDBACK MODE) ---
         function setupInputInteraction() {
             const inputs = document.querySelectorAll('.answer-input');
             
@@ -357,30 +357,19 @@
                 input.addEventListener('input', (e) => {
                     const idx = parseInt(input.getAttribute('data-index'));
                     const val = parseInt(input.value);
-                    const correctVal = sumsData[idx].quotient; // CHECKING QUOTIENT
                     
-                    // Immediate Feedback
+                    // Remove any previous coloring logic
+                    input.classList.remove('correct-answer', 'wrong-answer');
+
+                    // Save the answer regardless of whether it is right or wrong
                     if (!isNaN(val)) {
                         sumsData[idx].studentAnswer = val;
-                        
-                        // Only validate when input length matches expected length to avoid premature red flags
-                        if (String(val).length >= String(correctVal).length) {
-                             if (val === correctVal) {
-                                input.classList.add('correct-answer');
-                                input.classList.remove('wrong-answer');
-                                updateStreak(true);
-                             } else {
-                                input.classList.add('wrong-answer');
-                                input.classList.remove('correct-answer');
-                                updateStreak(false);
-                             }
-                             updateProgress();
-                        }
                     } else {
-                        // Empty
-                        input.classList.remove('correct-answer', 'wrong-answer');
                         sumsData[idx].studentAnswer = null;
                     }
+                    
+                    // Update progress bar based on filled answers
+                    updateProgress();
                 });
 
                 // Enter Key Navigation
@@ -389,19 +378,21 @@
                         e.preventDefault();
                         const nextInput = inputs[parseInt(input.getAttribute('data-index')) + 1];
                         if (nextInput) {
+                            // Check if next input is in current slide
                             if (nextInput.closest('.slide-container').classList.contains('active')) {
                                 nextInput.focus();
                             } else {
+                                // If next input is in next slide, trigger next slide logic
                                 changeSlide(1);
                             }
                         } else {
+                            // End of test - focus submit button
                             document.getElementById('submit-button').focus();
                         }
                     }
                 });
             });
         }
-
         function updateStreak(isCorrect) {
             const streakDisplay = document.getElementById('streak-display');
             const streakCount = document.getElementById('streak-count');
@@ -599,6 +590,7 @@
     </script>
 </body>
 </html>
+
 
 
 
