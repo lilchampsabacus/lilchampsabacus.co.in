@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Speed Math Mission</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
@@ -27,7 +27,7 @@
         </div>
     </header>
 
-    <main class="flex-grow w-full p-4 flex flex-col items-center justify-center">
+    <main class="flex-grow w-full p-4 flex flex-col items-center justify-start pt-8 pb-96 md:justify-center md:pt-4 md:pb-4">
 
         <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">Speed Math Mission (1 Mins)</h2>
 
@@ -282,9 +282,9 @@
             document.getElementById('solved-count').textContent = solvedCount;
 
             if (val === correctAnswer) {
-                correctCount++; currentStreak++; flashFeedback(true);
+                correctCount++; currentStreak++; 
             } else {
-                wrongCount++; currentStreak = 0; flashFeedback(false);
+                wrongCount++; currentStreak = 0; 
                 // LOG MISTAKE
                 const problemText = problemDisplay.textContent;
                 mistakesLog.push(`${problemText} = ${val} (Ans: ${correctAnswer})`);
