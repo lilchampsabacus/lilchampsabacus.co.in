@@ -14,28 +14,29 @@
         body.focus-mode { background-color: #fbf0d9; color: #433422; }
         .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
         
-        /* --- PRESSURE PULSE ANIMATION --- */
-        @keyframes pressurePulse {
-            0% { background-color: #fee2e2; }   /* Red-100 */
-            50% { background-color: #f87171; }  /* Red-400 (Intense) */
-            100% { background-color: #fee2e2; } /* Red-100 */
+        /* --- NEW PRESSURE ANIMATION (OVERLAY) --- */
+        @keyframes panicPulse {
+            0% { opacity: 0; }
+            50% { opacity: 0.6; } /* 60% Red Tint - Very Visible */
+            100% { opacity: 0; }
         }
         
-        /* This class will be added to BODY when time <= 3s */
-        .pressure-alert {
-            animation: pressurePulse 0.5s infinite ease-in-out !important; /* Fast pulse */
+        .animate-panic {
+            animation: panicPulse 0.8s infinite ease-in-out; /* Fast heartbeat pulse */
         }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans transition-colors duration-300">
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans relative">
     
+    <div id="pressure-overlay" class="fixed inset-0 bg-red-600 z-50 pointer-events-none hidden mix-blend-multiply"></div>
+
     <header class="bg-red-100 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl sm:text-2xl font-bold text-red-900">Li'l Champs Abacus Academy</h1>
         </div>
     </header>
 
-    <main class="flex-grow w-full p-4 flex flex-col items-center justify-start pt-8 pb-96 md:justify-center md:pt-4 md:pb-4">
+    <main class="flex-grow w-full p-4 flex flex-col items-center justify-start pt-8 pb-96 md:justify-center md:pt-4 md:pb-4 z-0">
 
         <h2 class="text-3xl font-extrabold text-red-800 mb-6 text-center back-link">Can you handle PRESSURE?</h2>
 
@@ -64,7 +65,7 @@
             </div>
         </div>
 
-        <div id="game-panel" class="hidden max-w-lg w-full bg-white p-6 rounded-2xl shadow-2xl border-4 border-transparent transition-colors">
+        <div id="game-panel" class="hidden max-w-lg w-full bg-white p-6 rounded-2xl shadow-2xl border-4 border-transparent transition-colors z-10 relative">
             
             <div class="flex justify-between items-center mb-6">
                 <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-bold shadow-sm">
@@ -88,7 +89,7 @@
             <p class="text-center text-gray-400 text-sm mt-4 font-medium">Auto-skips in 10s...</p>
         </div>
 
-        <section id="results-panel" class="hidden mt-6">
+        <section id="results-panel" class="hidden mt-6 relative z-10">
             <div id="report-card" class="max-w-fit w-full bg-white border-4 border-red-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
                 <div class="text-center border-b border-gray-100 pb-2 mb-4">
                     <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
@@ -162,7 +163,6 @@
         let isGameActive = false;
         let correctAnswer = 0;
         
-        // Stats
         let correctCount = 0;
         let wrongCount = 0;
         let skippedCount = 0;
@@ -175,6 +175,7 @@
         const answerInput = document.getElementById('answer-input');
         const opSelect = document.getElementById('operation-select');
         const diffSelect = document.getElementById('difficulty-select');
+        const pressureOverlay = document.getElementById('pressure-overlay'); // Get Overlay
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
@@ -256,8 +257,9 @@
         }
 
         function loadNextQuestion() {
-            // *** STOP PRESSURE ALERT BEFORE NEXT QUESTION ***
-            document.body.classList.remove('pressure-alert');
+            // *** HIDE OVERLAY FOR NEXT QUESTION ***
+            pressureOverlay.classList.add('hidden');
+            pressureOverlay.classList.remove('animate-panic');
 
             if (currentQuestionIndex >= MAX_QUESTIONS) {
                 endGame();
@@ -285,9 +287,10 @@
             currentQuestionTime--;
             document.getElementById('timer-display').textContent = currentQuestionTime;
             
-            // *** TRIGGER PULSATING RED BACKGROUND AT 3 SECONDS ***
+            // *** SHOW OVERLAY AT 3 SECONDS ***
             if (currentQuestionTime <= 3) {
-                document.body.classList.add('pressure-alert');
+                pressureOverlay.classList.remove('hidden');
+                pressureOverlay.classList.add('animate-panic');
             }
 
             if (currentQuestionTime <= 0) {
@@ -316,8 +319,9 @@
         }
 
         function endGame() {
-            // Clean up alert
-            document.body.classList.remove('pressure-alert');
+            // Remove overlay
+            pressureOverlay.classList.add('hidden');
+            pressureOverlay.classList.remove('animate-panic');
             
             isGameActive = false;
             clearInterval(questionTimerInterval);
