@@ -14,14 +14,16 @@
         body.focus-mode { background-color: #fbf0d9; color: #433422; }
         .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
         
-        /* --- NEW WARNING ANIMATION --- */
-        @keyframes pulseRedBackground {
-            0% { background-color: #fee2e2; }   /* Light Red */
-            50% { background-color: #fca5a5; }  /* Intense Red */
-            100% { background-color: #fee2e2; } /* Light Red */
+        /* --- PRESSURE PULSE ANIMATION --- */
+        @keyframes pressurePulse {
+            0% { background-color: #fee2e2; }   /* Red-100 */
+            50% { background-color: #f87171; }  /* Red-400 (Intense) */
+            100% { background-color: #fee2e2; } /* Red-100 */
         }
-        .timer-warning {
-            animation: pulseRedBackground 1s infinite ease-in-out;
+        
+        /* This class will be added to BODY when time <= 3s */
+        .pressure-alert {
+            animation: pressurePulse 0.5s infinite ease-in-out !important; /* Fast pulse */
         }
     </style>
 </head>
@@ -254,8 +256,8 @@
         }
 
         function loadNextQuestion() {
-            // *** CRITICAL: REMOVE RED FLASH BEFORE NEXT QUESTION STARTS ***
-            document.body.classList.remove('timer-warning');
+            // *** STOP PRESSURE ALERT BEFORE NEXT QUESTION ***
+            document.body.classList.remove('pressure-alert');
 
             if (currentQuestionIndex >= MAX_QUESTIONS) {
                 endGame();
@@ -283,9 +285,9 @@
             currentQuestionTime--;
             document.getElementById('timer-display').textContent = currentQuestionTime;
             
-            // *** NEW: Add red background warning at 3 seconds ***
+            // *** TRIGGER PULSATING RED BACKGROUND AT 3 SECONDS ***
             if (currentQuestionTime <= 3) {
-                document.body.classList.add('timer-warning');
+                document.body.classList.add('pressure-alert');
             }
 
             if (currentQuestionTime <= 0) {
@@ -314,8 +316,8 @@
         }
 
         function endGame() {
-            // Clean up any remaining flash
-            document.body.classList.remove('timer-warning');
+            // Clean up alert
+            document.body.classList.remove('pressure-alert');
             
             isGameActive = false;
             clearInterval(questionTimerInterval);
