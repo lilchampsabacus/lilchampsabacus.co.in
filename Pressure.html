@@ -13,14 +13,23 @@
         html { scroll-padding-top: 50px; }
         body.focus-mode { background-color: #fbf0d9; color: #433422; }
         .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
-        /* Removed Flash Animations as per request to hide immediate feedback */
+        
+        /* --- NEW WARNING ANIMATION --- */
+        @keyframes pulseRedBackground {
+            0% { background-color: #fee2e2; }   /* Light Red */
+            50% { background-color: #fca5a5; }  /* Intense Red */
+            100% { background-color: #fee2e2; } /* Light Red */
+        }
+        .timer-warning {
+            animation: pulseRedBackground 1s infinite ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans transition-colors duration-300">
     
-    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+    <header class="bg-red-100 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-red-900">Li'l Champs Abacus Academy</h1>
         </div>
     </header>
 
@@ -66,7 +75,7 @@
 
             <div class="flex justify-between items-center mb-4 px-2">
                 <span class="text-gray-500 font-bold text-sm">Player: <span id="display-student-name" class="text-gray-800">Student</span></span>
-                </div>
+            </div>
 
             <div id="problem-display" class="text-6xl font-mono font-black text-center text-gray-800 py-8 bg-gray-50 rounded-xl border-2 border-gray-100 mb-6">
                 Ready?
@@ -146,7 +155,7 @@
         let MAX_QUESTIONS = 20;
         
         let currentQuestionTime = TIME_PER_QUESTION; 
-        let currentQuestionIndex = 0; // 0 to 19
+        let currentQuestionIndex = 0; 
         
         let isGameActive = false;
         let correctAnswer = 0;
@@ -232,7 +241,6 @@
 
         function startGame() {
             isGameActive = true;
-            // Reset counters
             correctCount = 0; wrongCount = 0; skippedCount = 0; 
             currentQuestionIndex = 0;
             mistakesLog = [];
@@ -242,35 +250,32 @@
             resultsPanel.classList.add('hidden');
             document.querySelector('.back-link').classList.add('hidden');
             
-            // Start First Question
             loadNextQuestion();
         }
 
         function loadNextQuestion() {
+            // *** CRITICAL: REMOVE RED FLASH BEFORE NEXT QUESTION STARTS ***
+            document.body.classList.remove('timer-warning');
+
             if (currentQuestionIndex >= MAX_QUESTIONS) {
                 endGame();
                 return;
             }
 
-            // Update Question Number UI
             currentQuestionIndex++;
             document.getElementById('q-current').textContent = currentQuestionIndex;
             document.getElementById('q-total').textContent = MAX_QUESTIONS;
 
-            // Generate Math
             generateProblem();
             
-            // Reset Input
             answerInput.value = ''; 
             answerInput.disabled = false; 
             answerInput.focus();
 
-            // Reset Timer
             clearInterval(questionTimerInterval);
             currentQuestionTime = TIME_PER_QUESTION;
             document.getElementById('timer-display').textContent = currentQuestionTime;
 
-            // Start Timer
             questionTimerInterval = setInterval(updateQuestionTimer, 1000);
         }
 
@@ -278,8 +283,12 @@
             currentQuestionTime--;
             document.getElementById('timer-display').textContent = currentQuestionTime;
             
+            // *** NEW: Add red background warning at 3 seconds ***
+            if (currentQuestionTime <= 3) {
+                document.body.classList.add('timer-warning');
+            }
+
             if (currentQuestionTime <= 0) {
-                // Time up! Count as Skipped
                 clearInterval(questionTimerInterval);
                 skippedCount++;
                 mistakesLog.push(`${problemDisplay.textContent} = SKIPPED (Ans: ${correctAnswer})`);
@@ -292,10 +301,8 @@
             const val = parseInt(answerInput.value);
             if (isNaN(val)) return;
 
-            // Stop timer for this question since user submitted
             clearInterval(questionTimerInterval);
 
-            // Logic: Just record, NO FEEDBACK
             if (val === correctAnswer) {
                 correctCount++;
             } else {
@@ -303,11 +310,13 @@
                 mistakesLog.push(`${problemDisplay.textContent} = ${val} (Ans: ${correctAnswer})`);
             }
 
-            // Immediately jump to next
             loadNextQuestion();
         }
 
         function endGame() {
+            // Clean up any remaining flash
+            document.body.classList.remove('timer-warning');
+            
             isGameActive = false;
             clearInterval(questionTimerInterval);
             
@@ -321,7 +330,6 @@
             const studentName = document.getElementById('display-student-name').textContent;
             document.getElementById('report-student-name').textContent = studentName;
             
-            // Fill Report Data
             document.getElementById('final-correct').textContent = correctCount;
             document.getElementById('final-wrong').textContent = wrongCount;
             document.getElementById('final-skipped').textContent = skippedCount;
@@ -332,7 +340,6 @@
             const CHALLENGE_NAME = `PRESSURE: ${opText} (${diffText})`;
             document.getElementById('result-title-text').textContent = CHALLENGE_NAME;
 
-            // --- SEND DATA TO GOOGLE SHEET ---
             const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
             const accuracyVal = Math.round((correctCount / MAX_QUESTIONS) * 100) + "%";
             
@@ -359,5 +366,4 @@
         answerInput.addEventListener('keydown', checkAnswer);
     </script>
 </body>
-
 </html>
