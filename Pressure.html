@@ -210,6 +210,9 @@
             const mode = opSelect.value;
             const options = difficultyOptions[mode];
             diffSelect.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+            if (mode === 'multiplication') {
+                diffSelect.value = '2x1';
+            }
         }
         opSelect.addEventListener('change', updateDifficultyOptions);
 
@@ -373,4 +376,5 @@
     </script>
 </body>
 </html>
+
 
