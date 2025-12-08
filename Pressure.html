@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pressure Challenge</title>
+    
+    <link rel="stylesheet" href="elegant-theme.css">
+    <script src="gamify.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html { scroll-padding-top: 50px; }
+        body.focus-mode { background-color: #fbf0d9; color: #433422; }
+        .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
+        /* Removed Flash Animations as per request to hide immediate feedback */
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+    
+    <header class="bg-red-100 text-black p-4 shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold text-red-900">Li'l Champs Abacus Academy</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full p-4 flex flex-col items-center justify-start pt-8 pb-96 md:justify-center md:pt-4 md:pb-4">
+
+        <h2 class="text-3xl font-extrabold text-red-800 mb-6 text-center back-link">Can you handle PRESSURE?</h2>
+
+        <div id="config-panel" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl">
+            <div class="mb-6 bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                <p class="text-gray-700 font-medium">🔥 Rule: 20 Sums. You get exactly 10 seconds per sum. Keep moving!</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Operation</label>
+                    <select id="operation-select" class="w-full p-3 border-2 border-gray-300 rounded-lg font-semibold text-lg focus:border-red-500">
+                        <option value="multiplication">Multiplication (×)</option>
+                        <option value="division">Division (÷)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Difficulty Level</label>
+                    <select id="difficulty-select" class="w-full p-3 border-2 border-gray-300 rounded-lg font-semibold text-lg focus:border-red-500">
+                        </select>
+                </div>
+
+                <button id="start-button" class="w-full py-4 bg-red-600 text-white font-bold text-xl rounded-xl shadow-lg hover:bg-red-700 transition-transform transform active:scale-95 disabled:opacity-50" disabled>
+                    🚀 Start Pressure Test
+                </button>
+            </div>
+        </div>
+
+        <div id="game-panel" class="hidden max-w-lg w-full bg-white p-6 rounded-2xl shadow-2xl border-4 border-transparent transition-colors">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-bold shadow-sm">
+                    Q: <span id="q-current">1</span> / <span id="q-total">20</span>
+                </div>
+                <div class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-mono font-bold text-xl border-2 border-red-200">
+                    ⏱️ <span id="timer-display">10</span>s
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-4 px-2">
+                <span class="text-gray-500 font-bold text-sm">Player: <span id="display-student-name" class="text-gray-800">Student</span></span>
+                </div>
+
+            <div id="problem-display" class="text-6xl font-mono font-black text-center text-gray-800 py-8 bg-gray-50 rounded-xl border-2 border-gray-100 mb-6">
+                Ready?
+            </div>
+
+            <input type="number" id="answer-input" placeholder="?" class="math-input w-full p-4 text-4xl text-center font-bold border-2 border-blue-300 rounded-xl text-blue-900 placeholder-gray-300" autocomplete="off">
+            
+            <p class="text-center text-gray-400 text-sm mt-4 font-medium">Auto-skips in 10s...</p>
+        </div>
+
+        <section id="results-panel" class="hidden mt-6">
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-red-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                        Pressure Test
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="result-title-text">Result</h2>
+                </div>
+
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Report</h3>
+                <p class="text-center text-gray-500 mb-6 border-b pb-4">
+                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
+                </p>
+                
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-green-50 p-3 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-xs text-green-600 uppercase font-bold tracking-wider">Correct</p>
+                        <p class="text-3xl font-black text-green-700" id="final-correct">0</p>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-xl border-2 border-red-100 text-center">
+                        <p class="text-xs text-red-600 uppercase font-bold tracking-wider">Wrong</p>
+                        <p class="text-3xl font-black text-red-700" id="final-wrong">0</p>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-xl border-2 border-yellow-100 text-center">
+                        <p class="text-xs text-yellow-600 uppercase font-bold tracking-wider">Skipped</p>
+                        <p class="text-3xl font-black text-yellow-700" id="final-skipped">0</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-4">
+                     <p class="text-sm font-bold text-gray-500">Total Score: <span id="final-score-fraction">0/20</span></p>
+                </div>
+
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+                    Save Badge (Download)
+                </button>
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
+                    🔄 Replay Mission
+                </button>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-red-100 text-center p-3 mt-auto"><p class="text-sm font-semibold text-red-900">Contact: 9730482620</p></footer>
+
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';
+
+        function formatStudentName(identifier) {
+            if (!identifier) return 'Student';
+            const namePart = identifier.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        }
+
+        function downloadReport() {
+            const reportElement = document.getElementById('report-card');
+            const name = document.getElementById('report-student-name').textContent;
+            html2canvas(reportElement, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Pressure_Report_${name.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        let questionTimerInterval;
+        let TIME_PER_QUESTION = 10; 
+        let MAX_QUESTIONS = 20;
+        
+        let currentQuestionTime = TIME_PER_QUESTION; 
+        let currentQuestionIndex = 0; // 0 to 19
+        
+        let isGameActive = false;
+        let correctAnswer = 0;
+        
+        // Stats
+        let correctCount = 0;
+        let wrongCount = 0;
+        let skippedCount = 0;
+        let mistakesLog = []; 
+
+        const configPanel = document.getElementById('config-panel');
+        const gamePanel = document.getElementById('game-panel');
+        const resultsPanel = document.getElementById('results-panel');
+        const problemDisplay = document.getElementById('problem-display');
+        const answerInput = document.getElementById('answer-input');
+        const opSelect = document.getElementById('operation-select');
+        const diffSelect = document.getElementById('difficulty-select');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            if (studentIdentifier) {
+                document.getElementById('start-button').disabled = false;
+                document.getElementById('display-student-name').textContent = formatStudentName(studentIdentifier);
+            }
+            updateDifficultyOptions();
+        });
+
+        const difficultyOptions = {
+            multiplication: [
+                { value: '1x1', label: '1-Digit × 1-Digit' },
+                { value: '2x1', label: '2-Digit × 1-Digit' },
+                { value: '3x1', label: '3-Digit × 1-Digit' },
+                { value: '4x1', label: '4-Digit × 1-Digit' },
+                { value: '5x1', label: '5-Digit × 1-Digit' },
+                { value: '2x2', label: '2-Digit × 2-Digit' },
+                { value: '3x2', label: '3-Digit × 2-Digit' },
+            ],
+            division: [
+                { value: '3÷1', label: '3-Digit ÷ 1-Digit' },
+                { value: '4÷1', label: '4-Digit ÷ 1-Digit' },
+                { value: '5÷1', label: '5-Digit ÷ 1-Digit' },
+                { value: '4÷2', label: '4-Digit ÷ 2-Digit' },
+                { value: '5÷2', label: '5-Digit ÷ 2-Digit' },
+                { value: '5÷3', label: '5-Digit ÷ 3-Digit' },
+            ]
+        };
+
+        function updateDifficultyOptions() {
+            const mode = opSelect.value;
+            const options = difficultyOptions[mode];
+            diffSelect.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+        }
+        opSelect.addEventListener('change', updateDifficultyOptions);
+
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function generateProblem() {
+            const mode = opSelect.value;
+            const level = diffSelect.value;
+            let a, b, displayStr, ans;
+            const getNum = (d) => { 
+                if(d===1) return getRandomInt(2,9); 
+                return getRandomInt(Math.pow(10, d-1), Math.pow(10,d)-1); 
+            };
+
+            if (mode === 'multiplication') {
+                const [dA, dB] = level.split('x').map(s => parseInt(s[0]));
+                a = getNum(dA); b = getNum(dB); ans = a * b; displayStr = `${a} × ${b}`;
+            } else {
+                const [dA, dB] = level.split('÷').map(s => parseInt(s[0]));
+                if (dB === 1) b = getRandomInt(2, 9);
+                else { do { b = getNum(dB); } while (b % 10 === 0); }
+                const minDividend = Math.pow(10, dA - 1);
+                const maxDividend = Math.pow(10, dA) - 1;
+                const minQ = Math.ceil(minDividend / b);
+                const maxQ = Math.floor(maxDividend / b);
+                let q = getRandomInt(minQ, maxQ);
+                a = q * b; ans = q; displayStr = `${a} ÷ ${b}`;
+            }
+            problemDisplay.textContent = displayStr;
+            correctAnswer = ans;
+        }
+
+        function startGame() {
+            isGameActive = true;
+            // Reset counters
+            correctCount = 0; wrongCount = 0; skippedCount = 0; 
+            currentQuestionIndex = 0;
+            mistakesLog = [];
+            
+            configPanel.classList.add('hidden');
+            gamePanel.classList.remove('hidden');
+            resultsPanel.classList.add('hidden');
+            document.querySelector('.back-link').classList.add('hidden');
+            
+            // Start First Question
+            loadNextQuestion();
+        }
+
+        function loadNextQuestion() {
+            if (currentQuestionIndex >= MAX_QUESTIONS) {
+                endGame();
+                return;
+            }
+
+            // Update Question Number UI
+            currentQuestionIndex++;
+            document.getElementById('q-current').textContent = currentQuestionIndex;
+            document.getElementById('q-total').textContent = MAX_QUESTIONS;
+
+            // Generate Math
+            generateProblem();
+            
+            // Reset Input
+            answerInput.value = ''; 
+            answerInput.disabled = false; 
+            answerInput.focus();
+
+            // Reset Timer
+            clearInterval(questionTimerInterval);
+            currentQuestionTime = TIME_PER_QUESTION;
+            document.getElementById('timer-display').textContent = currentQuestionTime;
+
+            // Start Timer
+            questionTimerInterval = setInterval(updateQuestionTimer, 1000);
+        }
+
+        function updateQuestionTimer() {
+            currentQuestionTime--;
+            document.getElementById('timer-display').textContent = currentQuestionTime;
+            
+            if (currentQuestionTime <= 0) {
+                // Time up! Count as Skipped
+                clearInterval(questionTimerInterval);
+                skippedCount++;
+                mistakesLog.push(`${problemDisplay.textContent} = SKIPPED (Ans: ${correctAnswer})`);
+                loadNextQuestion();
+            }
+        }
+
+        function checkAnswer(e) {
+            if (e.key !== 'Enter' || !isGameActive) return;
+            const val = parseInt(answerInput.value);
+            if (isNaN(val)) return;
+
+            // Stop timer for this question since user submitted
+            clearInterval(questionTimerInterval);
+
+            // Logic: Just record, NO FEEDBACK
+            if (val === correctAnswer) {
+                correctCount++;
+            } else {
+                wrongCount++;
+                mistakesLog.push(`${problemDisplay.textContent} = ${val} (Ans: ${correctAnswer})`);
+            }
+
+            // Immediately jump to next
+            loadNextQuestion();
+        }
+
+        function endGame() {
+            isGameActive = false;
+            clearInterval(questionTimerInterval);
+            
+            gamePanel.classList.add('hidden');
+            resultsPanel.classList.remove('hidden');
+            
+            const now = new Date();
+            const timeFormatted = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('report-datetime').textContent = timeFormatted;
+            
+            const studentName = document.getElementById('display-student-name').textContent;
+            document.getElementById('report-student-name').textContent = studentName;
+            
+            // Fill Report Data
+            document.getElementById('final-correct').textContent = correctCount;
+            document.getElementById('final-wrong').textContent = wrongCount;
+            document.getElementById('final-skipped').textContent = skippedCount;
+            document.getElementById('final-score-fraction').textContent = `${correctCount}/${MAX_QUESTIONS}`;
+            
+            const opText = opSelect.options[opSelect.selectedIndex].text.split(' ')[0];
+            const diffText = diffSelect.options[diffSelect.selectedIndex].text;
+            const CHALLENGE_NAME = `PRESSURE: ${opText} (${diffText})`;
+            document.getElementById('result-title-text').textContent = CHALLENGE_NAME;
+
+            // --- SEND DATA TO GOOGLE SHEET ---
+            const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
+            const accuracyVal = Math.round((correctCount / MAX_QUESTIONS) * 100) + "%";
+            
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
+
+            if(SCRIPT_URL.includes("script.google.com")) {
+                const payload = {
+                    challengeType: CHALLENGE_NAME,
+                    name: studentName,
+                    score: correctCount + "/" + MAX_QUESTIONS,
+                    timeTaken: "20 Questions",
+                    accuracy: accuracyVal,
+                    mistakes: mistakesString
+                };
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => console.log("Report sent!")).catch(err => console.error("Error:", err));
+            }
+        }
+        
+        document.getElementById('start-button').addEventListener('click', startGame);
+        answerInput.addEventListener('keydown', checkAnswer);
+    </script>
+</body>
+</html>
