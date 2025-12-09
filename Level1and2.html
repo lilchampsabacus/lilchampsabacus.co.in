@@ -507,12 +507,12 @@
             // PASTE YOUR WEB APP URL INSIDE THE QUOTES BELOW
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
 
-            if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec") {
+            if (GOOGLE_SCRIPT_URL {
                 const payload = {
                     name: studentName,
                     formula: selectedFormulaObj.name,
                     score: score,
-                    time: timeString
+                    time: `${mins}:${secs < 10 ? '0' : ''}${secs}`
                 };
 
                 // We use mode: 'no-cors' to allow sending data to Google without browser security errors
@@ -549,6 +549,7 @@
     </script>
 </body>
 </html>
+
 
 
 
