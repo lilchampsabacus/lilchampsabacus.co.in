@@ -512,7 +512,7 @@
             if (GOOGLE_SCRIPT_URL) {
                 const payload = {
                     name: studentName,
-                    formula: selectedFormulaObj.name,
+                    formula: "'" + selectedFormulaObj.name,
                     score: score,
                     time: finalTimeString // FIX 2: Using the variable we defined above
                 };
@@ -552,6 +552,7 @@
     </script>
 </body>
 </html>
+
 
 
 
