@@ -502,6 +502,35 @@
             document.getElementById('report-formula-name').textContent = selectedFormulaObj.name;
             document.getElementById('score-display').textContent = score;
             document.getElementById('time-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+            // --- 5. SEND DATA TO GOOGLE SHEET ---
+            // PASTE YOUR WEB APP URL INSIDE THE QUOTES BELOW
+            const GOOGLE_SCRIPT_URL = "YOUR_WEB_APP_URL_GOES_HERE"; 
+
+            if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec") {
+                const payload = {
+                    name: studentName,
+                    formula: selectedFormulaObj.name,
+                    score: score,
+                    time: timeString
+                };
+
+                // We use mode: 'no-cors' to allow sending data to Google without browser security errors
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    console.log("Data sent to sheet successfully");
+                    // Optional: Add a visual indicator like a checkmark next to the student name
+                    const reportTitle = document.getElementById('report-title');
+                    const originalText = reportTitle.innerText;
+                    reportTitle.innerText = originalText + " (Saved ☁️)";
+                }).catch(err => {
+                    console.error("Error sending data", err);
+                });
+            }
         }
 
         function downloadReport() {
@@ -520,4 +549,5 @@
     </script>
 </body>
 </html>
+
 
