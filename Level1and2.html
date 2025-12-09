@@ -486,9 +486,11 @@
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('report-area').classList.remove('hidden');
             
+            // 1. Calculate Time and Create the Time String
             const totalTime = Math.floor((Date.now() - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
             const secs = totalTime % 60;
+            const finalTimeString = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             
             // --- 4. REPORT CARD DATA POPULATION ---
             const now = new Date();
@@ -501,18 +503,18 @@
             document.getElementById('report-student-name').textContent = studentName;
             document.getElementById('report-formula-name').textContent = selectedFormulaObj.name;
             document.getElementById('score-display').textContent = score;
-            document.getElementById('time-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            document.getElementById('time-display').textContent = finalTimeString;
 
             // --- 5. SEND DATA TO GOOGLE SHEET ---
-            // PASTE YOUR WEB APP URL INSIDE THE QUOTES BELOW
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
 
-            if (GOOGLE_SCRIPT_URL {
+            // FIX 1: Removed the code that was blocking your specific URL
+            if (GOOGLE_SCRIPT_URL) {
                 const payload = {
                     name: studentName,
                     formula: selectedFormulaObj.name,
                     score: score,
-                    time: `${mins}:${secs < 10 ? '0' : ''}${secs}`
+                    time: finalTimeString // FIX 2: Using the variable we defined above
                 };
 
                 // We use mode: 'no-cors' to allow sending data to Google without browser security errors
@@ -523,10 +525,11 @@
                     body: JSON.stringify(payload)
                 }).then(() => {
                     console.log("Data sent to sheet successfully");
-                    // Optional: Add a visual indicator like a checkmark next to the student name
+                    // Update title to show saved status
                     const reportTitle = document.getElementById('report-title');
-                    const originalText = reportTitle.innerText;
-                    reportTitle.innerText = originalText + " (Saved ☁️)";
+                    if (!reportTitle.innerText.includes("Saved")) {
+                        reportTitle.innerText = reportTitle.innerText + " (Saved ☁️)";
+                    }
                 }).catch(err => {
                     console.error("Error sending data", err);
                 });
@@ -549,6 +552,7 @@
     </script>
 </body>
 </html>
+
 
 
 
