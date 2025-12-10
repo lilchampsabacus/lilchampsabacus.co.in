@@ -574,7 +574,7 @@
 		
         // --- WRONG ANSWERS VIEW ---
         function showWrongAnswers() {
-            const allSums = JSON.parse(sessionStorage.getItem('multiplication2x1SumsData'));
+            const allSums = JSON.parse(sessionStorage.getItem('multiplication1x1SumsData'));
             const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
@@ -601,6 +601,7 @@
     </script>
 </body>
 </html>
+
 
 
 
