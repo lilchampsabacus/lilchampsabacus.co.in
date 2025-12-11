@@ -369,21 +369,24 @@
             if (state.currentStep > state.totalSteps) {
                 // Game over
 
-                // 1. Get current date and time
-        const now = new Date();
-        const dateString = now.toLocaleDateString('en-US', { 
-            year: 'numeric', month: 'long', day: 'numeric' 
-        });
-        const timeString = now.toLocaleTimeString('en-US', { 
-            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
-        });
-                // MODIFIED: Added selected practice number to the message
-                completionMessage.textContent = `Excellent work, ${state.studentName}! You completed all ${state.totalSteps} steps of Continuous ${state.operation} with the number ${state.studentNumber}.`;
+                // --- NEW CODE: Send data to Google Sheet ---
+                sendDataToGoogleSheet();
+                // -------------------------------------------
 
-                // 3. Display the date and time
-        dateTimeDisplay.textContent = `Completed on: ${dateString} at ${timeString}`;
-        
-        showScreen('complete');
+                // 1. Get current date and time
+                const now = new Date();
+                const dateString = now.toLocaleDateString('en-US', { 
+                    year: 'numeric', month: 'long', day: 'numeric' 
+                });
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+                });
+                
+                // ... rest of your existing completion code ...
+                completionMessage.textContent = `Excellent work, ${state.studentName}! You completed all ${state.totalSteps} steps of Continuous ${state.operation} with the number ${state.studentNumber}.`;
+                dateTimeDisplay.textContent = `Completed on: ${dateString} at ${timeString}`;
+                
+                showScreen('complete');
                 return;
             }
 
@@ -439,6 +442,29 @@
             }
         }
 
+          // --- Google Sheets Integration ---
+        function sendDataToGoogleSheet() {
+            const scriptURL = "https://script.google.com/macros/s/AKfycbwzaHaLlh8hdi6Vv2baqSh-b1XfDRRgSkEjO8mlPlOvnJh10adABNaswqDvmzIyhR6n/exec";
+
+            const data = {
+                studentName: state.studentName,
+                operation: state.operation === 'addition' ? 'Continuous Addition' : 'Continuous Subtraction',
+                number: state.studentNumber,
+                steps: state.totalSteps
+            };
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors', // Important to avoid browser security errors
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => console.log('Data sent to sheet successfully'))
+            .catch(error => console.error('Error sending data:', error));
+        }
+         
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
         
@@ -511,6 +537,7 @@
 </body>
 
 </html>
+
 
 
 
