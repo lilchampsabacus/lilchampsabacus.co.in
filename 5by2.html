@@ -467,101 +467,133 @@
         }
 
         function endTest() {
-            document.body.classList.remove('focus-mode');
-            clearInterval(timerInterval);
-            
-            document.getElementById('test-area').classList.add('hidden');
-            document.getElementById('report-area').classList.remove('hidden');
-            
-            let correctCount = 0;
-            let attemptedCount = 0;
-            let solvedWrongCount = 0;
-            
-            // Calculate Results
-            sumsData.forEach((data, index) => {
-                const isAttempted = data.studentAnswer !== null;
-                if (isAttempted) {
-                    attemptedCount++;
-                    const isCorrect = data.studentAnswer === data.quotient;
-                    data.isCorrect = isCorrect;
-                    if (isCorrect) correctCount++;
-                    else solvedWrongCount++;
-                } else {
-                    data.isCorrect = null;
-                }
-            });
+    		document.body.classList.remove('focus-mode');
+    		clearInterval(timerInterval);
 
-            // Note: The storage key below doesn't strictly matter for the report, 
-            // but it's good to keep it consistent if your file uses a specific name.
-            // (The report relies on the CHALLENGE_NAME variable below anyway)
-            sessionStorage.setItem('division5by2SumsData', JSON.stringify(sumsData));
+   		 	document.getElementById('test-area').classList.add('hidden');
+    		document.getElementById('report-area').classList.remove('hidden');
 
-            // Time Calculation
-            const endTime = Date.now();
-            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
-            
-            const minutes = Math.floor(timeElapsedSeconds / 60);
-            const seconds = timeElapsedSeconds % 60;
-            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            
-            let avgTimeDisplay = 'N/A';
-            if (attemptedCount > 0) {
-                avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
-            }
+    		let correctCount = 0;
+    		let attemptedCount = 0;
+    		let solvedWrongCount = 0;
 
-            // --- CRITICAL FIX: DEFINE THE NAME VARIABLE ---
-            const rawName = document.getElementById('student-identifier-input').value;
-            const formattedName = formatStudentName(rawName);
-            // ----------------------------------------------
+    		// 1. NEW: Arrays to store mistake data
+    		let mistakesLogStrings = [];
+    		let detailedMistakesArray = [];
 
-            // Fill Report
-            const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('report-student-name').textContent = formattedName;
-            
-            document.getElementById('report-correct').textContent = correctCount;
-            document.getElementById('report-time-elapsed').textContent = timeFormatted;
-            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-            
-            const wrongBtn = document.getElementById('see-wrong-button');
-            if (solvedWrongCount > 0) {
-                wrongBtn.textContent = `Review ${solvedWrongCount} Mistakes`;
-                wrongBtn.disabled = false;
+   			// Calculate Results
+    		sumsData.forEach((data, index) => {
+       	 		const isAttempted = data.studentAnswer !== null;
+        		if (isAttempted) {
+            	attemptedCount++;
+
+            // Division Logic: Check against Quotient
+            // (Using parseInt to ensure number comparison)
+            const isCorrect = parseInt(data.studentAnswer) === parseInt(data.quotient);
+            data.isCorrect = isCorrect;
+
+            if (isCorrect) {
+                correctCount++;
             } else {
-                wrongBtn.textContent = "Perfect Score! No Mistakes.";
-                wrongBtn.disabled = true;
-                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
+                solvedWrongCount++;
 
-            // --- SEND TO GOOGLE SHEETS ---
-            // ⬇️⬇️ CHANGE THIS VALUE FOR EACH FILE! ⬇️⬇️
-            const CHALLENGE_NAME = "5by2"; 
-            // ⬆️⬆️ Example: "3x1" or "4by1" ⬆️⬆️
+                // 2. NEW: Capture Wrong Answers
+                // Summary String (e.g., "Q1: 5 vs 6")
+                mistakesLogStrings.push(`Q${index + 1}: ${data.studentAnswer} vs ${data.quotient}`);
 
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
+                // Detailed Object (e.g., "15 ÷ 3")
+                // We use data.x (Dividend) and data.y (Divisor) or fallback if named differently
+                const dividend = data.dividend || data.x;
+                const divisor = data.divisor || data.y;
 
-            if(SCRIPT_URL.includes("script.google.com")) {
-                const payload = {
-                    challengeType: CHALLENGE_NAME, 
-                    name: formattedName,
-                    score: correctCount + "/30",
-                    timeTaken: timeFormatted,
-                    accuracy: Math.round((correctCount / 30) * 100) + "%"
-                };
-
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    console.log("Report sent!");
-                }).catch(err => {
-                    console.error("Error:", err);
+                detailedMistakesArray.push({
+                    question: `${dividend} ÷ ${divisor}`,
+                    wrong: data.studentAnswer,
+                    correct: data.quotient
                 });
             }
-        }
+        	} else {
+            	data.isCorrect = null;
+        		}
+    		});
 
+    		// Create the summary string
+    		const mistakesString = mistakesLogStrings.length > 0 ? mistakesLogStrings.join(", ") : "None";
+
+    		sessionStorage.setItem('division5by2SumsData', JSON.stringify(sumsData));
+
+    		// Time Calculation
+    		const endTime = Date.now();
+    		const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+
+    		const minutes = Math.floor(timeElapsedSeconds / 60);
+    		const seconds = timeElapsedSeconds % 60;
+    		const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+    		let avgTimeDisplay = 'N/A';
+    		if (attemptedCount > 0) {
+       				avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
+    				}
+
+    		// Name Logic
+    		const rawName = document.getElementById('student-identifier-input').value;
+    		const formattedName = formatStudentName(rawName);
+
+    		// Fill Report
+    		const now = new Date();
+    		document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {
+        	hour: '2-digit',
+        	minute: '2-digit'
+    		});
+    		document.getElementById('report-student-name').textContent = formattedName;
+
+    		document.getElementById('report-correct').textContent = correctCount;
+    		document.getElementById('report-time-elapsed').textContent = timeFormatted;
+    		document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+
+    		const wrongBtn = document.getElementById('see-wrong-button');
+    			if (solvedWrongCount > 0) {
+       		 		wrongBtn.textContent = `Review ${solvedWrongCount} Mistakes`;
+        			wrongBtn.disabled = false;
+    			} else {
+        			wrongBtn.textContent = "Perfect Score! No Mistakes.";
+        			wrongBtn.disabled = true;
+        			wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    				}
+
+    		// --- SEND TO GOOGLE SHEETS ---
+    		const CHALLENGE_NAME = "5by2";
+
+    		// Your Script URL
+    		const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
+
+    		if (SCRIPT_URL.includes("script.google.com")) {
+        		const payload = {
+            		challengeType: CHALLENGE_NAME,
+            		name: formattedName,
+            		score: correctCount + "/30", // Change "/30" if total sums are different
+            		timeTaken: timeFormatted,
+            		accuracy: Math.round((correctCount / 30) * 100) + "%",
+
+            		// 3. NEW: Send the mistake data
+            		mistakesString: mistakesString,
+            		detailedMistakes: detailedMistakesArray
+       	 			};
+
+        		fetch(SCRIPT_URL, {
+            			method: 'POST',
+            			mode: 'no-cors',
+            			headers: {
+                			'Content-Type': 'application/json'
+            				},
+            			body: JSON.stringify(payload)
+        				}).then(() => {
+            			console.log("Report sent!");
+        				}).catch(err => {
+            			console.error("Error:", err);
+        				});
+    			}
+		}
         // --- WRONG ANSWERS VIEW ---
         function showWrongAnswers() {
             const allSums = JSON.parse(sessionStorage.getItem('division5by2SumsData'));
@@ -593,6 +625,7 @@
     </script>
 </body>
 </html>
+
 
 
 
