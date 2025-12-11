@@ -480,27 +480,94 @@
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
-            let correctCount = quizData.filter(s => s.isCorrect).length;
+            // --- STATS CALCULATION ---
+            let correctCount = 0;
+            let mistakesLogStrings = [];    // For 'Report' tab
+            let detailedMistakesArray = []; // For 'Mistakes' tab
+
+            quizData.forEach((q, index) => {
+                if (q.isCorrect) {
+                    correctCount++;
+                } else {
+                    // 1. Format the question (e.g. "10 + 20 - 5")
+                    // We join with ' + ', then fix any double signs like "+ -" to just "- "
+                    const qText = q.numbers.join(' + ').replace(/\+ -/g, '- ');
+                    const userAns = q.userAnswer !== null ? q.userAnswer : "Skipped";
+                    
+                    // 2. Add to Summary String
+                    mistakesLogStrings.push(`Q${index + 1}: ${userAns} vs ${q.correctAnswer}`);
+                    
+                    // 3. Add to Detailed Object
+                    detailedMistakesArray.push({
+                        question: qText,
+                        wrong: userAns,
+                        correct: q.correctAnswer
+                    });
+                }
+            });
+
+            const mistakesString = mistakesLogStrings.length > 0 ? mistakesLogStrings.join(", ") : "None";
+            
+            // Time Calculation
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
             const secs = totalTime % 60;
-            
+            const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            const avgTimeDisplay = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
+            const accuracyVal = Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%";
+
+            // UI Updates
             const now = new Date();
             document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('report-student-name').textContent = formatStudentName(document.getElementById('student-identifier-input').value);
+            
+            const rawName = document.getElementById('student-identifier-input').value;
+            const formattedName = formatStudentName(rawName);
+            document.getElementById('report-student-name').textContent = formattedName;
             
             document.getElementById('report-correct').textContent = correctCount;
-            document.getElementById('report-time-elapsed').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            document.getElementById('report-avg-time').textContent = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
             
             const wrongBtn = document.getElementById('see-wrong-button');
             if (correctCount === TOTAL_QUESTIONS) {
                 wrongBtn.disabled = true;
                 wrongBtn.textContent = "Perfect Score! No Mistakes";
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.disabled = false;
+                wrongBtn.textContent = "Review Mistakes";
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            // --- SEND TO GOOGLE SHEETS ---
+            const CHALLENGE_NAME = "2ndLevel"; 
+            // This is the URL from your previous 2x1 file
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
+
+            if(SCRIPT_URL.includes("script.google.com")) {
+                const payload = {
+                    challengeType: CHALLENGE_NAME, 
+                    name: formattedName,
+                    score: correctCount + "/" + TOTAL_QUESTIONS,
+                    timeTaken: timeFormatted,
+                    accuracy: accuracyVal,
+                    mistakesString: mistakesString,       
+                    detailedMistakes: detailedMistakesArray 
+                };
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    console.log("Report sent!");
+                }).catch(err => {
+                    console.error("Error sending report:", err);
+                });
             }
         }
-
         // --- REVIEW MISTAKES ---
         function showWrongAnswers() {
             const wrongSums = quizData.filter(s => s.isCorrect === false);
