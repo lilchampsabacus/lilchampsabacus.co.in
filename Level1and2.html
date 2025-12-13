@@ -13,8 +13,8 @@
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden; /* No scrolling on body */
-            position: fixed; /* Fix body in place */
+            overflow: hidden; 
+            position: fixed; 
             overscroll-behavior: none;
             touch-action: none; 
         }
@@ -71,8 +71,8 @@
 
         /* Input Disabled State */
         input:disabled {
-            background-color: #f3f4f6; /* gray-100 */
-            color: #9ca3af; /* gray-400 */
+            background-color: #f3f4f6; 
+            color: #9ca3af; 
             border-color: #d1d5db;
         }
     </style>
@@ -147,10 +147,10 @@
                        inputmode="numeric" pattern="[0-9]*">
                 
                 <div class="flex gap-2 h-14">
-                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl active:bg-blue-800 transition-colors">
+                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Check
                     </button>
-                    <button id="next-btn" onclick="nextQuestion()" class="w-1/2 bg-gray-400 text-white font-bold rounded-lg shadow-md text-xl active:bg-gray-600 transition-colors">
+                    <button id="next-btn" onclick="nextQuestion()" disabled class="w-1/2 bg-gray-500 text-white font-bold rounded-lg shadow-md text-xl active:bg-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                         Next
                     </button>
                 </div>
@@ -395,15 +395,19 @@
             
             const input = document.getElementById('answer-input');
             input.value = ''; 
-            input.disabled = false; // Ensure enabled
+            input.disabled = false;
             input.focus();
             
             // Reset Styles
             document.getElementById('feedback-msg').textContent = '';
             input.classList.remove('bg-green-50', 'border-green-500', 'bg-red-50', 'border-red-500');
             
-            const checkBtn = document.getElementById('check-btn');
-            checkBtn.disabled = false;
+            // --- BUTTON STATES ---
+            document.getElementById('check-btn').disabled = false;
+            
+            // KEY CHANGE: Disable next button initially
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
         }
 
         function handleAction() {
@@ -413,6 +417,7 @@
             const correct = currentQuestions[currentQIndex].answer;
             const feedback = document.getElementById('feedback-msg');
             const checkBtn = document.getElementById('check-btn');
+            const nextBtn = document.getElementById('next-btn');
 
             if (val === correct) {
                 // Correct Answer
@@ -422,8 +427,9 @@
                 input.classList.add('bg-green-50', 'border-green-500');
                 
                 checkBtn.disabled = true;
-                input.disabled = true; // Lock input
-
+                input.disabled = true; 
+                
+                // Next button remains disabled because we auto-advance
                 setTimeout(() => {
                     nextQuestion();
                 }, 800);
@@ -434,10 +440,11 @@
                 feedback.className = "text-red-500 font-bold text-lg h-8 flex items-center justify-center shake";
                 input.classList.add('bg-red-50', 'border-red-500');
                 
-                // DISABLE RETRY LOGIC:
-                input.disabled = true;      // 1. Disable text box
-                checkBtn.disabled = true;   // 2. Disable Check button
-                // User must now click "Next"
+                input.disabled = true;      
+                checkBtn.disabled = true;   
+                
+                // KEY CHANGE: Enable Next button ONLY on wrong answer
+                nextBtn.disabled = false;
             }
         }
 
