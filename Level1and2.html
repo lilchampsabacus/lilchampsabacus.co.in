@@ -10,7 +10,7 @@
     
     <style>
         /* --- CORE STYLES --- */
-        body { touch-action: manipulation; } 
+        body { touch-action: manipulation; overscroll-behavior: none; } 
 
         /* --- TABLE STYLES --- */
         .sum-table {
@@ -22,9 +22,9 @@
 
         .number-cell {
             text-align: center;
-            font-size: 2.5rem; 
+            font-size: 3rem; /* Larger for better visibility */
             font-weight: 700; 
-            padding: 0.1rem 0;
+            padding: 0.2rem 0;
             border-bottom: 1px solid #e5e7eb; 
             color: #374151;
             line-height: 1.1;
@@ -36,8 +36,8 @@
             font-size: 0.8rem;
             color: #9ca3af;
             text-align: right;
-            padding-right: 10px;
-            width: 30px;
+            padding-right: 15px;
+            width: 40px;
             border: none;
             vertical-align: middle;
         }
@@ -45,28 +45,6 @@
         .negative-number { color: #dc2626; } 
 
         /* --- LAYOUT --- */
-        #question-area-box {
-            height: 40vh; 
-            overflow-y: auto; 
-            background: white;
-            border-bottom: 2px solid #bfdbfe;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @media (min-width: 768px) {
-            #question-area-box {
-                height: auto !important; 
-                min-height: 300px;
-                border: 2px solid #bfdbfe;
-                border-radius: 1rem;
-                overflow-y: visible !important; 
-                padding: 20px 0;
-            }
-            .number-cell { font-size: 2.5rem; } 
-        }
-
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .config-section { 
@@ -125,10 +103,6 @@
                     <option value="">-- Select Category First --</option>
                 </select>
             </div>
-
-            <div class="bg-blue-50 p-3 rounded mb-6 text-sm text-blue-800 text-center font-medium border border-blue-200">
-                Note: For formula help check your book or contact teacher.
-            </div>
             
             <button id="launch-btn" onclick="startGame()" disabled class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 rounded-full shadow-lg transition-transform transform active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed">
                 🚀 Launch Mission
@@ -136,32 +110,34 @@
         </section>
     </main>
 
-    <div id="game-ui" class="hidden w-full h-screen md:h-auto max-w-5xl mx-auto flex-col md:flex-row md:items-start md:justify-center md:gap-8 md:p-6 md:mt-10">
+    <div id="game-ui" class="hidden fixed inset-0 bg-white flex-col z-50">
         
-        <div class="w-full md:w-1/2 order-1">
-            <div id="question-area-box" class="shadow-sm md:shadow-lg bg-white">
-                <div id="question-container" class="w-full px-4">
-                    </div>
-            </div>
-            <div class="text-center mt-2 text-gray-400 text-xs font-bold uppercase">Question <span id="q-idx">1</span> / 10</div>
+        <div class="bg-blue-100 p-2 text-center border-b border-blue-200 flex-none">
+            <span class="text-blue-900 font-bold uppercase tracking-widest text-sm">
+                Question <span id="q-idx" class="text-lg">1</span> / 10
+            </span>
         </div>
 
-        <div class="w-full md:w-1/2 order-2 p-4 flex flex-col justify-start">
-            
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm mb-4">
-                <label class="block text-blue-900 font-bold mb-2 text-center md:text-left">Enter Answer:</label>
-                <input type="number" id="answer-input" placeholder="?" class="w-full p-4 border-2 border-blue-300 rounded-lg text-center text-4xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-3 shadow-inner" inputmode="numeric" pattern="[0-9]*">
-                <div id="feedback-msg" class="h-6 text-center font-bold text-lg mb-2"></div>
-                <button id="action-btn" onclick="handleAction()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-lg shadow-md text-xl active:bg-blue-800">Check (Enter)</button>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-orange-400">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
-                    <span id="progress-text" class="text-gray-500 font-bold text-xs">0/10</span>
+        <div id="question-area-box" class="flex-grow flex items-center justify-center overflow-y-auto bg-white p-2">
+            <div id="question-container" class="w-full max-w-sm">
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div id="progress-bar" class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div id="feedback-msg" class="h-8 text-center font-bold text-lg flex-none flex items-center justify-center"></div>
+
+        <div class="bg-blue-50 p-3 border-t border-blue-200 flex-none pb-safe">
+            <div class="max-w-md mx-auto">
+                <input type="number" id="answer-input" placeholder="?" 
+                       class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-4xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-3 shadow-inner" 
+                       inputmode="numeric" pattern="[0-9]*">
+                
+                <div class="flex gap-2 h-14">
+                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl active:bg-blue-800 transition-colors">
+                        Check
+                    </button>
+                    <button id="next-btn" onclick="nextQuestion()" class="w-1/2 bg-gray-400 text-white font-bold rounded-lg shadow-md text-xl active:bg-gray-600 transition-colors">
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
@@ -172,7 +148,7 @@
             
             <div class="border-b border-gray-100 pb-4 mb-4">
                 <h2 class="text-2xl font-extrabold text-gray-700" id="report-title">Formula Practice</h2>
-                <p class="text-sm text-gray-500 mt-1" id="report-formula-name">Small Friend +4</p>
+                <p class="text-sm text-gray-500 mt-1" id="report-formula-name">Formula Name</p>
             </div>
 
             <h3 class="text-3xl font-black text-blue-800 mb-2">Mission Complete!</h3>
@@ -197,13 +173,12 @@
         </div>
     </section>
 
-    <footer class="bg-yellow-200 text-center p-3 mt-auto">
+    <footer class="bg-yellow-200 text-center p-3 mt-auto config-section">
         <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
     </footer>
 
     <script>
         // --- 1. STRICT LOGIN ENFORCEMENT ---
-        // If not logged in, immediately redirect to index.html
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
@@ -219,7 +194,6 @@
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             
             if (studentIdentifier) {
-                // Logged In User
                 const displayStudentName = formatStudentName(studentIdentifier);
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
@@ -297,36 +271,25 @@
             document.getElementById('launch-btn').disabled = (this.value === "");
         });
 
-        // --- 3. STRICT BEAD LOGIC FOR FILLER ROWS ---
+        // --- 3. LOGIC (No changes to math logic) ---
         function isStrictDirectMove(current, val) {
             const unitCurr = current % 10;
             const unitRes = unitCurr + val;
-            
-            // 1. Must stay within 0-9
             if (unitRes < 0 || unitRes > 9) return false; 
-            
             const upperBeadCurr = unitCurr >= 5;
-            const upperBeadRes = unitRes >= 5;
             const lowerBeadCurr = unitCurr % 5;
-            
-            // 2. Bead Availability Check
             if (val > 0) {
                 const valLower = val % 5;
                 const valUpper = val >= 5;
-                
                 if (valUpper && upperBeadCurr) return false;
                 if (lowerBeadCurr + valLower > 4) return false; 
-                
                 return true;
-
             } else {
                 const valAbs = Math.abs(val);
                 const valLower = valAbs % 5;
                 const valUpper = valAbs >= 5;
-
                 if (valUpper && !upperBeadCurr) return false;
                 if (lowerBeadCurr < valLower) return false;
-
                 return true;
             }
         }
@@ -347,8 +310,6 @@
             const NUM_ROWS = 5; 
             const triggerIdx = Math.floor(Math.random() * (NUM_ROWS - 1)) + 1; 
             const cat = document.getElementById('category-select').value;
-
-            // --- 3a. SET START NUMBER ---
             let startNum;
             const levelIndex = parseInt(cat.charAt(0));
             if (levelIndex >= 3) {
@@ -356,49 +317,34 @@
             } else {
                 startNum = Math.floor(Math.random() * 9) + 1;
             }
-            
             rows.push(startNum); total = startNum;
-
-            // --- 3b. FILL UP TO TRIGGER ---
             for (let i = 1; i < triggerIdx; i++) {
                 let next = generateRandomDirect(total);
                 rows.push(next); total += next;
             }
-
-            // --- 3c. FORCE SETUP CONDITION ---
             let lastRow = rows.pop();
             total -= lastRow;
             const targetUnit = formulaObj.setup[Math.floor(Math.random() * formulaObj.setup.length)];
-            
             let rangeMin = -9, rangeMax = 9;
             if (levelIndex >= 3) { rangeMin = -19; rangeMax = 19; }
-
             let validForced = [];
             for(let k=rangeMin; k<=rangeMax; k++) {
                 if(k==0) continue;
                 if((total + k) < 0) continue; 
                 if((total + k + formulaObj.trigger) < 0) continue; 
-
                 if((total + k) % 10 === targetUnit) {
                     if(!isStrictDirectMove(total, k)) continue;
                     validForced.push(k);
                 }
             }
-
             if(validForced.length === 0) return generateQuestionSet(formulaObj); 
-            
             let forcedNum = validForced[Math.floor(Math.random() * validForced.length)];
             rows.push(forcedNum); total += forcedNum;
-
-            // --- 3d. APPLY TRIGGER ---
             rows.push(formulaObj.trigger); total += formulaObj.trigger;
-
-            // --- 3e. FILL REMAINDER ---
             for (let i = triggerIdx + 1; i < NUM_ROWS; i++) {
                  let next = generateRandomDirect(total);
                  rows.push(next); total += next;
             }
-
             return { numbers: rows, answer: total };
         }
 
@@ -408,7 +354,6 @@
             selectedFormulaObj = FORMULA_DATA[cat].find(f => f.id === fid);
             
             document.body.classList.add('focus-mode');
-            document.querySelector('.config-section').classList.add('hidden');
             const gameUi = document.getElementById('game-ui');
             gameUi.classList.remove('hidden');
             gameUi.style.display = "flex";
@@ -434,13 +379,15 @@
             container.innerHTML = html;
             
             const input = document.getElementById('answer-input');
-            input.value = ''; input.focus();
-            document.getElementById('feedback-msg').textContent = '';
+            input.value = ''; 
+            input.focus();
             
-            const btn = document.getElementById('action-btn');
-            btn.textContent = "Check (Enter)";
-            btn.className = "w-full bg-blue-600 text-white font-bold py-4 rounded-lg shadow-md text-xl active:bg-blue-800";
-            btn.onclick = handleAction;
+            // Reset Styles
+            document.getElementById('feedback-msg').textContent = '';
+            input.classList.remove('bg-green-50', 'border-green-500', 'bg-red-50', 'border-red-500');
+            
+            const checkBtn = document.getElementById('check-btn');
+            checkBtn.disabled = false;
         }
 
         function handleAction() {
@@ -449,23 +396,28 @@
             if (isNaN(val)) return;
             const correct = currentQuestions[currentQIndex].answer;
             const feedback = document.getElementById('feedback-msg');
-            const btn = document.getElementById('action-btn');
+            const checkBtn = document.getElementById('check-btn');
 
             if (val === correct) {
                 score++;
                 feedback.textContent = "Correct! 🎉";
-                feedback.className = "text-green-600 font-bold text-lg mb-2 h-6";
+                feedback.className = "text-green-600 font-bold text-lg h-8 flex items-center justify-center";
                 input.classList.add('bg-green-50', 'border-green-500');
+                
+                // Disable check button so they can't double click
+                checkBtn.disabled = true;
+
+                // AUTO ADVANCE AFTER 800ms
+                setTimeout(() => {
+                    nextQuestion();
+                }, 800);
+
             } else {
                 feedback.innerHTML = `Wrong. Ans: <span class="text-black">${correct}</span>`;
-                feedback.className = "text-red-500 font-bold text-lg mb-2 h-6 shake";
+                feedback.className = "text-red-500 font-bold text-lg h-8 flex items-center justify-center shake";
                 input.classList.add('bg-red-50', 'border-red-500');
+                // For wrong answers, user must click Next manually
             }
-            updateProgress();
-            btn.textContent = "Next ➡";
-            btn.className = "w-full bg-orange-500 text-white font-bold py-4 rounded-lg shadow-md text-xl";
-            btn.onclick = nextQuestion;
-            setTimeout(() => { document.getElementById('action-btn').focus(); }, 100);
         }
 
         function nextQuestion() {
@@ -475,24 +427,16 @@
             if (currentQIndex < 10) renderQuestion(); else endGame();
         }
 
-        function updateProgress() {
-            const pct = ((currentQIndex + 1) / 10) * 100;
-            document.getElementById('progress-bar').style.width = `${pct}%`;
-            document.getElementById('progress-text').textContent = `${currentQIndex+1}/10`;
-        }
-
         function endGame() {
             document.body.classList.remove('focus-mode');
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('report-area').classList.remove('hidden');
             
-            // 1. Calculate Time and Create the Time String
             const totalTime = Math.floor((Date.now() - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
             const secs = totalTime % 60;
             const finalTimeString = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             
-            // --- 4. REPORT CARD DATA POPULATION ---
             const now = new Date();
             const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
@@ -505,34 +449,28 @@
             document.getElementById('score-display').textContent = score;
             document.getElementById('time-display').textContent = finalTimeString;
 
-            // --- 5. SEND DATA TO GOOGLE SHEET ---
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
 
-            // FIX 1: Removed the code that was blocking your specific URL
             if (GOOGLE_SCRIPT_URL) {
                 const payload = {
                     name: studentName,
                     formula: "'" + selectedFormulaObj.name,
                     score: score,
-                    time: finalTimeString // FIX 2: Using the variable we defined above
+                    time: finalTimeString
                 };
 
-                // We use mode: 'no-cors' to allow sending data to Google without browser security errors
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 }).then(() => {
-                    console.log("Data sent to sheet successfully");
-                    // Update title to show saved status
+                    console.log("Data sent");
                     const reportTitle = document.getElementById('report-title');
                     if (!reportTitle.innerText.includes("Saved")) {
                         reportTitle.innerText = reportTitle.innerText + " (Saved ☁️)";
                     }
-                }).catch(err => {
-                    console.error("Error sending data", err);
-                });
+                }).catch(err => console.error(err));
             }
         }
 
@@ -547,14 +485,11 @@
         }
         
         document.getElementById('answer-input').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") { event.preventDefault(); document.getElementById("action-btn").click(); }
+            if (event.key === "Enter") { 
+                event.preventDefault(); 
+                document.getElementById("check-btn").click(); 
+            }
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
