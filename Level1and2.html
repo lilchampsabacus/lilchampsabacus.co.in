@@ -2,21 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Practice Sums 1st and 2nd Level</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- 1. LOCK THE SCREEN --- */
-        /* This prevents the whole page from scrolling up/down */
+        /* --- 1. STRICT SCREEN LOCKING --- */
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden; 
-            position: fixed; 
-            touch-action: none; /* Disables standard touch gestures to prevent scroll bounce */
+            overflow: hidden; /* No scrolling on body */
+            position: fixed; /* Fix body in place */
+            overscroll-behavior: none;
+            touch-action: none; 
         }
 
         /* --- TABLE STYLES --- */
@@ -62,12 +62,18 @@
             display: flex !important;
         }
 
-        /* Shake Animation for Wrong Answer */
         .shake { animation: shake 0.3s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
+        }
+
+        /* Input Disabled State */
+        input:disabled {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #9ca3af; /* gray-400 */
+            border-color: #d1d5db;
         }
     </style>
 </head>
@@ -118,33 +124,33 @@
         </section>
     </main>
 
-    <div id="game-ui" class="hidden absolute inset-0 bg-white flex-col z-50 h-full w-full">
+    <div id="game-ui" class="hidden fixed inset-0 bg-white flex-col z-50 h-full w-full">
         
-        <div class="bg-blue-100 p-2 text-center border-b border-blue-200 flex-none h-10 flex items-center justify-center">
-            <span class="text-blue-900 font-bold uppercase tracking-widest text-xs">
-                Question <span id="q-idx" class="text-base">1</span> / 10
+        <div class="bg-blue-100 p-2 text-center border-b border-blue-200 flex-none h-12 flex items-center justify-center z-10">
+            <span class="text-blue-900 font-bold uppercase tracking-widest text-sm">
+                Question <span id="q-idx" class="text-lg">1</span> / 10
             </span>
         </div>
 
-        <div id="question-area-box" class="flex-grow flex items-center justify-center overflow-y-auto bg-white p-1 min-h-0">
+        <div id="question-area-box" class="flex-grow flex items-center justify-center overflow-y-auto bg-white p-1 min-h-0 w-full">
             <div id="question-container" class="w-full max-w-sm">
                 </div>
         </div>
 
-        <div class="bg-blue-50 p-2 border-t border-blue-200 flex-none pb-2">
+        <div class="bg-blue-50 p-2 border-t border-blue-200 flex-none z-10 pb-safe">
             <div class="max-w-md mx-auto">
                 
-                <div id="feedback-msg" class="h-6 text-center font-bold text-lg flex items-center justify-center mb-1"></div>
+                <div id="feedback-msg" class="h-8 text-center font-bold text-lg flex items-center justify-center mb-1"></div>
 
                 <input type="number" id="answer-input" placeholder="?" 
-                       class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner h-14" 
+                       class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner h-14 transition-colors" 
                        inputmode="numeric" pattern="[0-9]*">
                 
-                <div class="flex gap-2 h-12">
-                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-lg active:bg-blue-800 transition-colors">
+                <div class="flex gap-2 h-14">
+                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl active:bg-blue-800 transition-colors">
                         Check
                     </button>
-                    <button id="next-btn" onclick="nextQuestion()" class="w-1/2 bg-gray-400 text-white font-bold rounded-lg shadow-md text-lg active:bg-gray-600 transition-colors">
+                    <button id="next-btn" onclick="nextQuestion()" class="w-1/2 bg-gray-400 text-white font-bold rounded-lg shadow-md text-xl active:bg-gray-600 transition-colors">
                         Next
                     </button>
                 </div>
@@ -389,6 +395,7 @@
             
             const input = document.getElementById('answer-input');
             input.value = ''; 
+            input.disabled = false; // Ensure enabled
             input.focus();
             
             // Reset Styles
@@ -408,21 +415,29 @@
             const checkBtn = document.getElementById('check-btn');
 
             if (val === correct) {
+                // Correct Answer
                 score++;
                 feedback.textContent = "Correct! 🎉";
-                feedback.className = "text-green-600 font-bold text-lg h-6 flex items-center justify-center";
+                feedback.className = "text-green-600 font-bold text-lg h-8 flex items-center justify-center";
                 input.classList.add('bg-green-50', 'border-green-500');
                 
                 checkBtn.disabled = true;
+                input.disabled = true; // Lock input
 
                 setTimeout(() => {
                     nextQuestion();
                 }, 800);
 
             } else {
+                // Wrong Answer
                 feedback.innerHTML = `Wrong. Ans: <span class="text-black">${correct}</span>`;
-                feedback.className = "text-red-500 font-bold text-lg h-6 flex items-center justify-center shake";
+                feedback.className = "text-red-500 font-bold text-lg h-8 flex items-center justify-center shake";
                 input.classList.add('bg-red-50', 'border-red-500');
+                
+                // DISABLE RETRY LOGIC:
+                input.disabled = true;      // 1. Disable text box
+                checkBtn.disabled = true;   // 2. Disable Check button
+                // User must now click "Next"
             }
         }
 
