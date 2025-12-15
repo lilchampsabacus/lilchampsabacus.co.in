@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Practice Sums 1st and 2nd Level</title>
+    <title>Practice Sums - Strict Limit Fix</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -309,12 +309,13 @@
             }
         }
 
-        function generateRandomDirect(currentTotal, maxLimit = 90) { // Added maxLimit
+        // UPDATED: Added maxLimit parameter
+        function generateRandomDirect(currentTotal, maxLimit) { 
             const options = [];
             for (let i = -9; i <= 9; i++) {
                 if (i === 0) continue;
                 if (currentTotal + i < 0) continue;
-                if (currentTotal + i > maxLimit) continue; // STRICT CHECK: Cap total
+                if (currentTotal + i > maxLimit) continue; // STRICT CHECK
                 if (isStrictDirectMove(currentTotal, i)) options.push(i);
             }
             if (options.length === 0) return 0; 
@@ -322,6 +323,9 @@
         }
 
         function generateQuestionSet(formulaObj) {
+            // --- STRICT MAX LIMIT SETTING ---
+            const MAX_ALLOWED = 99; // Never allow result to reach 100
+
             let rows = [], total = 0;
             const NUM_ROWS = 5; 
             const triggerIdx = Math.floor(Math.random() * (NUM_ROWS - 1)) + 1; 
@@ -329,18 +333,14 @@
             let startNum;
             const levelIndex = parseInt(cat.charAt(0));
             
-            // --- MODIFIED START NUMBER LOGIC ---
+            // --- UPDATED START NUMBER LOGIC ---
             if (levelIndex >= 3) {
-                // For Big Friend/Mix, restrict start number to 10-75
-                // This prevents the total from easily exceeding 90
-                startNum = Math.floor(Math.random() * 66) + 10; 
+                // Was 10-99, now 10-60 to leave room for additions
+                startNum = Math.floor(Math.random() * 51) + 10; 
             } else {
                 startNum = Math.floor(Math.random() * 9) + 1;
             }
-
             rows.push(startNum); total = startNum;
-            
-            const MAX_ALLOWED = 90; // Global cap for this session
 
             for (let i = 1; i < triggerIdx; i++) {
                 let next = generateRandomDirect(total, MAX_ALLOWED);
@@ -352,22 +352,25 @@
             
             const targetUnit = formulaObj.setup[Math.floor(Math.random() * formulaObj.setup.length)];
             let rangeMin = -9, rangeMax = 9;
-            if (levelIndex >= 3) { rangeMin = -19; rangeMax = 19; } // Keep range strict
+            if (levelIndex >= 3) { rangeMin = -19; rangeMax = 19; }
 
             let validForced = [];
             for(let k=rangeMin; k<=rangeMax; k++) {
                 if(k==0) continue;
+                // Safety Checks
                 if((total + k) < 0) continue; 
-                if((total + k) > MAX_ALLOWED) continue; // Check forced move cap
+                if((total + k) > MAX_ALLOWED) continue; // Check forced number against limit
+                
                 if((total + k + formulaObj.trigger) < 0) continue; 
-                if((total + k + formulaObj.trigger) > MAX_ALLOWED) continue; // Check trigger result cap
+                if((total + k + formulaObj.trigger) > MAX_ALLOWED) continue; // Check trigger result against limit
 
                 if((total + k) % 10 === targetUnit) {
                     if(!isStrictDirectMove(total, k)) continue;
                     validForced.push(k);
                 }
             }
-
+            
+            // If no valid move exists that keeps us under 100, try again
             if(validForced.length === 0) return generateQuestionSet(formulaObj); 
             
             let forcedNum = validForced[Math.floor(Math.random() * validForced.length)];
@@ -379,7 +382,6 @@
                  let next = generateRandomDirect(total, MAX_ALLOWED);
                  rows.push(next); total += next;
             }
-            
             return { numbers: rows, answer: total };
         }
 
@@ -425,7 +427,6 @@
             // --- BUTTON STATES ---
             document.getElementById('check-btn').disabled = false;
             
-            // KEY CHANGE: Disable next button initially
             const nextBtn = document.getElementById('next-btn');
             nextBtn.disabled = true;
         }
@@ -440,7 +441,6 @@
             const nextBtn = document.getElementById('next-btn');
 
             if (val === correct) {
-                // Correct Answer
                 score++;
                 feedback.textContent = "Correct! 脂";
                 feedback.className = "text-green-600 font-bold text-lg h-8 flex items-center justify-center";
@@ -449,21 +449,17 @@
                 checkBtn.disabled = true;
                 input.disabled = true; 
                 
-                // Next button remains disabled because we auto-advance
                 setTimeout(() => {
                     nextQuestion();
                 }, 800);
 
             } else {
-                // Wrong Answer
                 feedback.innerHTML = `Wrong. Ans: <span class="text-black">${correct}</span>`;
                 feedback.className = "text-red-500 font-bold text-lg h-8 flex items-center justify-center shake";
                 input.classList.add('bg-red-50', 'border-red-500');
                 
                 input.disabled = true;      
                 checkBtn.disabled = true;   
-                
-                // KEY CHANGE: Enable Next button ONLY on wrong answer
                 nextBtn.disabled = false;
             }
         }
@@ -513,7 +509,6 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 }).then(() => {
-                    console.log("Data sent");
                     const reportTitle = document.getElementById('report-title');
                     if (!reportTitle.innerText.includes("Saved")) {
                         reportTitle.innerText = reportTitle.innerText + " (Saved 笘ｸ";
