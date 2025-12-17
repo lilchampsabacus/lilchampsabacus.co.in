@@ -25,6 +25,7 @@
         body.focus-mode { background-color: #fbf0d9 !important; color: #433422; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
+		.hidden { display: none !important; }
         .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
         .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
@@ -294,6 +295,7 @@
         }
 
         function nextSum() {
+			if (sumsData[currentSlideIndex].studentAnswer === null) return;
             document.getElementById(`slide-${currentSlideIndex}`).classList.remove('active');
             currentSlideIndex++;
             document.getElementById(`slide-${currentSlideIndex}`).classList.add('active');
@@ -335,6 +337,7 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         function endTest() {
+			if (sumsData[TOTAL_SUMS - 1].studentAnswer === null) return;
             document.body.classList.remove('focus-mode');
             clearInterval(timerInterval);
             document.getElementById('test-area').classList.add('hidden');
