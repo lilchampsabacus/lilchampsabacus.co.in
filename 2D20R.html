@@ -29,6 +29,40 @@
         .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
         .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+		/* --- MOBILE FIX FOR 10 ROWS --- */
+        @media (max-width: 768px) {
+            /* Make the sum table tighter on mobile */
+            .sum-table td {
+                padding: 0 !important;
+                height: auto !important;
+            }
+            
+            /* Reduce font size for the numbers */
+            .number-cell {
+                font-size: 1.25rem !important; /* Smaller than the current 1.5rem */
+                line-height: 1.1 !important;   /* Reduce vertical spacing */
+                padding-bottom: 2px !important;
+            }
+
+            /* Make the row numbers (1, 2, 3...) smaller */
+            .row-index {
+                font-size: 0.6rem !important;
+                width: 15px !important;
+                padding-right: 2px !important;
+            }
+            
+            /* Reduce the white box padding around the sum */
+            #question-carousel {
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Reduce the "Q 1/20" text size */
+            #question-carousel .text-center {
+                font-size: 0.65rem !important;
+                margin-bottom: 0 !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col font-sans">
@@ -304,7 +338,7 @@
             document.getElementById('feedback-display').textContent = '';
             const input = document.getElementById('answer-input');
             input.value = ''; input.disabled = false; input.classList.remove('correct-answer', 'wrong-answer'); input.focus();
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function updateStreak(isCorrect) {
