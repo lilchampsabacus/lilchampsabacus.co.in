@@ -301,9 +301,6 @@
 
     <script>
         // --- AUTHENTICATION CHECK ---
-        // As requested: If user not logged in, redirect to index.html
-        // NOTE: For this preview to work without a real index.html, ensure isLoggedIn is true in your testing environment
-        // or this line will cause a 404/loop.
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
              window.location.href = 'index.html'; 
         }
@@ -313,6 +310,7 @@
         let currentQuestion = 0;
         let userAnswers = [];
         let startTime;
+        let studentNameFormatted = "Student"; // Default
 
         // --- DOM Elements ---
         const practiceArea = document.getElementById('practice-area');
@@ -326,9 +324,9 @@
             // Check if student name exists in session, else default
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (studentIdentifier) {
-                const namePart = identifier.split('@')[0];
-                const formattedName = namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-                document.getElementById('report-student-name').textContent = formattedName;
+                const namePart = studentIdentifier.split('@')[0];
+                studentNameFormatted = namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                document.getElementById('report-student-name').textContent = studentNameFormatted;
             }
         });
 
@@ -457,6 +455,52 @@
                 wrongBtn.disabled = true;
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
+
+            // --- SEND TO GOOGLE SHEETS ---
+            sendReportToSheets(correctCount, timeFormatted, userAnswers);
+        }
+
+        function sendReportToSheets(correctCount, timeFormatted, allAnswers) {
+            const CHALLENGE_NAME = "2x1 (500 Sums)"; 
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
+
+            // Prepare Data for Sheets
+            const mistakes = allAnswers.filter(a => !a.isCorrect);
+            
+            // 1. Simple string summary
+            const mistakesString = mistakes.length > 0 
+                ? mistakes.map(m => `Q: ${m.top}x${m.bottom} (User:${m.userAnswer})`).join(", ").substring(0, 500) // Limit length
+                : "None";
+
+            // 2. Detailed Array
+            const detailedMistakesArray = mistakes.map(m => ({
+                question: `${m.top} × ${m.bottom}`,
+                wrong: m.userAnswer,
+                correct: m.correctAnswer
+            }));
+
+            if(SCRIPT_URL.includes("script.google.com")) {
+                const payload = {
+                    challengeType: CHALLENGE_NAME, 
+                    name: studentNameFormatted,
+                    score: correctCount + "/" + TOTAL_QUESTIONS,
+                    timeTaken: timeFormatted,
+                    accuracy: Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%",
+                    mistakesString: mistakesString,       
+                    detailedMistakes: detailedMistakesArray 
+                };
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    console.log("Report sent to Google Sheets!");
+                }).catch(err => {
+                    console.error("Error sending report:", err);
+                });
+            }
         }
 
         function showWrongAnswers() {
@@ -489,7 +533,6 @@
             const reportElement = document.getElementById('report-card');
             const studentName = document.getElementById('report-student-name').textContent || "Student";
             
-            // Temporarily remove shadow and border for cleaner screenshot if desired, or keep it
             html2canvas(reportElement, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `Mission_Report_${studentName.replace(/\s+/g, '_')}.png`;
