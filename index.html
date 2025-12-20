@@ -45,6 +45,7 @@
             margin-top: 5px;
             margin-bottom: 20px;
         }
+        /* Login Form Styles */
         form {
             max-width: 300px;
             margin: 0 auto;
@@ -83,6 +84,54 @@
             margin-top: 10px;
             text-align: center;
         }
+
+        /* --- NEW STYLES FOR MARKETING SECTIONS --- */
+        .section-divider {
+            margin: 40px auto;
+            border: 0;
+            border-top: 2px solid #ddd;
+            max-width: 80%;
+        }
+        .hero-section {
+            background-color: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .hero-headline {
+            color: #d35400; /* Burnt Orange for energy */
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .hero-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+        .about-section {
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            background-color: #fffaf0; /* Slightly different shade */
+            padding: 30px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        .about-section h3 {
+            color: #333;
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .feature-list li {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +154,42 @@
         </form>
             
         <p id="login-message"></p>
+
+        <hr class="section-divider">
+
+        <section class="hero-section">
+            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=800&auto=format&fit=crop" alt="Child learning mental math" class="hero-image">
+            
+            <div class="hero-headline">Master Mental Math. Build Confidence for Life.</div>
+        </section>
+
+        <section class="about-section">
+            <h3 style="font-size: 1.5em; color: #2c3e50;">Where Young Minds Master the Art of Mental Math</h3>
+            
+            <p>Welcome to <strong>Li'l Champs Abacus Academy</strong>, Ambernath’s dedicated center for whole-brain development. We are not just a tuition class; we are a training ground where children discover their hidden potential.</p>
+            
+            <p>Our mission is simple: to empower the next generation with the skills of <strong>Concentration, Confidence, and Speed</strong>. We believe that when a child masters the Abacus, they aren't just learning to calculate fast—they are learning how to focus in a distracted world.</p>
+
+            <h3>Our Proven Methodology</h3>
+            <p>We utilize a <strong>globally recognized visual arithmetic curriculum</strong> that has helped millions of children worldwide. Unlike traditional rote learning, our method activates both the left and right hemispheres of the brain.</p>
+            <ul class="feature-list">
+                <li><strong>Tactile Learning:</strong> Using the physical Abacus tool to stimulate brain sensors.</li>
+                <li><strong>Visualization:</strong> Teaching children to picture numbers mentally, turning math into a clear mental image.</li>
+                <li><strong>Listening Skills:</strong> Training students to process auditory information instantly and accurately.</li>
+            </ul>
+
+            <h3>Why Parents in Ambernath Choose Li'l Champs</h3>
+            <ul class="feature-list">
+                <li><strong>Tech-Enabled Practice:</strong> We are one of the few centers offering a dedicated Student Portal (this website!) where students can access daily exercises and stay consistent.</li>
+                <li><strong>Personalized Mentorship:</strong> Every child learns at their own pace. We ensure that your child captures the concept fully before moving to the next level.</li>
+                <li><strong>Proven Results:</strong> Our students consistently demonstrate improved academic performance, sharper memory, and the confidence to face competitive exams.</li>
+            </ul>
+
+            <p style="text-align: center; margin-top: 30px; font-weight: bold; color: #5cb85c;">
+                Join the Li'l Champs Family today!
+            </p>
+        </section>
+
     </main>
 
     <footer>
@@ -158,7 +243,3 @@
     </script>
 </body>
 </html>
-
-
-
-
