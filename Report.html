@@ -147,6 +147,8 @@
                     data.forEach(row => {
                         const tr = document.createElement('tr');
                         tr.className = "border-b border-gray-200 hover:bg-gray-50";
+
+                        let accVal = parseInt(row.accuracy) || 0;
                         
                         // Color code accuracy
                         let accuracyColor = "text-green-600";
@@ -173,6 +175,7 @@
 </body>
 
 </html>
+
 
 
 
