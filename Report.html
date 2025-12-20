@@ -66,7 +66,6 @@
                         <th class="py-3 px-6 text-center">Score</th>
                         <th class="py-3 px-6 text-center">Time</th>
                         <th class="py-3 px-6 text-center">Accuracy</th>
-                        <th class="py-3 px-6 text-center">Mistakes</th>
                     </tr>
                 </thead>
                 <tbody id="reportBody" class="text-gray-600 text-sm font-light">
@@ -160,7 +159,6 @@
                             <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score}</td>
                             <td class="py-3 px-6 text-center">${row.time}</td>
                             <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${(row.accuracy * 100).toFixed(0)}%</td>
-                             <td class="py-3 px-6 text-center text-xs text-red-500">${row.mistakes}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -175,3 +173,4 @@
 </body>
 
 </html>
+
