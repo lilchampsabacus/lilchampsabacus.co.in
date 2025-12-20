@@ -158,7 +158,7 @@
                             <td class="py-3 px-6">${row.challenge}</td>
                             <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score}</td>
                             <td class="py-3 px-6 text-center">${row.time}</td>
-                            <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${(row.accuracy).toFixed(0)}%</td>
+                            <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${row.accuracy}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -173,6 +173,7 @@
 </body>
 
 </html>
+
 
 
 
