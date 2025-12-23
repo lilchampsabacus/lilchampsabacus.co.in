@@ -17,12 +17,12 @@
         /* --- NEW PRESSURE ANIMATION (OVERLAY) --- */
         @keyframes panicPulse {
             0% { opacity: 0; }
-            50% { opacity: 0.6; } /* 60% Red Tint - Very Visible */
+            50% { opacity: 0.6; } 
             100% { opacity: 0; }
         }
         
         .animate-panic {
-            animation: panicPulse 0.8s infinite ease-in-out; /* Fast heartbeat pulse */
+            animation: panicPulse 0.8s infinite ease-in-out; 
         }
     </style>
 </head>
@@ -40,9 +40,24 @@
 
         <h2 class="text-3xl font-extrabold text-red-800 mb-6 text-center back-link">Can you handle PRESSURE?</h2>
 
+        <div id="daily-limit-screen" class="hidden max-w-md w-full bg-gray-100 p-8 rounded-2xl shadow-xl border-4 border-gray-300 text-center">
+            <div class="text-6xl mb-4">🔒</div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">Mission Locked</h3>
+            <p class="text-red-600 font-bold text-lg mb-4">You have already completed your Pressure Test for today.</p>
+            <p class="text-gray-600 mb-6">Please practice on your <strong>Physical Abacus</strong> now.</p>
+            <div class="bg-white p-4 rounded-lg border border-gray-300">
+                <p class="text-sm font-semibold text-gray-500">Next attempt available:</p>
+                <p class="text-xl font-bold text-blue-600">Tomorrow</p>
+            </div>
+            <button onclick="window.location.href='index.html'" class="mt-6 w-full py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700">
+                Go Home
+            </button>
+        </div>
+
         <div id="config-panel" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl">
-            <div class="mb-6 bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                <p class="text-gray-700 font-medium">🔥 Rule: 20 Sums. You get exactly 10 seconds per sum. Keep moving!</p>
+            <div class="mb-4 bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                <p class="text-gray-700 font-medium">🔥 Rule: 20 Sums. 10s per sum.</p>
+                <p class="text-red-700 font-bold text-sm mt-1 uppercase tracking-wide">⚠️ Limit: 1 Attempt Per Day</p>
             </div>
             
             <div class="space-y-4">
@@ -125,9 +140,9 @@
                 <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
                     Save Badge (Download)
                 </button>
-                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
-                    🔄 Replay Mission
-                </button>
+                <div class="text-center mt-4">
+                     <p class="text-xs text-gray-400">Daily limit reached. Come back tomorrow!</p>
+                </div>
             </div>
         </section>
     </main>
@@ -171,17 +186,47 @@
         const configPanel = document.getElementById('config-panel');
         const gamePanel = document.getElementById('game-panel');
         const resultsPanel = document.getElementById('results-panel');
+        const limitScreen = document.getElementById('daily-limit-screen'); // NEW
         const problemDisplay = document.getElementById('problem-display');
         const answerInput = document.getElementById('answer-input');
         const opSelect = document.getElementById('operation-select');
         const diffSelect = document.getElementById('difficulty-select');
-        const pressureOverlay = document.getElementById('pressure-overlay'); // Get Overlay
+        const pressureOverlay = document.getElementById('pressure-overlay'); 
+
+        // --- DAILY LIMIT LOGIC ---
+        function checkDailyAccess() {
+            const studentId = sessionStorage.getItem('studentIdentifier');
+            const todayStr = new Date().toDateString(); // E.g. "Tue Dec 23 2025"
+            const storageKey = `pressure_last_played_${studentId}`;
+            const lastPlayed = localStorage.getItem(storageKey);
+
+            if (lastPlayed === todayStr) {
+                // Block Access
+                configPanel.classList.add('hidden');
+                gamePanel.classList.add('hidden');
+                limitScreen.classList.remove('hidden');
+                return false;
+            }
+            return true;
+        }
+
+        function markDailyCompletion() {
+            const studentId = sessionStorage.getItem('studentIdentifier');
+            const todayStr = new Date().toDateString();
+            const storageKey = `pressure_last_played_${studentId}`;
+            localStorage.setItem(storageKey, todayStr);
+        }
+        // -------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (studentIdentifier) {
-                document.getElementById('start-button').disabled = false;
                 document.getElementById('display-student-name').textContent = formatStudentName(studentIdentifier);
+                
+                // Check if they played today before enabling the button
+                if (checkDailyAccess()) {
+                    document.getElementById('start-button').disabled = false;
+                }
             }
             updateDifficultyOptions();
         });
@@ -246,6 +291,8 @@
         }
 
         function startGame() {
+            if (!checkDailyAccess()) return; // Double check
+
             isGameActive = true;
             correctCount = 0; wrongCount = 0; skippedCount = 0; 
             currentQuestionIndex = 0;
@@ -260,7 +307,6 @@
         }
 
         function loadNextQuestion() {
-            // *** HIDE OVERLAY FOR NEXT QUESTION ***
             pressureOverlay.classList.add('hidden');
             pressureOverlay.classList.remove('animate-panic');
 
@@ -290,7 +336,6 @@
             currentQuestionTime--;
             document.getElementById('timer-display').textContent = currentQuestionTime;
             
-            // *** SHOW OVERLAY AT 3 SECONDS ***
             if (currentQuestionTime <= 3) {
                 pressureOverlay.classList.remove('hidden');
                 pressureOverlay.classList.add('animate-panic');
@@ -322,12 +367,14 @@
         }
 
         function endGame() {
-            // Remove overlay
             pressureOverlay.classList.add('hidden');
             pressureOverlay.classList.remove('animate-panic');
             
             isGameActive = false;
             clearInterval(questionTimerInterval);
+
+            // *** MARK AS PLAYED TODAY ***
+            markDailyCompletion();
             
             gamePanel.classList.add('hidden');
             resultsPanel.classList.remove('hidden');
@@ -376,5 +423,3 @@
     </script>
 </body>
 </html>
-
-
