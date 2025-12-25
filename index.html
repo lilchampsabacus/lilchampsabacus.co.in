@@ -17,17 +17,22 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll from Santa animation */
         }
         header {
             background-color: #ffff94;
             color: black;
             padding: 15px 10px;
             text-align: center;
+            z-index: 10; /* Keep header above snow */
+            position: relative;
         }
         main {
             flex-grow: 1;
             padding: 20px;
             text-align: center;
+            z-index: 10; /* Keep login form above snow */
+            position: relative;
         }
         footer {
             background-color: #ffff94;
@@ -35,9 +40,11 @@
             padding: 10px;
             text-align: center;
             font-size: 0.9em;
+            z-index: 10;
+            position: relative;
         }
         h1 {
-            font-size: 1.5em; /* Smaller on mobile */
+            font-size: 1.5em; 
             margin: 0;
         }
         h2 {
@@ -54,6 +61,8 @@
             border-radius: 8px;
             background-color: white;
             text-align: left;
+            position: relative;
+            z-index: 20; /* Ensure form is clickable */
         }
         label, input, button {
             display: block;
@@ -68,7 +77,7 @@
         }
         button {
             padding: 10px;
-            background-color: #5cb85c;
+            background-color: #c0392b; /* CHANGED TO CHRISTMAS RED */
             color: white;
             border: none;
             cursor: pointer;
@@ -76,7 +85,7 @@
             font-weight: bold;
         }
         button:hover {
-            background-color: #4cae4c;
+            background-color: #a93226;
         }
         #login-message {
             color: red;
@@ -85,7 +94,71 @@
             text-align: center;
         }
 
-        /* --- NEW STYLES FOR MARKETING SECTIONS --- */
+        /* --- CHRISTMAS SPECIAL STYLES --- */
+        
+        /* 1. Snow Effect */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #add8e6; /* Light Blue Snow */
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px #000;
+            user-select: none;
+            z-index: 1; /* Behind the login form */
+            pointer-events: none; /* Allows clicking through snow */
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* 2. Santa on Horse Animation */
+        .santa-container {
+            position: fixed;
+            bottom: 60px; /* Just above footer */
+            left: -200px; /* Start off screen */
+            font-size: 3rem; /* Big Icons */
+            z-index: 5;
+            animation: rideAcross 15s linear infinite;
+            display: flex;
+            align-items: center;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
+        }
+        
+        /* Combine emojis to look like riding */
+        .santa-group {
+            display: flex;
+            align-items: center;
+        }
+
+        @keyframes rideAcross {
+            0% { left: -200px; transform: scaleX(1); }
+            45% { left: 45%; transform: scaleX(1) rotate(0deg); }
+            50% { left: 50%; transform: scaleX(1) rotate(-10deg); } /* Little jump */
+            55% { left: 55%; transform: scaleX(1) rotate(0deg); }
+            100% { left: 110%; transform: scaleX(1); }
+        }
+
+        /* 3. Christmas Tree */
+        .xmas-tree {
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            font-size: 4rem;
+            z-index: 4;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from { filter: drop-shadow(0 0 2px gold); transform: scale(1); }
+            to { filter: drop-shadow(0 0 10px gold); transform: scale(1.05); }
+        }
+
+        /* --- EXISTING MARKETING STYLES --- */
         .section-divider {
             margin: 40px auto;
             border: 0;
@@ -99,9 +172,11 @@
             margin: 20px auto;
             max-width: 800px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
         }
         .hero-headline {
-            color: #d35400; /* Burnt Orange for energy */
+            color: #d35400; 
             font-size: 1.8em;
             font-weight: bold;
             margin-top: 20px;
@@ -118,10 +193,12 @@
             text-align: left;
             max-width: 800px;
             margin: 0 auto 40px auto;
-            background-color: #fffaf0; /* Slightly different shade */
+            background-color: #fffaf0; 
             padding: 30px;
             border-radius: 10px;
             line-height: 1.6;
+            position: relative;
+            z-index: 10;
         }
         .about-section h3 {
             color: #333;
@@ -136,12 +213,16 @@
 </head>
 <body>
 
+    <div class="xmas-tree">🎄</div>
+    <div class="santa-container">
+        <span style="font-size: 40px; margin-right: -15px; z-index: 2;">🎅</span> <span style="font-size: 50px;">🐎</span> <span style="font-size: 30px; margin-left: 10px;">🎁</span> </div>
     <header>
         <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
         <h2>Best Abacus & Brain Development Center in Ambernath</h2>
     </header>
 
     <main>
+        <p style="font-weight: bold; color: #c0392b;">🎅 Merry Christmas Students! 🎄</p>
         <p style="font-weight: bold;">Student Login</p>
         <form id="loginForm">
             <label for="username">Username (use small-caps):</label>
@@ -197,12 +278,35 @@
     </footer>
 
     <script>
+        // --- SNOWFALL SCRIPT START ---
+        function createSnow() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            
+            // Randomize position and animation duration
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's'; // Between 2 and 5 seconds
+            snowflake.style.opacity = Math.random();
+            snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+            
+            document.body.appendChild(snowflake);
+            
+            // Remove snowflake after it falls to keep browser light
+            setTimeout(() => {
+                snowflake.remove();
+            }, 5000);
+        }
+
+        // Generate a snowflake every 100ms
+        setInterval(createSnow, 100);
+        // --- SNOWFALL SCRIPT END ---
+
+
         // 1. SUPABASE CONFIGURATION 
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
-        // FIX: Initialize the Supabase Client with a different variable name (supabaseClient)
-        // This avoids conflict with the global 'supabase' object provided by the CDN.
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // This function is called by the button with onclick="handleLogin()"
@@ -214,7 +318,6 @@
             
             messageElement.textContent = "Checking credentials...";
 
-            // 2. USE THE CORRECTED VARIABLE NAME FOR THE AUTHENTICATION CALL
             const { error } = await supabaseClient.auth.signInWithPassword({
                 email: identifier, 
                 password: password
@@ -243,4 +346,3 @@
     </script>
 </body>
 </html>
-
