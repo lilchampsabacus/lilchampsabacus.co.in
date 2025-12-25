@@ -15,6 +15,7 @@
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
         .number-cell { text-align: center; font-size: 1.5rem; font-weight: 700; padding: 0; border-bottom: 1px solid #e5e7eb; color: #374151; line-height: 1.2; }
         @media (min-width: 768px) { .number-cell { font-size: 2rem; padding: 0.25rem; } }
@@ -22,47 +23,23 @@
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
         .negative-number { color: #dc2626; } 
+        
         body.focus-mode { background-color: #fbf0d9 !important; color: #433422; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
 		.hidden { display: none !important; }
-        .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
-        .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; animation: shake 0.3s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
 		/* --- MOBILE FIX FOR 10 ROWS --- */
         @media (max-width: 768px) {
-            /* Make the sum table tighter on mobile */
-            .sum-table td {
-                padding: 0 !important;
-                height: auto !important;
-            }
-            
-            /* Reduce font size for the numbers */
-            .number-cell {
-                font-size: 1.25rem !important; /* Smaller than the current 1.5rem */
-                line-height: 1.1 !important;   /* Reduce vertical spacing */
-                padding-bottom: 2px !important;
-            }
-
-            /* Make the row numbers (1, 2, 3...) smaller */
-            .row-index {
-                font-size: 0.6rem !important;
-                width: 15px !important;
-                padding-right: 2px !important;
-            }
-            
-            /* Reduce the white box padding around the sum */
-            #question-carousel {
-                margin-bottom: 0.5rem;
-            }
-            
-            /* Reduce the "Q 1/20" text size */
-            #question-carousel .text-center {
-                font-size: 0.65rem !important;
-                margin-bottom: 0 !important;
-            }
+            .sum-table td { padding: 0 !important; height: auto !important; }
+            .number-cell { font-size: 1.25rem !important; line-height: 1.1 !important; padding-bottom: 2px !important; }
+            .row-index { font-size: 0.6rem !important; width: 15px !important; padding-right: 2px !important; }
+            #question-carousel { margin-bottom: 0.5rem; }
+            #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
         }
+        
+        /* Review Section Styling */
+        .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
     </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col font-sans">
@@ -98,7 +75,7 @@
             </div>
             
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
-                🚀 Launch Mission
+                噫 Launch Mission
             </button>
         </section>
 
@@ -111,35 +88,22 @@
                 <div class="w-full md:w-1/2 max-w-sm mx-auto order-2 md:sticky md:top-4">
                     <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
                         <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
-                        <input type="number" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="Enter Answer">
-                        <div id="feedback-display" class="h-6 text-center font-bold text-md mb-2"></div>
-
-                        <div class="flex flex-col gap-2">
-                            <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-transform active:scale-95">Check (Enter)</button>
-                            <button id="next-btn" onclick="nextSum()" class="hidden w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg">Next Question &rarr;</button>
-                            <button id="finish-btn" onclick="endTest()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-lg animate-pulse">Get Report 🏁</button>
+                        <input type="number" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
+                        
+                        <div class="flex flex-col gap-2 mt-2">
+                            <button id="submit-button" onclick="submitAndNext()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-transform active:scale-95">
+                                Next &rarr;
+                            </button>
                         </div>
                     </div>
 
                     <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
-                            <div id="streak-display" class="font-bold text-orange-500 text-sm hidden">🔥<span id="streak-count">0</span></div>
                         </div>
-                        <div class="relative w-full h-8 mt-2 mb-2 select-none">
-    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
-    
-    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
-        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
-            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
-            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
-            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
-            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
-            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
-        </svg>
-    </div>
-</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
                         <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
                     </div>
                 </div>
@@ -169,9 +133,24 @@
                     <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
                 </div>
                 <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">Save Badge (Download)</button>
-                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">🔄 Replay Mission</button>
+                
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
+                    Review Mistakes
+                </button>
+
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">売 Replay Mission</button>
             </div>
         </section>
+
+        <section id="wrong-answer-area" class="hidden w-full max-w-4xl mx-auto p-4">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
+            <div id="wrong-sums-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                </div>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
+                &larr; Back to Scoreboard
+            </button>
+        </section>
+
     </main>
 
     <footer class="bg-yellow-200 text-center p-3 mt-auto">
@@ -187,7 +166,6 @@
         let sumsData = [];
         let startTime;
         let currentSlideIndex = 0;
-        let currentStreak = 0;
         let timerInterval;
 
         function formatStudentName(identifier) {
@@ -236,10 +214,10 @@
                 else if (optionValue === 2) { // 3 Digits
                     if (i <= 2) { min = 555; max = 999; } else { min = 100; max = 999; }
                 }
-                else if (optionValue === 4) { // 4 Digits (NEW)
+                else if (optionValue === 4) { // 4 Digits
                     if (i <= 2) { min = 5555; max = 9999; } else { min = 1000; max = 9999; }
                 }
-                else if (optionValue === 5) { // 5 Digits (NEW)
+                else if (optionValue === 5) { // 5 Digits
                     if (i <= 2) { min = 55555; max = 99999; } else { min = 10000; max = 99999; }
                 }
                 else { min = 1; max = 9; }
@@ -272,6 +250,19 @@
             }
         }
 
+        // Helper to generate the HTML table for a sum
+        function createSumTableHtml(numbers) {
+            let tableHtml = '<table class="sum-table">';
+            numbers.forEach((num, rIndex) => {
+                const isNeg = num < 0;
+                const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
+                const colorClass = isNeg ? 'negative-number' : '';
+                tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}</td></tr>`;
+            });
+            tableHtml += '</table>';
+            return tableHtml;
+        }
+
         function renderCards() {
             const carousel = document.getElementById('question-carousel');
             carousel.innerHTML = '';
@@ -280,97 +271,75 @@
                 slideDiv.className = `slide-container ${index === 0 ? 'active' : ''}`;
                 slideDiv.id = `slide-${index}`;
                 
-                let tableHtml = '<table class="sum-table">';
-                data.numbers.forEach((num, rIndex) => {
-                    const isNeg = num < 0;
-                    const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
-                    const colorClass = isNeg ? 'negative-number' : '';
-                    tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}</td></tr>`;
-                });
-                tableHtml += '</table>';
+                const tableHtml = createSumTableHtml(data.numbers);
 
                 slideDiv.innerHTML = `<div class="text-center mb-1 font-bold text-gray-400 text-xs uppercase">Q ${index + 1} / ${TOTAL_SUMS}</div>${tableHtml}`;
                 carousel.appendChild(slideDiv);
             });
+            
+            setupInputInteraction();
+        }
+
+        function setupInputInteraction() {
             const input = document.getElementById('answer-input');
-            input.value = ''; input.disabled = false; input.focus();
-            input.addEventListener('keydown', (e) => {
+            input.value = ''; 
+            input.disabled = false; 
+            input.focus();
+            
+            // Remove old listeners to prevent stacking
+            const newNode = input.cloneNode(true);
+            input.parentNode.replaceChild(newNode, input);
+            
+            const freshInput = document.getElementById('answer-input');
+            freshInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const btn = document.getElementById('submit-button');
-                    const nextBtn = document.getElementById('next-btn');
-                    if (!btn.classList.contains('hidden')) checkAnswer();
-                    else if (!nextBtn.classList.contains('hidden')) nextSum();
+                    submitAndNext();
                 }
             });
         }
 
-        function checkAnswer() {
+        // --- CORE LOGIC: NO IMMEDIATE FEEDBACK, AUTO NEXT ---
+        function submitAndNext() {
             const input = document.getElementById('answer-input');
-            const val = parseInt(input.value);
-            if (isNaN(val)) return;
-            const currentData = sumsData[currentSlideIndex];
-            currentData.studentAnswer = val;
-            input.disabled = true;
-            const feedbackDiv = document.getElementById('feedback-display');
-            if (val === currentData.correctTotal) {
-                currentData.isCorrect = true;
-                input.classList.add('correct-answer'); input.classList.remove('wrong-answer');
-                feedbackDiv.textContent = "Correct! 🎉"; feedbackDiv.className = "text-green-600 font-bold text-lg mb-2 h-6";
-                updateStreak(true);
-                setTimeout(() => { if (currentSlideIndex < TOTAL_SUMS - 1) nextSum(); else updateButtonsForEnd(); }, 800);
-            } else {
-                currentData.isCorrect = false;
-                input.classList.add('wrong-answer'); input.classList.remove('correct-answer');
-                feedbackDiv.innerHTML = `Wrong. Correct Ans: <span class="text-black">${currentData.correctTotal}</span>`;
-                feedbackDiv.className = "text-red-500 font-bold text-lg mb-2 h-6";
-                updateStreak(false);
-                updateButtonsForEnd();
+            const valStr = input.value.trim();
+            
+            // Validation: Do not proceed if empty
+            if (valStr === '') {
+                input.focus();
+                // Optional: visual cue to enter something
+                input.classList.add('border-red-500');
+                setTimeout(() => input.classList.remove('border-red-500'), 500);
+                return;
             }
-            updateProgress();
-        }
 
-        function updateButtonsForEnd() {
-            document.getElementById('submit-button').classList.add('hidden');
+            const val = parseInt(valStr);
+            
+            // Save Data
+            sumsData[currentSlideIndex].studentAnswer = val;
+
+            // Logic to move forward or end
             if (currentSlideIndex < TOTAL_SUMS - 1) {
-                const nextBtn = document.getElementById('next-btn'); nextBtn.classList.remove('hidden'); nextBtn.focus();
+                // Move to next sum
+                document.getElementById(`slide-${currentSlideIndex}`).classList.remove('active');
+                currentSlideIndex++;
+                document.getElementById(`slide-${currentSlideIndex}`).classList.add('active');
+                
+                // Clear Input & Focus
+                input.value = '';
+                input.focus();
+                
+                // Update Progress (Visual only)
+                const pct = ((currentSlideIndex) / TOTAL_SUMS) * 100;
+                document.getElementById('progress-bar').style.width = `${pct}%`;
+                document.getElementById('progress-text').textContent = `${currentSlideIndex}/${TOTAL_SUMS}`;
+                
             } else {
-                const finishBtn = document.getElementById('finish-btn'); finishBtn.classList.remove('hidden'); finishBtn.focus();
+                // End Test
+                document.getElementById('progress-bar').style.width = `100%`;
+                document.getElementById('progress-text').textContent = `${TOTAL_SUMS}/${TOTAL_SUMS}`;
+                endTest();
             }
-        }
-
-        function nextSum() {
-			if (sumsData[currentSlideIndex].studentAnswer === null) return;
-            document.getElementById(`slide-${currentSlideIndex}`).classList.remove('active');
-            currentSlideIndex++;
-            document.getElementById(`slide-${currentSlideIndex}`).classList.add('active');
-            document.getElementById('submit-button').classList.remove('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('feedback-display').textContent = '';
-            const input = document.getElementById('answer-input');
-            input.value = ''; input.disabled = false; input.classList.remove('correct-answer', 'wrong-answer'); input.focus();
-            input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function updateStreak(isCorrect) {
-            const streakDisplay = document.getElementById('streak-display');
-            if (isCorrect) {
-                currentStreak++;
-                if (currentStreak > 1) { streakDisplay.classList.remove('hidden'); document.getElementById('streak-count').textContent = currentStreak; }
-            } else {
-                currentStreak = 0; streakDisplay.classList.add('hidden');
-            }
-        }
-
-        function updateProgress() {
-            const totalAnswered = sumsData.filter(s => s.studentAnswer !== null).length;
-            const pct = (totalAnswered / TOTAL_SUMS) * 100;
-            //document.getElementById('progress-bar').style.width = `${pct}%`;
-			const bead = document.getElementById('progress-bead');
-    				if(bead) {
-        					bead.style.left = `${pct}%`;
-    				}
-            document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_SUMS}`;
         }
 
         function startTest() {
@@ -386,19 +355,29 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         function endTest() {
-			if (sumsData[TOTAL_SUMS - 1].studentAnswer === null) return;
             document.body.classList.remove('focus-mode');
             clearInterval(timerInterval);
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            let correctCount = 0; let mistakesLog = [];
+            
+            // --- CALCULATION LOGIC MOVED TO END ---
+            let correctCount = 0; 
+            let mistakesLog = [];
+            let solvedWrongCount = 0;
+
             sumsData.forEach((data, index) => {
-                if (data.isCorrect) { correctCount++; } 
-                else { 
+                if (data.studentAnswer === data.correctTotal) {
+                    data.isCorrect = true;
+                    correctCount++;
+                } else {
+                    data.isCorrect = false;
+                    solvedWrongCount++;
                     const studentAns = data.studentAnswer !== null ? data.studentAnswer : "Skipped";
                     mistakesLog.push(`Q${index + 1}: ${studentAns} vs ${data.correctTotal}`);
                 }
             });
+            // --------------------------------------
+
             const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
@@ -407,7 +386,19 @@
             const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             const accuracyVal = Math.round((correctCount / TOTAL_SUMS) * 100) + "%";
 
-            // --- DYNAMIC CHALLENGE NAME LOGIC ---
+            // Update Review Button
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (solvedWrongCount > 0) {
+                wrongBtn.textContent = `Review ${solvedWrongCount} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score! No Mistakes.";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // Challenge Name Logic
             const selectorElement = document.getElementById("practice-type");
             let CHALLENGE_NAME = "2D10R"; 
             if (selectorElement) {
@@ -419,7 +410,6 @@
                 else if (val === "5") CHALLENGE_NAME = "5D10R";
                 else CHALLENGE_NAME = selectorElement.options[selectorElement.selectedIndex].text;
             }
-            // ------------------------------------
             
             const rawName = document.getElementById('student-identifier-input').value;
             const formattedName = formatStudentName(rawName);
@@ -445,6 +435,43 @@
                     body: JSON.stringify(payload)
                 }).then(() => console.log("Report sent successfully!")).catch(err => console.error("Error sending report:", err));
             }
+        }
+
+        // --- WRONG ANSWERS VIEW ---
+        function showWrongAnswers() {
+            const wrongSums = sumsData.filter(s => s.isCorrect === false); 
+            const listContainer = document.getElementById('wrong-sums-list');
+            listContainer.innerHTML = '';
+            
+            wrongSums.forEach((sum, index) => {
+                const tableHtml = createSumTableHtml(sum.numbers);
+                
+                const card = `
+                    <div class="review-card shadow-lg p-2 flex flex-col items-center">
+                        <div class="w-full border-b pb-2 mb-2 text-center text-gray-500 font-bold text-xs">Correction</div>
+                        ${tableHtml}
+                        <div class="w-full mt-2 pt-2 border-t flex justify-between px-4 bg-gray-50">
+                            <div class="text-center">
+                                <div class="text-xs text-red-500 font-bold">You Said</div>
+                                <div class="text-lg font-bold text-red-600 line-through">${sum.studentAnswer}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-green-600 font-bold">Correct</div>
+                                <div class="text-lg font-bold text-green-700">${sum.correctTotal}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += card;
+            });
+
+            document.getElementById('report-area').classList.add('hidden');
+            document.getElementById('wrong-answer-area').classList.remove('hidden');
+        }
+
+        function showReport() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
         }
     </script>
 </body>
