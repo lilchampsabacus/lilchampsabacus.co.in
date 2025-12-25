@@ -125,9 +125,27 @@
                         🔥 Streak: <span id="streak-count">0</span>
                     </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
+               <div class="relative w-full h-8 mt-2 mb-2 select-none">
+    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
+    
+    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
+        
+        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
+
+            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
+            
+            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
+            
+            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            
+            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
+            
+            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
+        </svg>
+
+        </div>
+</div>
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Start</span>
                     <span id="progress-text">0/30 Solved</span>
@@ -415,7 +433,8 @@
         function updateProgress() {
             const totalAnswered = sumsData.filter(s => s.studentAnswer !== null).length;
             const percentage = (totalAnswered / TOTAL_SUMS) * 100;
-            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            //document.getElementById('progress-bar').style.width = `${percentage}%`;
+			document.getElementById('progress-bead').style.left = `${percentage}%`;
             document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_SUMS} Solved`;
         }
 
@@ -625,6 +644,7 @@
     </script>
 </body>
 </html>
+
 
 
 
