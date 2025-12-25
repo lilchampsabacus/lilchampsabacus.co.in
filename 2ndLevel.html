@@ -42,7 +42,7 @@
         }
 
         .number-row {
-            font-family: 'Courier New', Courier, monospace; /* Monospace for alignment */
+            font-family: 'Courier New', Courier, monospace;
             font-size: 2.5rem;
             font-weight: 700;
             text-align: right;
@@ -58,7 +58,7 @@
             border-radius: 2px;
         }
 
-        /* --- FOCUS MODE (Kindle Style) --- */
+        /* --- FOCUS MODE --- */
         body.focus-mode {
             background-color: #fbf0d9 !important; 
             color: #433422;
@@ -76,24 +76,6 @@
             background-color: transparent !important;
             box-shadow: none !important;
             padding: 0 !important;
-        }
-
-        /* Input Feedback */
-        .correct-answer {
-            background-color: #dcfce7 !important; 
-            border-color: #22c55e !important;
-            color: #15803d;
-        }
-        .wrong-answer {
-            background-color: #fee2e2 !important;
-            border-color: #ef4444 !important;
-            color: #b91c1c;
-            animation: shake 0.3s;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
     </style>
 </head>
@@ -130,24 +112,22 @@
             <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
                 <div class="flex justify-between items-center mb-2">
                     <div class="text-gray-600 font-semibold">Progress</div>
-                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden">
-                        🔥 Streak: <span id="streak-count">0</span>
+                </div>
+                
+                <div class="relative w-full h-8 mt-2 mb-2 select-none">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
+                    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
+                        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
+                            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
+                            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
+                            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
+                            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
+                        </svg>
                     </div>
                 </div>
-                <div class="relative w-full h-8 mt-2 mb-2 select-none">
-    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
-    
-    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
-        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
-            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
-            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
-            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
-            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
-            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
-        </svg>
-    </div>
-</div>
+                
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Start</span>
                     <span id="progress-text">0/20 Solved</span>
@@ -157,17 +137,11 @@
             <div id="question-carousel" class="mb-6 flex justify-center">
                 </div>
             
-            <div id="feedback-display" class="h-8 text-center font-bold text-lg mb-4"></div>
+            <div id="validation-message" class="h-6 text-center font-bold text-red-500 mb-2"></div>
 
             <div class="flex flex-col gap-3 max-w-xs mx-auto">
-                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
-                    Check Answer (Enter)
-                </button>
-                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
-                    Next Question &rarr;
-                </button>
-                <button id="finish-btn" onclick="endTest()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-lg animate-pulse">
-                    Finish Mission 🏁
+                <button id="submit-button" onclick="submitAndNext()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">
+                    Submit Answer
                 </button>
             </div>
         </section>
@@ -256,7 +230,6 @@
         
         let quizData = [];
         let currentQuestionIndex = 0;
-        let currentStreak = 0;
         let startTime;
         let timerInterval;
 
@@ -301,7 +274,7 @@
             renderQuestion(); 
         });
 
-        // --- MATH GENERATION (Specific Logic Preserved) ---
+        // --- MATH GENERATION ---
         function generateQuestion() {
             // 1. First Number (N1): Always positive
             const N1 = getRandomElement(POSITIVE_NUMBERS);
@@ -347,6 +320,9 @@
             const container = document.getElementById('question-carousel');
             container.innerHTML = ''; // Clear previous
             
+            // Validation reset
+            document.getElementById('validation-message').textContent = '';
+
             const currentQ = quizData[currentQuestionIndex];
             
             const slideDiv = document.createElement('div');
@@ -381,98 +357,66 @@
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const btn = document.getElementById('submit-button');
-                    const nextBtn = document.getElementById('next-btn');
-                    if (!btn.classList.contains('hidden')) checkAnswer();
-                    else if (!nextBtn.classList.contains('hidden')) nextQuestion();
+                    submitAndNext();
                 }
             });
         }
 
-        // --- GAME FLOW ---
-        function checkAnswer() {
+        // --- GAME FLOW (NEW LOGIC) ---
+        function submitAndNext() {
             const input = document.getElementById('answer-input');
-            const val = parseInt(input.value);
-            
+            const valStr = input.value.trim();
+            const validationMsg = document.getElementById('validation-message');
+
+            // 1. Validation Check
+            if (valStr === '') {
+                validationMsg.textContent = "Please enter an answer";
+                input.focus();
+                // Optional: visual shake
+                input.classList.add('border-red-500', 'border-2');
+                setTimeout(() => input.classList.remove('border-red-500', 'border-2'), 500);
+                return;
+            }
+
+            const val = parseInt(valStr);
             if (isNaN(val)) return;
 
+            // 2. Save Data (No visible feedback)
             const currentQ = quizData[currentQuestionIndex];
             currentQ.userAnswer = val;
-            input.disabled = true;
+            currentQ.isCorrect = (val === currentQ.correctAnswer);
 
-            const feedbackDiv = document.getElementById('feedback-display');
-            
-            if (val === currentQ.correctAnswer) {
-                currentQ.isCorrect = true;
-                input.classList.add('correct-answer');
-                feedbackDiv.textContent = "Correct! 🎉";
-                feedbackDiv.className = "text-green-600 font-bold text-lg mb-4 h-8 text-center"; // Centered
-                updateStreak(true);
-                
-                // Auto Advance on Correct
-                setTimeout(() => {
-                    if (currentQuestionIndex < TOTAL_QUESTIONS - 1) nextQuestion();
-                    else updateButtonsForEnd();
-                }, 800);
-
-            } else {
-                currentQ.isCorrect = false;
-                input.classList.add('wrong-answer');
-                feedbackDiv.innerHTML = `Wrong. Correct: ${currentQ.correctAnswer}`;
-                feedbackDiv.className = "text-red-500 font-bold text-lg mb-4 h-8 text-center"; // Centered
-                updateStreak(false);
-                updateButtonsForEnd(); // Manual advance for wrong answers
-            }
-            updateProgress();
-        }
-
-        function updateButtonsForEnd() {
-            document.getElementById('submit-button').classList.add('hidden');
+            // 3. Auto Advance
             if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
-                const nextBtn = document.getElementById('next-btn');
-                nextBtn.classList.remove('hidden');
-                nextBtn.focus();
+                currentQuestionIndex++;
+                updateProgress(); // Move bead
+                renderQuestion();
             } else {
-                const finishBtn = document.getElementById('finish-btn');
-                finishBtn.classList.remove('hidden');
-                finishBtn.focus();
-            }
-        }
-
-        function nextQuestion() {
-            currentQuestionIndex++;
-            
-            // Reset Controls
-            document.getElementById('submit-button').classList.remove('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('feedback-display').textContent = '';
-            
-            renderQuestion();
-        }
-
-        function updateStreak(isCorrect) {
-            const streakDisplay = document.getElementById('streak-display');
-            if (isCorrect) {
-                currentStreak++;
-                if (currentStreak > 1) {
-                    streakDisplay.classList.remove('hidden');
-                    document.getElementById('streak-count').textContent = currentStreak;
-                }
-            } else {
-                currentStreak = 0;
-                streakDisplay.classList.add('hidden');
+                updateProgress(); // Ensure bead goes to 100%
+                endTest();
             }
         }
 
         function updateProgress() {
-            const totalAnswered = quizData.filter(s => s.userAnswer !== null).length;
-            const pct = (totalAnswered / TOTAL_QUESTIONS) * 100;
-            //document.getElementById('progress-bar').style.width = `${pct}%`;
-			const bead = document.getElementById('progress-bead');
-    			if(bead) {
-       				 bead.style.left = `${pct}%`;
-    			}
+            // BEAD LOGIC
+            const pct = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
+            const bead = document.getElementById('progress-bead');
+            const totalAnswered = currentQuestionIndex + 1; // Since we only update after answering
+            
+            // Special check for end of test trigger
+            if (totalAnswered > TOTAL_QUESTIONS) return;
+
+            if(bead) {
+                bead.style.left = `${pct}%`;
+            }
             document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_QUESTIONS} Solved`;
+        }
+        
+        // Manual override for 'start' state
+        function initProgress() {
+             const bead = document.getElementById('progress-bead');
+             if(bead) bead.style.left = `0%`;
+             document.getElementById('progress-text').textContent = `0/${TOTAL_QUESTIONS} Solved`;
         }
 
         // --- START & END ---
@@ -480,6 +424,7 @@
             document.body.classList.add('focus-mode');
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
+            initProgress();
             startTime = Date.now();
             startTimer();
         }
@@ -505,7 +450,6 @@
                     correctCount++;
                 } else {
                     // 1. Format the question (e.g. "10 + 20 - 5")
-                    // We join with ' + ', then fix any double signs like "+ -" to just "- "
                     const qText = q.numbers.join(' + ').replace(/\+ -/g, '- ');
                     const userAns = q.userAnswer !== null ? q.userAnswer : "Skipped";
                     
@@ -557,7 +501,6 @@
 
             // --- SEND TO GOOGLE SHEETS ---
             const CHALLENGE_NAME = "2ndLevel"; 
-            // This is the URL from your previous 2x1 file
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
 
             if(SCRIPT_URL.includes("script.google.com")) {
