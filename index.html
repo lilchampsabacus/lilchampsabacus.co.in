@@ -8,6 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Li'l Champs - Hero Headquarters</title>
     <style>
+        /* --- GLOBAL RESETS --- */
+        * {
+            box-sizing: border-box; /* Crucial for responsive layout */
+        }
+
         /* --- SUPERHERO THEME VARIABLES --- */
         :root {
             --hero-blue: #0056b3;
@@ -18,7 +23,7 @@
         }
 
         body {
-            font-family: 'Verdana', sans-serif; /* Cleaner, stronger font */
+            font-family: 'Verdana', sans-serif;
             background-color: var(--bg-sky);
             margin: 0;
             padding: 0;
@@ -29,27 +34,6 @@
         }
 
         /* --- ANIMATED BACKGROUND (CITYSCAPE) --- */
-        .city-background {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 30vh;
-            background-repeat: repeat-x;
-            background-size: 50% 100%;
-            /* CSS Drawing of a city skyline */
-            background-image: 
-                linear-gradient(to top, #2c3e50 0%, #2c3e50 100%),
-                linear-gradient(to top, #34495e 0%, #34495e 100%),
-                linear-gradient(to top, #2c3e50 0%, #2c3e50 100%);
-            background-position: 0 bottom, 100px bottom, 200px bottom;
-            z-index: 0;
-            opacity: 0.8;
-            /* Create the building shapes using clip-path could be complex, 
-               so we use a simple blocky silhouette via opacity/gradients or just a simple div 
-               For simplicity and performance, we will use a scrolling div block below */
-        }
-        
         .sky-clouds {
             position: fixed;
             top: 0;
@@ -104,6 +88,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         /* --- SUPER LOGIN FORM --- */
@@ -117,11 +102,13 @@
             max-width: 350px;
             width: 100%;
             margin-top: 20px;
-            animation: floatCard 4s ease-in-out infinite;
+            /* Animation commented out to prevent jitter on some mobile screens, 
+               uncomment if you want the float effect back */
+            /* animation: floatCard 4s ease-in-out infinite; */
             transition: transform 0.5s ease, opacity 0.5s ease;
         }
 
-        /* Comic "Boom" decoration */
+        /* The Badge - Default Desktop Style */
         .login-badge {
             position: absolute;
             top: -30px;
@@ -140,6 +127,7 @@
             box-shadow: 3px 3px 0px black;
             font-size: 0.8em;
             text-align: center;
+            z-index: 20;
         }
 
         @keyframes floatCard {
@@ -149,11 +137,13 @@
         }
 
         label {
+            display: block;
             font-weight: bold;
             color: var(--comic-black);
             text-transform: uppercase;
             font-size: 0.9em;
             text-align: left;
+            margin-bottom: 5px;
         }
 
         input[type="text"], input[type="password"] {
@@ -217,7 +207,7 @@
             100% { transform: scale(0) rotate(360deg); opacity: 0; }
         }
 
-        /* --- MARKETING SECTION (Retained but styled) --- */
+        /* --- MARKETING SECTION --- */
         .hero-section {
             background-color: white;
             padding: 20px;
@@ -226,12 +216,14 @@
             box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
             margin: 40px auto;
             max-width: 800px;
+            width: 95%; /* Better width on mobile */
         }
         
         .section-divider {
             border-top: 4px dashed var(--comic-black);
             margin: 40px auto;
             opacity: 0.3;
+            width: 100%;
         }
 
         footer {
@@ -242,10 +234,26 @@
             z-index: 10;
         }
 
-        /* Responsive text */
+        /* --- RESPONSIVE FIXES (The Magic Part) --- */
         @media (max-width: 600px) {
             h1 { font-size: 1.2em; }
             .flying-hero { font-size: 3rem; }
+            
+            /* Fix container width on mobile */
+            .login-container {
+                max-width: 90%; /* Leave space on sides */
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            /* Fix the badge cropping */
+            .login-badge {
+                right: -10px; /* Pull closer to box */
+                top: -25px;
+                width: 60px; /* Slightly smaller */
+                height: 60px;
+                font-size: 0.7em;
+            }
         }
     </style>
 </head>
@@ -297,7 +305,7 @@
     </footer>
 
     <script>
-        // 1. SUPABASE CONFIGURATION (Kept exactly as requested)
+        // 1. SUPABASE CONFIGURATION
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
