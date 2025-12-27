@@ -6,317 +6,312 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Li'l Champs - Daily Practice</title>
+    <title>Li'l Champs - Hero Headquarters</title>
     <style>
-        /* Basic CSS for mobile-friendliness and styling */
+        /* --- SUPERHERO THEME VARIABLES --- */
+        :root {
+            --hero-blue: #0056b3;
+            --hero-red: #e74c3c;
+            --hero-yellow: #f1c40f;
+            --comic-black: #2c3e50;
+            --bg-sky: #87CEEB;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #FFFFE0; /* Light yellow background */
+            font-family: 'Verdana', sans-serif; /* Cleaner, stronger font */
+            background-color: var(--bg-sky);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden; /* Prevent horizontal scroll from Santa animation */
+            overflow-x: hidden;
         }
+
+        /* --- ANIMATED BACKGROUND (CITYSCAPE) --- */
+        .city-background {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 30vh;
+            background-repeat: repeat-x;
+            background-size: 50% 100%;
+            /* CSS Drawing of a city skyline */
+            background-image: 
+                linear-gradient(to top, #2c3e50 0%, #2c3e50 100%),
+                linear-gradient(to top, #34495e 0%, #34495e 100%),
+                linear-gradient(to top, #2c3e50 0%, #2c3e50 100%);
+            background-position: 0 bottom, 100px bottom, 200px bottom;
+            z-index: 0;
+            opacity: 0.8;
+            /* Create the building shapes using clip-path could be complex, 
+               so we use a simple blocky silhouette via opacity/gradients or just a simple div 
+               For simplicity and performance, we will use a scrolling div block below */
+        }
+        
+        .sky-clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #2980b9, #6dd5fa, #ffffff);
+            z-index: -1;
+        }
+
+        /* Flying Hero Animation */
+        .flying-hero {
+            position: fixed;
+            top: 10%;
+            left: -100px;
+            font-size: 4rem;
+            z-index: 5;
+            animation: flyAcross 12s linear infinite;
+            filter: drop-shadow(5px 5px 0px rgba(0,0,0,0.2));
+        }
+
+        @keyframes flyAcross {
+            0% { left: -100px; transform: translateY(0) rotate(10deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { left: 110vw; transform: translateY(0) rotate(10deg); }
+        }
+
         header {
-            background-color: #ffff94;
-            color: black;
-            padding: 15px 10px;
+            background-color: var(--hero-yellow);
+            color: var(--comic-black);
+            padding: 20px 10px;
             text-align: center;
-            z-index: 10; /* Keep header above snow */
+            z-index: 10;
+            border-bottom: 5px solid black;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             position: relative;
         }
+
+        header h1 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px white;
+            font-weight: 900;
+            margin: 0;
+        }
+
         main {
             flex-grow: 1;
             padding: 20px;
             text-align: center;
-            z-index: 10; /* Keep login form above snow */
-            position: relative;
-        }
-        footer {
-            background-color: #ffff94;
-            color: black;
-            padding: 10px;
-            text-align: center;
-            font-size: 0.9em;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- SUPER LOGIN FORM --- */
+        .login-container {
             position: relative;
-        }
-        h1 {
-            font-size: 1.5em; 
-            margin: 0;
-        }
-        h2 {
-            font-size: 1.1em;
-            margin-top: 5px;
-            margin-bottom: 20px;
-        }
-        /* Login Form Styles */
-        form {
-            max-width: 300px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: white;
-            text-align: left;
-            position: relative;
-            z-index: 20; /* Ensure form is clickable */
-        }
-        label, input, button {
-            display: block;
+            background: white;
+            padding: 30px;
+            border: 4px solid black;
+            border-radius: 15px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            max-width: 350px;
             width: 100%;
-            margin-bottom: 10px;
+            margin-top: 20px;
+            animation: floatCard 4s ease-in-out infinite;
+            transition: transform 0.5s ease, opacity 0.5s ease;
         }
-        input[type="text"], input[type="password"] {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px;
-            background-color: #c0392b; /* CHANGED TO CHRISTMAS RED */
+
+        /* Comic "Boom" decoration */
+        .login-badge {
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            background-color: var(--hero-red);
             color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
-        }
-        button:hover {
-            background-color: #a93226;
-        }
-        #login-message {
-            color: red;
-            font-weight: bold;
-            margin-top: 10px;
+            border: 3px solid black;
+            transform: rotate(15deg);
+            box-shadow: 3px 3px 0px black;
+            font-size: 0.8em;
             text-align: center;
         }
 
-        /* --- CHRISTMAS SPECIAL STYLES --- */
-        
-        /* 1. Snow Effect */
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: #add8e6; /* Light Blue Snow */
-            font-size: 1em;
-            font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px #000;
-            user-select: none;
-            z-index: 1; /* Behind the login form */
-            pointer-events: none; /* Allows clicking through snow */
-            animation-name: fall;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
+        @keyframes floatCard {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
-        @keyframes fall {
-            to { transform: translateY(100vh); }
+        label {
+            font-weight: bold;
+            color: var(--comic-black);
+            text-transform: uppercase;
+            font-size: 0.9em;
+            text-align: left;
         }
 
-        /* 2. Santa on Horse Animation */
-        .santa-container {
-            position: fixed;
-            bottom: 60px; /* Just above footer */
-            left: -200px; /* Start off screen */
-            font-size: 3rem; /* Big Icons */
-            z-index: 5;
-            animation: rideAcross 15s linear infinite;
-            display: flex;
-            align-items: center;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
-        }
-        
-        /* Combine emojis to look like riding */
-        .santa-group {
-            display: flex;
-            align-items: center;
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
 
-        @keyframes rideAcross {
-            0% { left: -200px; transform: scaleX(1); }
-            45% { left: 45%; transform: scaleX(1) rotate(0deg); }
-            50% { left: 50%; transform: scaleX(1) rotate(-10deg); } /* Little jump */
-            55% { left: 55%; transform: scaleX(1) rotate(0deg); }
-            100% { left: 110%; transform: scaleX(1); }
+        input:focus {
+            border-color: var(--hero-blue);
+            outline: none;
+            box-shadow: 0 0 8px rgba(0, 86, 179, 0.3);
         }
 
-        /* 3. Christmas Tree */
-        .xmas-tree {
-            position: fixed;
-            bottom: 50px;
-            right: 10px;
-            font-size: 4rem;
-            z-index: 4;
-            animation: twinkle 2s infinite alternate;
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--hero-blue);
+            color: white;
+            border: 3px solid black;
+            font-size: 1.1em;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 5px 5px 0px black;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes twinkle {
-            from { filter: drop-shadow(0 0 2px gold); transform: scale(1); }
-            to { filter: drop-shadow(0 0 10px gold); transform: scale(1.05); }
+        button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px black;
+            background-color: #004494;
         }
 
-        /* --- EXISTING MARKETING STYLES --- */
-        .section-divider {
-            margin: 40px auto;
-            border: 0;
-            border-top: 2px solid #ddd;
-            max-width: 80%;
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px black;
         }
+
+        #login-message {
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+        /* --- SUCCESS ANIMATION --- */
+        .zoom-out {
+            animation: superZoom 0.8s forwards;
+        }
+
+        @keyframes superZoom {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- MARKETING SECTION (Retained but styled) --- */
         .hero-section {
             background-color: white;
-            padding: 30px 20px;
+            padding: 20px;
             border-radius: 10px;
-            margin: 20px auto;
+            border: 3px solid black;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
+            margin: 40px auto;
             max-width: 800px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
+        }
+        
+        .section-divider {
+            border-top: 4px dashed var(--comic-black);
+            margin: 40px auto;
+            opacity: 0.3;
+        }
+
+        footer {
+            background-color: var(--comic-black);
+            color: white;
+            padding: 15px;
+            text-align: center;
             z-index: 10;
         }
-        .hero-headline {
-            color: #d35400; 
-            font-size: 1.8em;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .hero-image {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto;
-        }
-        .about-section {
-            text-align: left;
-            max-width: 800px;
-            margin: 0 auto 40px auto;
-            background-color: #fffaf0; 
-            padding: 30px;
-            border-radius: 10px;
-            line-height: 1.6;
-            position: relative;
-            z-index: 10;
-        }
-        .about-section h3 {
-            color: #333;
-            border-bottom: 2px solid #ffd700;
-            display: inline-block;
-            padding-bottom: 5px;
-        }
-        .feature-list li {
-            margin-bottom: 10px;
+
+        /* Responsive text */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.2em; }
+            .flying-hero { font-size: 3rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="xmas-tree">🎄</div>
-    <div class="santa-container">
-        <span style="font-size: 40px; margin-right: -15px; z-index: 2;">🎅</span> <span style="font-size: 50px;">🐎</span> <span style="font-size: 30px; margin-left: 10px;">🎁</span> </div>
+    <div class="sky-clouds"></div>
+    <div style="position: fixed; bottom: 0; width: 100%; height: 150px; z-index: 1; opacity: 0.3; pointer-events: none; background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 1000 300\' preserveAspectRatio=\'none\'><path d=\'M0,300 L0,250 L50,250 L50,200 L100,200 L100,280 L150,280 L150,150 L200,150 L200,290 L250,290 L250,180 L350,180 L350,260 L400,260 L400,300 Z\' fill=\'%23000\'/></svg>') repeat-x bottom left;"></div>
+    
+    <div class="flying-hero">🦸‍♂️</div>
+
     <header>
-        <h1>Li'l Champs Abacus Academy Ambernath East and West</h1>
-        <h2>Best Abacus & Brain Development Center in Ambernath</h2>
+        <h1>Li'l Champs Abacus Academy</h1>
+        <div style="font-size: 0.9em; margin-top: 5px; font-weight: bold;">AMBERNATH EAST & WEST</div>
     </header>
 
     <main>
-        <p style="font-weight: bold; color: #c0392b;">🎅 Merry Christmas Students! 🎄</p>
-        <p style="font-weight: bold;">Student Login</p>
-        <form id="loginForm">
-            <label for="username">Username (use small-caps):</label>
-            <input type="text" id="username" name="username" required>
-            
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="button" onclick="handleLogin()">Start Practice</button>
-        </form>
-            
-        <p id="login-message"></p>
+        <h2 style="color: white; text-shadow: 2px 2px 0px black; font-size: 1.5em; margin-bottom: 5px;">STUDENT PORTAL</h2>
+        <p style="color: var(--comic-black); font-weight: bold; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 20px;">
+            ⚡ Access Your Brain Power ⚡
+        </p>
+        
+        <div class="login-container" id="loginBox">
+            <div class="login-badge">SECRET<br>ENTRY</div>
+            <form id="loginForm">
+                <label for="username">Secret Identity (Username):</label>
+                <input type="text" id="username" name="username" placeholder="e.g. aryan_k" required>
+                
+                <label for="password">Access Code (Password):</label>
+                <input type="password" id="password" name="password" placeholder="••••••" required>
+                
+                <button type="button" onclick="handleLogin()">ACTIVATE MISSION 🚀</button>
+            </form>
+            <div id="login-message"></div>
+        </div>
 
         <hr class="section-divider">
 
         <section class="hero-section">
-            <img src="hero.jpeg" alt="Li'l Champs students and parents celebrating success" class="hero-image">
-            
-            <div class="hero-headline">Master Mental Math. Build Confidence for Life.</div>
-        </section>
-
-        <section class="about-section">
-            <h3 style="font-size: 1.5em; color: #2c3e50;">Where Young Minds Master the Art of Mental Math</h3>
-            
-            <p>Welcome to <strong>Li'l Champs Abacus Academy</strong>, Ambernath’s dedicated center for whole-brain development. We are not just a tuition class; we are a training ground where children discover their hidden potential.</p>
-            
-            <p>Our mission is simple: to empower the next generation with the skills of <strong>Concentration, Confidence, and Speed</strong>. We believe that when a child masters the Abacus, they aren't just learning to calculate fast—they are learning how to focus in a distracted world.</p>
-
-            <h3>Our Proven Methodology</h3>
-            <p>We utilize a <strong>globally recognized visual arithmetic curriculum</strong> that has helped millions of children worldwide. Unlike traditional rote learning, our method activates both the left and right hemispheres of the brain.</p>
-            <ul class="feature-list">
-                <li><strong>Tactile Learning:</strong> Using the physical Abacus tool to stimulate brain sensors.</li>
-                <li><strong>Visualization:</strong> Teaching children to picture numbers mentally, turning math into a clear mental image.</li>
-                <li><strong>Listening Skills:</strong> Training students to process auditory information instantly and accurately.</li>
-            </ul>
-
-            <h3>Why Parents in Ambernath Choose Li'l Champs</h3>
-            <ul class="feature-list">
-                <li><strong>Tech-Enabled Practice:</strong> We are one of the few centers offering a dedicated Student Portal (this website!) where students can access daily exercises and stay consistent.</li>
-                <li><strong>Personalized Mentorship:</strong> Every child learns at their own pace. We ensure that your child captures the concept fully before moving to the next level.</li>
-                <li><strong>Proven Results:</strong> Our students consistently demonstrate improved academic performance, sharper memory, and the confidence to face competitive exams.</li>
-            </ul>
-
-            <p style="text-align: center; margin-top: 30px; font-weight: bold; color: #5cb85c;">
-                Join the Li'l Champs Family today!
-            </p>
+            <h3 style="color: var(--hero-blue); margin-top:0;">💥 UNLEASH YOUR POTENTIAL</h3>
+            <img src="hero.jpeg" alt="Students" style="width:100%; max-width:400px; border:2px solid black; border-radius:5px; margin: 10px 0;">
+            <p><strong>Concentration. Speed. Accuracy.</strong></p>
+            <p>At Li'l Champs, we don't just teach math; we train Super Brains!</p>
         </section>
 
     </main>
 
     <footer>
-        For any queries call 9730482620
+        For Mission Support: 9730482620
     </footer>
 
     <script>
-        // --- SNOWFALL SCRIPT START ---
-        function createSnow() {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake');
-            snowflake.innerHTML = '❄';
-            
-            // Randomize position and animation duration
-            snowflake.style.left = Math.random() * 100 + 'vw';
-            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's'; // Between 2 and 5 seconds
-            snowflake.style.opacity = Math.random();
-            snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
-            
-            document.body.appendChild(snowflake);
-            
-            // Remove snowflake after it falls to keep browser light
-            setTimeout(() => {
-                snowflake.remove();
-            }, 5000);
-        }
-
-        // Generate a snowflake every 100ms
-        setInterval(createSnow, 100);
-        // --- SNOWFALL SCRIPT END ---
-
-
-        // 1. SUPABASE CONFIGURATION 
+        // 1. SUPABASE CONFIGURATION (Kept exactly as requested)
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // This function is called by the button with onclick="handleLogin()"
         async function handleLogin() {
-            
             const identifier = document.getElementById('username').value; 
             const password = document.getElementById('password').value;
             const messageElement = document.getElementById('login-message');
+            const loginBox = document.getElementById('loginBox');
             
-            messageElement.textContent = "Checking credentials...";
+            // UI Feedback: Loading
+            messageElement.style.color = 'blue';
+            messageElement.innerHTML = '⚙️ Authenticating...';
 
             const { error } = await supabaseClient.auth.signInWithPassword({
                 email: identifier, 
@@ -326,21 +321,31 @@
             if (error) {
                 // Failed login
                 console.error('Supabase Login Error:', error);
-                messageElement.textContent = "Login failed. Check your username/email or password.";
+                messageElement.style.color = 'red';
+                messageElement.innerHTML = '❌ Access Denied.<br>Check credentials.';
+                
+                // Shake animation for error
+                loginBox.style.transform = "translateX(10px)";
+                setTimeout(() => loginBox.style.transform = "translateX(-10px)", 100);
+                setTimeout(() => loginBox.style.transform = "translateX(0px)", 200);
+
                 sessionStorage.removeItem('isLoggedIn');
                 sessionStorage.removeItem('studentIdentifier');
             } else {
                 // Successful login
-                messageElement.textContent = "Login successful!";
+                messageElement.style.color = 'green';
+                messageElement.innerHTML = '✅ ACCESS GRANTED!';
                 
-                // Set the session flag and identifier
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('studentIdentifier', identifier); 
                 
-                // Wait briefly before redirecting
+                // TRIGGER SUCCESS ANIMATION
+                loginBox.classList.add('zoom-out');
+
+                // Wait for animation to finish before redirect
                 setTimeout(function() {
                     window.location.href = 'practice_options.html';
-                }, 50);
+                }, 800);
             }
         }
     </script>
