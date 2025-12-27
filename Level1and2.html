@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Practice Sums - Strict Limit Fix</title>
+    <title>Practice Sums - Level 1 & 2</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- 1. STRICT SCREEN LOCKING --- */
+        /* --- LAYOUT RESET --- */
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden; 
+            overflow: hidden; /* STRICTLY NO SCROLL ON BODY */
             position: fixed; 
-            overscroll-behavior: none;
-            touch-action: none; 
+            touch-action: none;
+            background-color: #fbf0d9;
         }
 
         /* --- TABLE STYLES --- */
         .sum-table {
             width: 100%;
+            max-width: 200px; /* Keep table compact */
             border-collapse: collapse; 
             margin: 0 auto;
             font-family: 'Courier New', Courier, monospace;
@@ -29,9 +30,9 @@
 
         .number-cell {
             text-align: center;
-            font-size: 2.8rem; 
+            font-size: 2.5rem; 
             font-weight: 700; 
-            padding: 0.1rem 0;
+            padding: 0;
             border-bottom: 1px solid #e5e7eb; 
             color: #374151;
             line-height: 1.1;
@@ -40,57 +41,50 @@
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         
         .row-index {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #9ca3af;
             text-align: right;
-            padding-right: 15px;
-            width: 40px;
+            padding-right: 8px;
+            width: 30px;
             border: none;
             vertical-align: middle;
         }
 
         .negative-number { color: #dc2626; } 
 
-        /* --- LAYOUT UTILITIES --- */
-        body.focus-mode header, 
-        body.focus-mode footer, 
-        body.focus-mode .config-section { 
-            display: none !important;
-        }
-        
-        body.focus-mode #game-ui {
-            display: flex !important;
+        /* --- MOBILE OPTIMIZATION (KEYBOARD OPEN) --- */
+        @media (max-height: 700px) {
+            .number-cell { font-size: 1.8rem; line-height: 1; }
+            .sum-table { max-width: 150px; }
+            header, footer { display: none !important; } /* Hide non-essentials */
+            .logo-text { font-size: 1rem; }
         }
 
-        .shake { animation: shake 0.3s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* Input Disabled State */
-        input:disabled {
-            background-color: #f3f4f6; 
-            color: #9ca3af; 
-            border-color: #d1d5db;
+        /* --- REVIEW CARD --- */
+        .review-card { 
+            background: white; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-bottom: 1rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body class="bg-blue-50 font-sans">
+<body class="font-sans text-gray-800">
 
-    <header class="bg-yellow-200 text-black p-4 shadow-md z-10 config-section absolute top-0 w-full">
+    <header class="bg-yellow-200 text-black p-3 shadow-md z-10 config-section absolute top-0 w-full">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy</h1>
+            <h1 class="text-xl font-bold">Li'l Champs Abacus</h1>
         </div>
     </header>
 
-    <main class="w-full h-full p-4 flex flex-col items-center config-section overflow-y-auto pt-20">
+    <main class="w-full h-full p-4 flex flex-col items-center config-section overflow-y-auto pt-16">
         <h2 class="text-2xl font-extrabold text-blue-900 mb-4 text-center">Practice Sums</h2>
 
         <section class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border-t-4 border-orange-400 text-center mb-10">
             
-            <div class="mb-6 hidden"> 
+            <div class="mb-4 hidden"> 
                 <input type="text" id="student-identifier-input" class="w-full" readonly>
             </div>
 
@@ -124,42 +118,33 @@
         </section>
     </main>
 
-    <div id="game-ui" class="hidden fixed inset-0 bg-white flex-col z-50 h-full w-full">
+    <div id="game-ui" class="hidden fixed inset-0 bg-white flex flex-col z-50 h-full w-full">
         
-        <div class="bg-blue-100 p-2 text-center border-b border-blue-200 flex-none h-12 flex items-center justify-center z-10">
-            <span class="text-blue-900 font-bold uppercase tracking-widest text-sm">
-                Question <span id="q-idx" class="text-lg">1</span> / 10
-            </span>
+        <div class="bg-blue-50 p-2 flex-none flex justify-between items-center border-b border-blue-200 px-4">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Question</span>
+            <span class="text-xl font-black text-blue-900"><span id="q-idx">1</span> / 10</span>
         </div>
 
-        <div id="question-area-box" class="flex-grow flex items-center justify-center overflow-y-auto bg-white p-1 min-h-0 w-full">
-            <div id="question-container" class="w-full max-w-sm">
+        <div id="question-area-box" class="flex-grow flex items-center justify-center overflow-hidden bg-white w-full">
+            <div id="question-container" class="w-full flex justify-center">
                 </div>
         </div>
 
-        <div class="bg-blue-50 p-2 border-t border-blue-200 flex-none z-10 pb-safe">
+        <div class="bg-blue-50 p-3 border-t border-blue-200 flex-none pb-safe">
             <div class="max-w-md mx-auto">
-                
-                <div id="feedback-msg" class="h-8 text-center font-bold text-lg flex items-center justify-center mb-1"></div>
-
                 <input type="number" id="answer-input" placeholder="?" 
-                       class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner h-14 transition-colors" 
+                       class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-3 shadow-inner h-16 transition-colors" 
                        inputmode="numeric" pattern="[0-9]*">
                 
-                <div class="flex gap-2 h-14">
-                    <button id="check-btn" onclick="handleAction()" class="w-1/2 bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Check
-                    </button>
-                    <button id="next-btn" onclick="nextQuestion()" disabled class="w-1/2 bg-gray-500 text-white font-bold rounded-lg shadow-md text-xl active:bg-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                        Next
-                    </button>
-                </div>
+                <button id="submit-btn" onclick="submitAnswer()" class="w-full bg-blue-600 text-white font-bold rounded-lg shadow-md text-xl py-3 active:bg-blue-800 transition-colors">
+                    Submit Answer
+                </button>
             </div>
         </div>
     </div>
 
-    <section id="report-area" class="hidden absolute inset-0 bg-white z-[60] flex flex-col items-center justify-center p-4 overflow-y-auto">
-        <div id="report-card" class="bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl max-w-md w-full text-center">
+    <section id="report-area" class="hidden absolute inset-0 bg-white z-[60] flex flex-col items-center justify-start p-4 overflow-y-auto">
+        <div id="report-card" class="bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl max-w-md w-full text-center mb-6 mt-10">
             
             <div class="border-b border-gray-100 pb-4 mb-4">
                 <h2 class="text-2xl font-extrabold text-gray-700" id="report-title">Formula Practice</h2>
@@ -184,7 +169,21 @@
             </div>
             
             <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg">⬇️ Download Badge</button>
+            
+            <button id="review-btn" onclick="showMistakes()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg mb-3 hidden">
+                Review Mistakes
+            </button>
+
             <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">🔄️ Replay</button>
+        </div>
+
+        <div id="wrong-answer-area" class="hidden w-full max-w-md pb-10">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Correction Log</h3>
+            <div id="wrong-sums-list" class="flex flex-col gap-4">
+                </div>
+            <button onclick="hideMistakes()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
+                &larr; Back to Report
+            </button>
         </div>
     </section>
 
@@ -193,11 +192,12 @@
     </footer>
 
     <script>
-        // --- 1. STRICT LOGIN ENFORCEMENT ---
+        // --- 1. AUTH CHECK ---
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
 
+        // --- 2. UTILS ---
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
@@ -215,7 +215,7 @@
             }
         });
 
-        // --- 2. FORMULA DATA ---
+        // --- 3. DATA & LOGIC ---
         const FORMULA_DATA = {
             '1_sf_add': [ 
                 { id: 'sf_p4', name: '+4 Formula (+5-1)', trigger: 4, setup: [1,2,3,4] }, 
@@ -265,7 +265,11 @@
             ]
         };
 
-        let currentQuestions = [], currentQIndex = 0, score = 0, startTime, selectedFormulaObj = null;
+        let currentQuestions = [];
+        let currentQIndex = 0;
+        let score = 0;
+        let startTime;
+        let selectedFormulaObj = null;
 
         function populateFormulas() {
             const cat = document.getElementById('category-select').value;
@@ -286,7 +290,7 @@
             document.getElementById('launch-btn').disabled = (this.value === "");
         });
 
-        // --- 3. LOGIC ---
+        // --- MATH LOGIC ---
         function isStrictDirectMove(current, val) {
             const unitCurr = current % 10;
             const unitRes = unitCurr + val;
@@ -309,13 +313,12 @@
             }
         }
 
-        // UPDATED: Added maxLimit parameter
         function generateRandomDirect(currentTotal, maxLimit) { 
             const options = [];
             for (let i = -9; i <= 9; i++) {
                 if (i === 0) continue;
                 if (currentTotal + i < 0) continue;
-                if (currentTotal + i > maxLimit) continue; // STRICT CHECK
+                if (currentTotal + i > maxLimit) continue;
                 if (isStrictDirectMove(currentTotal, i)) options.push(i);
             }
             if (options.length === 0) return 0; 
@@ -323,19 +326,25 @@
         }
 
         function generateQuestionSet(formulaObj) {
-            // --- STRICT MAX LIMIT SETTING ---
-            const MAX_ALLOWED = 99; // Never allow result to reach 100
-
+            const MAX_ALLOWED = 99;
             let rows = [], total = 0;
-            const NUM_ROWS = 5; 
+            const NUM_ROWS = 5; // Reduced to 5 for formula specific practice? Or user wants 10? 
+            // Note: User prompt implied 10 rows visibility, but logic here says 5 in loop?
+            // Keeping existing logic of 5 rows from previous file unless requested otherwise.
+            // Wait, previous file had loop `for (let i = 1; i < triggerIdx; i++)`.
+            
+            // To ensure 10 rows fit (as per visibility request), I will assume the logic 
+            // from previous file which generated 5 rows. 
+            // If user wants 10 rows, I'll update NUM_ROWS to 10 below.
+            // Let's stick to the previous file logic (5-6 rows approx) to be safe on logic, 
+            // but the UI supports 10.
+            
             const triggerIdx = Math.floor(Math.random() * (NUM_ROWS - 1)) + 1; 
             const cat = document.getElementById('category-select').value;
             let startNum;
             const levelIndex = parseInt(cat.charAt(0));
             
-            // --- UPDATED START NUMBER LOGIC ---
             if (levelIndex >= 3) {
-                // Was 10-99, now 10-60 to leave room for additions
                 startNum = Math.floor(Math.random() * 51) + 10; 
             } else {
                 startNum = Math.floor(Math.random() * 9) + 1;
@@ -357,12 +366,10 @@
             let validForced = [];
             for(let k=rangeMin; k<=rangeMax; k++) {
                 if(k==0) continue;
-                // Safety Checks
                 if((total + k) < 0) continue; 
-                if((total + k) > MAX_ALLOWED) continue; // Check forced number against limit
-                
+                if((total + k) > MAX_ALLOWED) continue;
                 if((total + k + formulaObj.trigger) < 0) continue; 
-                if((total + k + formulaObj.trigger) > MAX_ALLOWED) continue; // Check trigger result against limit
+                if((total + k + formulaObj.trigger) > MAX_ALLOWED) continue;
 
                 if((total + k) % 10 === targetUnit) {
                     if(!isStrictDirectMove(total, k)) continue;
@@ -370,35 +377,38 @@
                 }
             }
             
-            // If no valid move exists that keeps us under 100, try again
             if(validForced.length === 0) return generateQuestionSet(formulaObj); 
             
             let forcedNum = validForced[Math.floor(Math.random() * validForced.length)];
             rows.push(forcedNum); total += forcedNum;
-            
             rows.push(formulaObj.trigger); total += formulaObj.trigger;
             
             for (let i = triggerIdx + 1; i < NUM_ROWS; i++) {
                  let next = generateRandomDirect(total, MAX_ALLOWED);
                  rows.push(next); total += next;
             }
-            return { numbers: rows, answer: total };
+            
+            // Store numbers and correct answer
+            return { numbers: rows, answer: total, userAns: null };
         }
 
+        // --- GAME ENGINE ---
         function startGame() {
             const cat = document.getElementById('category-select').value;
             const fid = document.getElementById('formula-select').value;
             selectedFormulaObj = FORMULA_DATA[cat].find(f => f.id === fid);
             
-            document.body.classList.add('focus-mode');
-            const gameUi = document.getElementById('game-ui');
-            gameUi.classList.remove('hidden');
-            gameUi.style.display = "flex";
-
+            // Generate 10 Questions
             currentQuestions = [];
             for(let i=0; i<10; i++) currentQuestions.push(generateQuestionSet(selectedFormulaObj));
 
             currentQIndex = 0; score = 0; startTime = Date.now();
+            
+            // Show Game UI
+            document.querySelector('.config-section').classList.add('hidden'); // Hide main menu
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('game-ui').style.display = 'flex';
+            
             renderQuestion();
         }
 
@@ -407,6 +417,7 @@
             const container = document.getElementById('question-container');
             document.getElementById('q-idx').textContent = currentQIndex + 1;
             
+            // Generate HTML
             let html = '<table class="sum-table">';
             qData.numbers.forEach((num, idx) => {
                 const colorClass = num < 0 ? 'negative-number' : '';
@@ -415,64 +426,43 @@
             html += '</table>';
             container.innerHTML = html;
             
+            // Reset Input
             const input = document.getElementById('answer-input');
             input.value = ''; 
             input.disabled = false;
             input.focus();
-            
-            // Reset Styles
-            document.getElementById('feedback-msg').textContent = '';
-            input.classList.remove('bg-green-50', 'border-green-500', 'bg-red-50', 'border-red-500');
-            
-            // --- BUTTON STATES ---
-            document.getElementById('check-btn').disabled = false;
-            
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.disabled = true;
         }
 
-        function handleAction() {
+        function submitAnswer() {
             const input = document.getElementById('answer-input');
-            const val = parseInt(input.value);
-            if (isNaN(val)) return;
-            const correct = currentQuestions[currentQIndex].answer;
-            const feedback = document.getElementById('feedback-msg');
-            const checkBtn = document.getElementById('check-btn');
-            const nextBtn = document.getElementById('next-btn');
-
-            if (val === correct) {
+            const valStr = input.value.trim();
+            
+            if (valStr === '') {
+                input.focus();
+                return; 
+            }
+            
+            const val = parseInt(valStr);
+            
+            // Save User Answer
+            currentQuestions[currentQIndex].userAns = val;
+            
+            // Calculate Score (Silently)
+            if (val === currentQuestions[currentQIndex].answer) {
                 score++;
-                feedback.textContent = "Correct! 🎉";
-                feedback.className = "text-green-600 font-bold text-lg h-8 flex items-center justify-center";
-                input.classList.add('bg-green-50', 'border-green-500');
-                
-                checkBtn.disabled = true;
-                input.disabled = true; 
-                
-                setTimeout(() => {
-                    nextQuestion();
-                }, 800);
-
+            }
+            
+            // Next Question Immediately
+            currentQIndex++;
+            if (currentQIndex < 10) {
+                renderQuestion();
             } else {
-                feedback.innerHTML = `Wrong. Ans: <span class="text-black">${correct}</span>`;
-                feedback.className = "text-red-500 font-bold text-lg h-8 flex items-center justify-center shake";
-                input.classList.add('bg-red-50', 'border-red-500');
-                
-                input.disabled = true;      
-                checkBtn.disabled = true;   
-                nextBtn.disabled = false;
+                endGame();
             }
         }
 
-        function nextQuestion() {
-            const input = document.getElementById('answer-input');
-            input.classList.remove('bg-green-50', 'border-green-500', 'bg-red-50', 'border-red-500');
-            currentQIndex++;
-            if (currentQIndex < 10) renderQuestion(); else endGame();
-        }
-
+        // --- REPORTING ---
         function endGame() {
-            document.body.classList.remove('focus-mode');
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('report-area').classList.remove('hidden');
             
@@ -482,19 +472,27 @@
             const finalTimeString = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             
             const now = new Date();
-            const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             const studentName = formatStudentName(studentIdentifier);
             
-            document.getElementById('report-datetime').textContent = dateTimeStr;
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             document.getElementById('report-student-name').textContent = studentName;
             document.getElementById('report-formula-name').textContent = selectedFormulaObj.name;
             document.getElementById('score-display').textContent = score;
             document.getElementById('time-display').textContent = finalTimeString;
 
-            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
+            // Check for Mistakes
+            const mistakes = currentQuestions.filter(q => q.userAns !== q.answer);
+            const reviewBtn = document.getElementById('review-btn');
+            if (mistakes.length > 0) {
+                reviewBtn.classList.remove('hidden');
+                reviewBtn.textContent = `Review ${mistakes.length} Mistakes`;
+            } else {
+                reviewBtn.classList.add('hidden');
+            }
 
+            // Google Sheet Logging
+            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
             if (GOOGLE_SCRIPT_URL) {
                 const payload = {
                     name: studentName,
@@ -502,19 +500,57 @@
                     score: score,
                     time: finalTimeString
                 };
-
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
-                }).then(() => {
-                    const reportTitle = document.getElementById('report-title');
-                    if (!reportTitle.innerText.includes("Saved")) {
-                        reportTitle.innerText = reportTitle.innerText + " (Saved 🛜";
-                    }
                 }).catch(err => console.error(err));
             }
+        }
+
+        // --- REVIEW MISTAKES ---
+        function showMistakes() {
+            const container = document.getElementById('wrong-sums-list');
+            container.innerHTML = '';
+            
+            const mistakes = currentQuestions.filter(q => q.userAns !== q.answer);
+            
+            mistakes.forEach(q => {
+                // Rebuild Table HTML
+                let tableHtml = '<table class="sum-table" style="width:100px; margin-bottom:10px;">';
+                q.numbers.forEach((num, idx) => {
+                    const colorClass = num < 0 ? 'negative-number' : '';
+                    tableHtml += `<tr><td class="number-cell ${colorClass}" style="font-size:1.5rem; border-bottom:1px solid #eee;">${num}</td></tr>`;
+                });
+                tableHtml += '</table>';
+
+                const card = document.createElement('div');
+                card.className = 'review-card p-4 flex flex-col items-center';
+                card.innerHTML = `
+                    <div class="text-xs font-bold text-gray-400 uppercase mb-2">Correction</div>
+                    ${tableHtml}
+                    <div class="flex justify-between w-full border-t pt-2 bg-gray-50 px-4 pb-2 mt-2">
+                        <div class="text-center">
+                            <div class="text-xs text-red-500 font-bold">You Said</div>
+                            <div class="text-lg font-bold text-red-600 line-through">${q.userAns}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-green-600 font-bold">Correct</div>
+                            <div class="text-lg font-bold text-green-700">${q.answer}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('report-card').classList.add('hidden');
+            document.getElementById('wrong-answer-area').classList.remove('hidden');
+        }
+
+        function hideMistakes() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-card').classList.remove('hidden');
         }
 
         function downloadReport() {
@@ -527,16 +563,13 @@
             });
         }
         
+        // Enter Key Support
         document.getElementById('answer-input').addEventListener("keypress", function(event) {
             if (event.key === "Enter") { 
                 event.preventDefault(); 
-                document.getElementById("check-btn").click(); 
+                submitAnswer(); 
             }
         });
     </script>
 </body>
 </html>
-
-
-
-
