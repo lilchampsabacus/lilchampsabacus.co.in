@@ -592,26 +592,50 @@
             		score: correctCount + "/30", // Change "/30" if total sums are different
             		timeTaken: timeFormatted,
             		accuracy: Math.round((correctCount / 30) * 100) + "%",
-
-            		// 3. NEW: Send the mistake data
             		mistakesString: mistakesString,
             		detailedMistakes: detailedMistakesArray
        	 			};
+				sendReportWithRetry(SCRIPT_URL, payload);
+            }
+        }
 
-        		fetch(SCRIPT_URL, {
-            			method: 'POST',
-            			mode: 'no-cors',
-            			headers: {
-                			'Content-Type': 'application/json'
-            				},
-            			body: JSON.stringify(payload)
-        				}).then(() => {
-            			console.log("Report sent!");
-        				}).catch(err => {
-            			console.error("Error:", err);
-        				});
-    			}
-		}
+        // --- NEW HELPER FUNCTION TO HANDLE "SERVER BUSY" ---
+        function sendReportWithRetry(url, payload, attempt = 1) {
+            // Note: We use "text/plain" to avoid CORS Preflight checks in simple requests
+            fetch(url, {
+                method: 'POST',
+                redirect: 'follow', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json()) // Expect JSON from updated Script
+            .then(data => {
+                if (data.result === "success") {
+                    console.log("Report saved successfully!");
+                    // OPTIONAL: Visual cue
+                    const h2 = document.querySelector('#report-card h2');
+                    if(h2) {
+                        h2.innerText += " (Saved ✅)";
+                        h2.style.color = "green";
+                    }
+                } 
+                else if (data.message === "Server Busy" && attempt <= 3) {
+                    console.warn(`Server busy. Retrying attempt ${attempt}...`);
+                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000); // Retry after 3s
+                } 
+                else {
+                    console.error("Server Error:", data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Network Error:", err);
+                if (attempt <= 3) {
+                    console.log(`Network fail. Retrying attempt ${attempt}...`);
+                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000);
+                }
+            });
+        }
+        		
        
 		// --- WRONG ANSWERS VIEW ---
         function showWrongAnswers() {
@@ -642,6 +666,7 @@
     </script>
 </body>
 </html>
+
 
 
 
