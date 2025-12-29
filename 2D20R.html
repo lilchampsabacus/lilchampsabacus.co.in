@@ -393,11 +393,16 @@
                     solvedWrongCount++;
                     const studentAns = data.studentAnswer !== null ? data.studentAnswer : "Skipped";
                     mistakesLog.push(`Q${index + 1}: ${studentAns} vs ${data.correctTotal}`);
+					const questionStr = data.numbers.join("\n"); 
+                    detailedMistakesArray.push({
+                        question: questionStr,
+                        wrong: studentAns,
+                        correct: data.correctTotal
+                    });
                 }
             });
-            // --------------------------------------
-
-            const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
+			
+			const mistakesString = mistakesLog.length > 0 ? mistakesLog.join(", ") : "None";
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
@@ -447,13 +452,48 @@
                     score: correctCount + "/" + TOTAL_SUMS,
                     timeTaken: timeFormatted,
                     accuracy: accuracyVal,
-                    mistakes: mistakesString 
+                    mistakes: mistakesString,
+					detailedMistakes: detailedMistakesArray
                 };
-                fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(() => console.log("Report sent successfully!")).catch(err => console.error("Error sending report:", err));
+                sendReportWithRetry(SCRIPT_URL, payload);
             }
+        }
+
+        // --- NEW HELPER FUNCTION TO HANDLE "SERVER BUSY" ---
+        function sendReportWithRetry(url, payload, attempt = 1) {
+            // Note: We use "text/plain" to avoid CORS Preflight checks in simple requests
+            fetch(url, {
+                method: 'POST',
+                redirect: 'follow', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json()) // We expect JSON back from the script now
+            .then(data => {
+                if (data.result === "success") {
+                    console.log("Report saved successfully!");
+                    // OPTIONAL: Visual cue that it saved
+                    const reportTitle = document.getElementById('report-level-title');
+                    if(reportTitle) {
+                        reportTitle.innerText += " (Saved ✅)";
+                        reportTitle.style.color = "green";
+                    }
+                } 
+                else if (data.message === "Server Busy" && attempt <= 3) {
+                    console.warn(`Server busy. Retrying attempt ${attempt}...`);
+                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000); // Wait 3s and retry
+                } 
+                else {
+                    console.error("Server Error:", data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Network Error:", err);
+                if (attempt <= 3) {
+                    console.log(`Network fail. Retrying attempt ${attempt}...`);
+                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000);
+                }
+            });
         }
 
         // --- WRONG ANSWERS VIEW ---
