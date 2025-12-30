@@ -390,6 +390,8 @@
             let mistakesLog = [];
             let solvedWrongCount = 0;
 
+			let detailedMistakesArray = [];
+
             sumsData.forEach((data, index) => {
                 if (data.studentAnswer === data.correctTotal) {
                     data.isCorrect = true;
