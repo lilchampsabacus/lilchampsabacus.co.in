@@ -305,60 +305,77 @@
     </footer>
 
     <script>
-        // 1. SUPABASE CONFIGURATION
-        const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk'; 
+    // --- YOUR GOOGLE SCRIPT URL ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    async function handleLogin() {
+        const identifier = document.getElementById('username').value.trim(); 
+        const password = document.getElementById('password').value.trim();
+        const messageElement = document.getElementById('login-message');
+        const loginBox = document.getElementById('loginBox');
+        
+        if(!identifier || !password) {
+            messageElement.style.color = 'red';
+            messageElement.innerHTML = 'Please enter both username and password.';
+            return;
+        }
 
-        async function handleLogin() {
-            const identifier = document.getElementById('username').value; 
-            const password = document.getElementById('password').value;
-            const messageElement = document.getElementById('login-message');
-            const loginBox = document.getElementById('loginBox');
-            
-            // UI Feedback: Loading
-            messageElement.style.color = 'blue';
-            messageElement.innerHTML = '⚙️ Authenticating...';
+        // UI Feedback: Loading
+        messageElement.style.color = 'blue';
+        messageElement.innerHTML = '⚙️ Authenticating...';
 
-            const { error } = await supabaseClient.auth.signInWithPassword({
-                email: identifier, 
-                password: password
+        const payload = {
+            action: "login",
+            username: identifier,
+            password: password
+        };
+
+        try {
+            // Send to Google Script
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
             });
+            
+            const data = await response.json();
 
-            if (error) {
-                // Failed login
-                console.error('Supabase Login Error:', error);
-                messageElement.style.color = 'red';
-                messageElement.innerHTML = '❌ Access Denied.<br>Check credentials.';
-                
-                // Shake animation for error
-                loginBox.style.transform = "translateX(10px)";
-                setTimeout(() => loginBox.style.transform = "translateX(-10px)", 100);
-                setTimeout(() => loginBox.style.transform = "translateX(0px)", 200);
-
-                sessionStorage.removeItem('isLoggedIn');
-                sessionStorage.removeItem('studentIdentifier');
+            if (data.result === "error") {
+                throw new Error(data.message);
             } else {
-                // Successful login
+                // SUCCESS!
                 messageElement.style.color = 'green';
                 messageElement.innerHTML = '✅ ACCESS GRANTED!';
                 
+                // Store exactly what was entered so other files can format it
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('studentIdentifier', identifier); 
                 
-                // TRIGGER SUCCESS ANIMATION
+                // Animation & Redirect
                 loginBox.classList.add('zoom-out');
-
-                // Wait for animation to finish before redirect
                 setTimeout(function() {
-                    window.location.href = 'practice_options.html';
+                    window.location.href = 'practice_options.html'; 
                 }, 800);
             }
+
+        } catch (error) {
+            // Error Handling
+            console.error('Login Error:', error);
+            messageElement.style.color = 'red';
+            messageElement.innerHTML = '❌ Access Denied.<br>Check credentials.';
+            
+            // Shake animation
+            loginBox.style.transform = "translateX(10px)";
+            setTimeout(() => loginBox.style.transform = "translateX(-10px)", 100);
+            setTimeout(() => loginBox.style.transform = "translateX(0px)", 200);
+
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('studentIdentifier');
         }
-    </script>
+    }
+</script>
 </body>
 </html>
+
 
 
 
