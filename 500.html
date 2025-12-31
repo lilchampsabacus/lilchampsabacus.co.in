@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lil Champs Abacus - Multiplication Mission</title>
     
-    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -15,149 +14,63 @@
 
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #fdfbf7; /* Warm paper color */
+            background-color: #fdfbf7;
             color: #333;
-            /* Flex layout to handle Header/Footer/Main */
             display: flex;
             flex-direction: column;
             height: 100vh;
             width: 100vw;
-            overflow: hidden; /* Prevent body scroll during practice */
+            overflow: hidden;
         }
 
-        h1, h2, h3, .btn-font {
-            font-family: 'Fredoka', sans-serif;
-        }
+        h1, h2, h3, .btn-font { font-family: 'Fredoka', sans-serif; }
 
-        /* Header & Footer Styling from 2x1.html */
-        header {
-            background-color: #fef08a; /* yellow-200 */
-            color: black;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 50;
-            flex-shrink: 0;
-        }
+        header { background-color: #fef08a; color: black; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 50; flex-shrink: 0; }
+        footer { background-color: #fef08a; text-align: center; padding: 0.75rem; flex-shrink: 0; font-weight: 600; color: #713f12; }
 
-        footer {
-            background-color: #fef08a; /* yellow-200 */
-            text-align: center;
-            padding: 0.75rem;
-            flex-shrink: 0;
-            font-weight: 600;
-            color: #713f12; /* yellow-900 */
-        }
+        main { flex-grow: 1; position: relative; width: 100%; display: flex; flex-direction: column; }
 
-        /* Main Content Area */
-        main {
-            flex-grow: 1;
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            /* Ensure content is centered or placed where needed */
-        }
-
-        /* The Practice Container 
-           Fixed to the top portion of the MAIN area to accommodate mobile keyboards.
-        */
         #practice-area {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70%; /* Use top 70% of the available main space */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; height: 70%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
         }
 
-        /* The Input Area */
         .input-box {
-            font-size: 2.5rem;
-            text-align: center;
-            border: 3px solid #d1d5db;
-            border-radius: 1rem;
-            width: 180px;
-            padding: 10px;
-            outline: none;
-            background: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            font-family: 'Fredoka', sans-serif;
-            color: #374151;
+            font-size: 2.5rem; text-align: center; border: 3px solid #d1d5db; border-radius: 1rem;
+            width: 180px; padding: 10px; outline: none; background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); font-family: 'Fredoka', sans-serif; color: #374151;
         }
+        .input-box:focus { border-color: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.2); }
 
-        .input-box:focus {
-            border-color: #4ade80;
-            box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.2);
-        }
-
-        /* Report Section - Overlay covering Main */
         #report-section {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fdfbf7;
-            overflow-y: auto; /* Independent scrolling */
-            display: none;
-            padding: 1rem;
-            z-index: 50;
-            padding-bottom: 80px; /* Space for footer */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fdfbf7; overflow-y: auto; display: none; padding: 1rem; z-index: 50; padding-bottom: 80px;
         }
 
-        /* Animations */
-        @keyframes popIn {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .pop-in {
-            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .pop-in { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* One Line Equation Style */
-        .equation-text {
-            font-family: 'Fredoka', monospace;
-            font-size: 3.5rem;
-            color: #4b5563;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 380px) {
-            .equation-text { font-size: 2.5rem; }
-        }
+        .equation-text { font-family: 'Fredoka', monospace; font-size: 3.5rem; color: #4b5563; display: flex; align-items: center; gap: 1rem; }
+        @media (max-width: 380px) { .equation-text { font-size: 2.5rem; } }
 
-        /* Report Card Styling */
         .report-card {
-            background: white;
-            border: 4px solid #dbeafe; /* blue-100 */
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: 0 auto;
+            background: white; border: 4px solid #dbeafe; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); max-width: 500px; margin: 0 auto;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
     <header class="flex justify-between items-center">
         <h1 class="text-xl sm:text-2xl font-bold text-yellow-900">Li'l Champs Abacus Academy, Ambernath</h1>
     </header>
 
     <main id="main-content">
-        <!-- Start Screen -->
         <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-[#fdfbf7] z-40 p-6 text-center">
             <div class="mb-6">
                 <i class="fas fa-calculator text-6xl text-green-500 mb-4"></i>
-                <h1 class="text-4xl text-gray-800 font-bold mb-2">Multiplication Mission</h1>
-                <h2 class="text-xl text-gray-500">2 Digits x 1 Digit</h2>
+                <h1 class="text-4xl text-gray-800 font-bold mb-2">Multiplication Marathon</h1>
+                <h2 class="text-xl text-gray-500">2 Digit x 1 Digit (500 Sums)</h2>
             </div>
             
             <div class="bg-white p-6 rounded-xl max-w-md w-full mb-8 text-left border border-gray-200 shadow-sm">
@@ -165,18 +78,16 @@
                 <ul class="list-disc pl-5 text-gray-600 space-y-1">
                     <li>Solve <strong>500</strong> sums.</li>
                     <li>No feedback until the end.</li>
-                    <li>Write answer & Press Enter.</li>
+                    <li>Internet required to Start & Finish.</li>
                 </ul>
             </div>
 
-            <button onclick="startMission()" class="btn-font bg-green-500 hover:bg-green-600 text-white text-2xl py-4 px-10 rounded-full shadow-lg transform transition active:scale-95">
+            <button id="start-btn" onclick="startMission()" class="btn-font bg-green-500 hover:bg-green-600 text-white text-2xl py-4 px-10 rounded-full shadow-lg transform transition active:scale-95">
                 Start Mission 🚀
             </button>
         </div>
 
-        <!-- Practice Area -->
         <div id="practice-area" style="display: none;">
-            <!-- Progress Pill -->
             <div class="absolute top-4 w-full px-6 flex justify-between items-center text-gray-400 font-bold">
                 <div class="text-xs uppercase tracking-wider">Mission Progress</div>
                 <div class="bg-gray-200 rounded-full px-4 py-1 text-sm text-gray-700 shadow-inner">
@@ -184,7 +95,6 @@
                 </div>
             </div>
 
-            <!-- The Sum -->
             <div class="mb-8 pop-in" id="question-container">
                 <div class="equation-text">
                     <span id="num-top">00</span>
@@ -194,45 +104,33 @@
                 </div>
             </div>
 
-            <!-- Input -->
             <form id="answer-form" onsubmit="submitAnswer(event)" class="flex flex-col items-center w-full">
                 <input type="tel" id="answer-input" class="input-box" placeholder="" autocomplete="off" inputmode="numeric" autofocus>
-                
-                <!-- Next Button -->
                 <button type="submit" class="mt-6 bg-green-500 text-white rounded-full p-3 px-8 font-bold shadow-md active:bg-green-600 touch-manipulation transition-colors border-b-4 border-green-600 active:border-b-0 active:translate-y-1">
                     NEXT <i class="fas fa-arrow-right ml-1"></i>
                 </button>
             </form>
         </div>
 
-        <!-- Finish Button Screen -->
         <div id="finish-screen" class="hidden absolute inset-0 bg-[#fdfbf7] flex flex-col items-center justify-center z-30">
             <i class="fas fa-flag-checkered text-6xl text-green-500 mb-6"></i>
             <h1 class="text-3xl font-bold text-gray-800 mb-4">Mission Complete!</h1>
             <p class="text-gray-600 mb-8">You have solved all 500 sums.</p>
-            <button onclick="showReport()" class="btn-font bg-green-600 text-white text-2xl py-4 px-12 rounded-full shadow-lg transform transition active:scale-95 animate-bounce">
+            <button id="submit-final-btn" onclick="endMission()" class="btn-font bg-green-600 text-white text-2xl py-4 px-12 rounded-full shadow-lg transform transition active:scale-95 animate-bounce">
                 See Report Card
             </button>
         </div>
 
-        <!-- Report Section (Detailed) -->
         <div id="report-section">
             <div id="report-card" class="report-card relative overflow-hidden mb-6">
-                <!-- Report Header -->
                 <div class="text-center border-b border-gray-100 pb-2 mb-4">
-                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                        Skill Mastery
-                    </span>
-                    <h2 class="text-xl font-bold text-gray-700 mt-2">2 Digits x 1 Digit</h2>
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
+                    <h2 class="text-xl font-bold text-gray-700 mt-2">2 Digit x 1 Digit (500 sums)</h2>
                 </div>
 
                 <h3 class="text-2xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <p class="text-center text-gray-500 mb-6 border-b pb-4 text-sm"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600">Student</span></p>
                 
-                <p class="text-center text-gray-500 mb-6 border-b pb-4 text-sm">
-                    <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600">Student</span>
-                </p>
-                
-                <!-- Stats Grid -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-green-50 p-3 rounded-xl border-2 border-green-100 text-center">
                         <p class="text-xs text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
@@ -249,47 +147,31 @@
                     <p class="text-lg font-bold text-gray-700" id="report-avg-time">N/A</p>
                 </div>
 
-                <!-- Actions -->
                 <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-download"></i> Save Badge
                 </button>
-                
-                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3 text-sm">
+                <button id="see-wrong-button" onclick="showSecureMistakes()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3 text-sm" disabled>
                     Review Mistakes
                 </button>
-                
-                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50 text-sm">
-                    Replay Mission
-                </button>
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50 text-sm">Replay Mission</button>
             </div>
         </div>
 
-        <!-- Wrong Answers Area -->
         <div id="wrong-answer-area" class="absolute inset-0 bg-[#fdfbf7] z-50 overflow-y-auto hidden p-4 pb-20">
             <div class="max-w-md mx-auto">
                 <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center sticky top-0 bg-[#fdfbf7] py-4">Corrections</h3>
                 <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
-                    <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center text-sm">
-                        <span>Problem</span>
-                        <span>You Said</span>
-                        <span>Correct</span>
-                    </div>
+                    <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center text-sm"><span>Problem</span><span>You Said</span><span>Correct</span></div>
                     <div id="wrong-sums-list" class="space-y-2 text-sm"></div>
                 </div>
-                <button onclick="backToReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg shadow-lg">
-                    &larr; Back to Report
-                </button>
+                <button onclick="backToReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg shadow-lg">&larr; Back to Report</button>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
-    </footer>
+    <footer><p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p></footer>
 
-    <!-- Encouragement Modal -->
     <div id="encouragement-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-8 text-center max-w-sm mx-4 shadow-2xl pop-in">
             <i class="fas fa-star text-yellow-400 text-5xl mb-4"></i>
@@ -300,28 +182,24 @@
     </div>
 
     <script>
-        // --- AUTHENTICATION CHECK ---
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-             window.location.href = 'index.html'; 
-        }
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
-        // --- Game State ---
+        // --- SECURE BRAIN URL ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         const TOTAL_QUESTIONS = 500;
-        let currentQuestion = 0;
-        let userAnswers = [];
+        
+        let questionsData = []; // Stores the 500 fetched questions
+        let currentQuestionIndex = 0;
         let startTime;
-        let studentNameFormatted = "Student"; // Default
+        let studentNameFormatted = "Student";
 
-        // --- DOM Elements ---
         const practiceArea = document.getElementById('practice-area');
         const numTopEl = document.getElementById('num-top');
         const numBottomEl = document.getElementById('num-bottom');
         const inputEl = document.getElementById('answer-input');
         const countEl = document.getElementById('current-count');
         
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if student name exists in session, else default
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (studentIdentifier) {
                 const namePart = studentIdentifier.split('@')[0];
@@ -330,40 +208,53 @@
             }
         });
 
-        function startMission() {
-            document.getElementById('start-screen').style.display = 'none';
-            practiceArea.style.display = 'flex';
-            currentQuestion = 0;
-            userAnswers = [];
-            startTime = Date.now();
-            generateQuestion();
+        // --- STEP 1: FETCH 500 QUESTIONS ---
+        async function startMission() {
+            const btn = document.getElementById('start-btn');
+            btn.textContent = "Loading 500 Sums...";
+            btn.disabled = true;
+
+            try {
+                // Request 500 questions from the Brain
+                const response = await fetch(`${SCRIPT_URL}?levelCode=mul-2x1&count=${TOTAL_QUESTIONS}`);
+                const data = await response.json();
+                
+                // Initialize Data
+                questionsData = data.map(q => ({
+                    x: q.x, 
+                    y: q.y, 
+                    type: 'mul',
+                    studentAnswer: null 
+                }));
+
+                // Start Game
+                document.getElementById('start-screen').style.display = 'none';
+                practiceArea.style.display = 'flex';
+                currentQuestionIndex = 0;
+                startTime = Date.now();
+                showQuestion();
+
+            } catch (err) {
+                console.error(err);
+                btn.textContent = "Error. Retry?";
+                btn.disabled = false;
+                alert("Could not load questions. Please check your internet.");
+            }
         }
 
-        function generateQuestion() {
-            if (currentQuestion >= TOTAL_QUESTIONS) {
-                endMission();
+        function showQuestion() {
+            if (currentQuestionIndex >= TOTAL_QUESTIONS) {
+                showFinishScreen();
                 return;
             }
 
-            // Logic: 
-            // Bottom: 2-9 (No 1)
-            // Top: 11-99 (No multiples of 10)
-            let bottom = Math.floor(Math.random() * 8) + 2; 
-            let top;
-            do {
-                top = Math.floor(Math.random() * 89) + 11;
-            } while (top % 10 === 0);
-
-            numTopEl.textContent = top;
-            numBottomEl.textContent = bottom;
-            countEl.textContent = currentQuestion + 1;
+            const q = questionsData[currentQuestionIndex];
+            numTopEl.textContent = q.x;
+            numBottomEl.textContent = q.y;
+            countEl.textContent = currentQuestionIndex + 1;
             
             inputEl.value = '';
-            // Slight delay for mobile focus stability
             setTimeout(() => { inputEl.focus(); }, 50);
-
-            practiceArea.dataset.top = top;
-            practiceArea.dataset.bottom = bottom;
         }
 
         function submitAnswer(e) {
@@ -371,26 +262,15 @@
             const val = inputEl.value.trim();
             if (val === '') return;
 
-            const top = parseInt(practiceArea.dataset.top);
-            const bottom = parseInt(practiceArea.dataset.bottom);
-            const userAnswer = parseInt(val);
-            const correctAnswer = top * bottom;
+            // Store Answer locally (no grading yet)
+            questionsData[currentQuestionIndex].studentAnswer = parseInt(val);
+            currentQuestionIndex++;
 
-            userAnswers.push({
-                top,
-                bottom,
-                userAnswer,
-                correctAnswer,
-                isCorrect: userAnswer === correctAnswer
-            });
-
-            currentQuestion++;
-
-            // Encouragement Check (Every 100)
-            if (currentQuestion > 0 && currentQuestion < TOTAL_QUESTIONS && currentQuestion % 100 === 0) {
-                showEncouragement(currentQuestion);
+            // Milestones
+            if (currentQuestionIndex > 0 && currentQuestionIndex < TOTAL_QUESTIONS && currentQuestionIndex % 100 === 0) {
+                showEncouragement(currentQuestionIndex);
             } else {
-                generateQuestion();
+                showQuestion();
             }
         }
 
@@ -408,143 +288,97 @@
 
         function closeEncouragement() {
             document.getElementById('encouragement-modal').classList.add('hidden');
-            generateQuestion();
+            showQuestion();
             setTimeout(() => { inputEl.focus(); }, 50);
         }
 
-        function endMission() {
+        function showFinishScreen() {
             practiceArea.style.display = 'none';
             document.getElementById('finish-screen').classList.remove('hidden');
             document.getElementById('finish-screen').style.display = 'flex';
         }
 
-        // --- REPORT LOGIC ---
-        function showReport() {
-            document.getElementById('finish-screen').style.display = 'none';
-            document.getElementById('report-section').style.display = 'block';
+        // --- STEP 2: NETWORK-PROOF GRADING ---
+        async function endMission() {
+            const btn = document.getElementById('submit-final-btn');
+            btn.textContent = "📡 Grading...";
+            btn.disabled = true;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-gray-500');
 
-            // Calculate Stats
-            const correctCount = userAnswers.filter(a => a.isCorrect).length;
-            const wrongCount = userAnswers.length - correctCount;
-
-            // Time Calculation
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // Avg Time
-            const avgTime = (timeElapsedSeconds / TOTAL_QUESTIONS).toFixed(2);
+            const payload = {
+                levelCode: 'mul-2x1',
+                name: studentNameFormatted,
+                challengeType: "2x1 (500 Sums)",
+                timeTaken: timeFormatted,
+                userAnswers: questionsData // Send all 500 answers
+            };
 
-            // Populate Report
-            const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('report-correct').textContent = correctCount;
-            document.getElementById('report-time-elapsed').textContent = timeFormatted;
-            document.getElementById('report-avg-time').textContent = `${avgTime}s`;
-
-            // Wrong Button State
-            const wrongBtn = document.getElementById('see-wrong-button');
-            if (wrongCount > 0) {
-                wrongBtn.textContent = `Review ${wrongCount} Mistakes`;
-                wrongBtn.disabled = false;
-                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                wrongBtn.textContent = "Perfect Score! No Mistakes.";
-                wrongBtn.disabled = true;
-                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-
-            // --- SEND TO GOOGLE SHEETS ---
-            sendReportToSheets(correctCount, timeFormatted, userAnswers);
-        }
-
-        function sendReportToSheets(correctCount, timeFormatted, allAnswers) {
-            const CHALLENGE_NAME = "2x1 (500 Sums)"; 
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
-
-            // Prepare Data for Sheets
-            const mistakes = allAnswers.filter(a => !a.isCorrect);
-            
-            // 1. Simple string summary
-            const mistakesString = mistakes.length > 0 
-                ? mistakes.map(m => `Q: ${m.top}x${m.bottom} (User:${m.userAnswer})`).join(", ").substring(0, 500) // Limit length
-                : "None";
-
-            // 2. Detailed Array
-            const detailedMistakesArray = mistakes.map(m => ({
-                question: `${m.top} × ${m.bottom}`,
-                wrong: m.userAnswer,
-                correct: m.correctAnswer
-            }));
-
-            if(SCRIPT_URL.includes("script.google.com")) {
-                const payload = {
-                    challengeType: CHALLENGE_NAME, 
-                    name: studentNameFormatted,
-                    score: correctCount + "/" + TOTAL_QUESTIONS,
-                    timeTaken: timeFormatted,
-                    accuracy: Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%",
-                    mistakesString: mistakesString,       
-                    detailedMistakes: detailedMistakesArray 
-                };
-                sendReportWithRetry(SCRIPT_URL, payload);
-            }
-        }
-
-        // --- NEW HELPER FUNCTION TO HANDLE "SERVER BUSY" ---
-        function sendReportWithRetry(url, payload, attempt = 1) {
-            // Note: We use "text/plain" to avoid CORS Preflight checks in simple requests
-            fetch(url, {
-                method: 'POST',
-                redirect: 'follow', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json()) // We expect JSON back from the script now
-            .then(data => {
-                if (data.result === "success") {
-                    console.log("Report saved successfully!");
-                    // OPTIONAL: Visual cue that it saved
-                    const reportTitle = document.getElementById('report-level-title');
-                    if(reportTitle) {
-                        reportTitle.innerText += " (Saved ✅)";
-                        reportTitle.style.color = "green";
-                    }
-                } 
-                else if (data.message === "Server Busy" && attempt <= 3) {
-                    console.warn(`Server busy. Retrying attempt ${attempt}...`);
-                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000); // Wait 3s and retry
-                } 
-                else {
-                    console.error("Server Error:", data.message);
-                }
-            })
-            .catch(err => {
-                console.error("Network Error:", err);
-                if (attempt <= 3) {
-                    console.log(`Network fail. Retrying attempt ${attempt}...`);
-                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000);
-                }
-            });
-        }
-
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
                 
+                const result = await response.json();
+                const gradeData = result.gradeData;
 
-        function showWrongAnswers() {
-            const wrongList = userAnswers.filter(a => !a.isCorrect);
+                // --- SUCCESS ---
+                document.getElementById('finish-screen').style.display = 'none';
+                document.getElementById('report-section').style.display = 'block';
+
+                document.getElementById('report-correct').textContent = gradeData.score;
+                document.getElementById('report-time-elapsed').textContent = timeFormatted;
+                
+                const avgTime = (timeElapsedSeconds / TOTAL_QUESTIONS).toFixed(2);
+                document.getElementById('report-avg-time').textContent = `${avgTime}s`;
+
+                // Store mistakes for review
+                sessionStorage.setItem('marathonMistakes', JSON.stringify(gradeData.mistakesArray));
+
+                const wrongBtn = document.getElementById('see-wrong-button');
+                if (gradeData.mistakesArray.length > 0) {
+                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
+                    wrongBtn.disabled = false;
+                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    wrongBtn.textContent = "Perfect Score!";
+                    wrongBtn.disabled = true;
+                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
+                // Date
+                const now = new Date();
+                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            } catch (err) {
+                console.error(err);
+                btn.textContent = "⚠️ Connection Failed. Click to Retry.";
+                btn.disabled = false;
+                btn.classList.remove('bg-gray-500');
+                btn.classList.add('bg-red-600');
+                alert("Connection lost! Answers are safe. Check internet and click Retry.");
+            }
+        }
+
+        function showSecureMistakes() {
+            const mistakes = JSON.parse(sessionStorage.getItem('marathonMistakes') || "[]");
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
 
-            wrongList.forEach(item => {
+            mistakes.forEach(m => {
                 const row = `
                     <div class="grid grid-cols-3 text-center py-3 border-b hover:bg-red-50">
-                        <span class="font-bold text-gray-700">${item.top} &times; ${item.bottom}</span>
-                        <span class="text-red-500 font-bold line-through">${item.userAnswer}</span>
-                        <span class="text-green-600 font-bold">${item.correctAnswer}</span>
-                    </div>
-                `;
+                        <span class="font-bold text-gray-700">${m.question}</span>
+                        <span class="text-red-500 font-bold line-through">${m.wrong}</span>
+                        <span class="text-green-600 font-bold">${m.correct}</span>
+                    </div>`;
                 listContainer.innerHTML += row;
             });
 
@@ -557,22 +391,18 @@
             document.getElementById('report-section').style.display = 'block';
         }
 
-        // --- DOWNLOAD BADGE ---
         function downloadReport() {
             const reportElement = document.getElementById('report-card');
-            const studentName = document.getElementById('report-student-name').textContent || "Student";
-            
             html2canvas(reportElement, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Mission_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.download = `Marathon_Report_${studentNameFormatted.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         }
 
-        // --- Focus Management ---
+        // Focus Logic
         document.addEventListener('click', function(e) {
-            // Keep focus on input unless clicking a button
             if (practiceArea.style.display === 'flex' && 
                 e.target.tagName !== 'BUTTON' && 
                 e.target.tagName !== 'A' &&
@@ -580,12 +410,8 @@
                 inputEl.focus();
             }
         });
-
-        // Prevent double tap zoom
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
-        }, { passive: false });
+        
+        document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
     </script>
 </body>
 </html>
-
