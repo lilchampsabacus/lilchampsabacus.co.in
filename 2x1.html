@@ -7,85 +7,35 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="gamify.js" defer></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         html { scroll-padding-top: 100px; }
+        .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .slide-container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Slide Animations */
-        .slide-container {
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .slide-container.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Input Styling */
         .sum-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem; margin-bottom: 0.5rem; background: white;
+            border: 1px solid #e5e7eb; border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;
         }
-        .sum-item:focus-within {
-            transform: scale(1.02);
-            border-color: #3b82f6;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
-        }
+        .sum-item:focus-within { transform: scale(1.02); border-color: #3b82f6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1); }
 
-        /* Feedback Colors */
-        .correct-answer {
-            background-color: #dcfce7 !important; /* Green-100 */
-            border-color: #22c55e !important;
-            color: #15803d;
-        }
-        .wrong-answer {
-            background-color: #fee2e2 !important; /* Red-100 */
-            border-color: #ef4444 !important;
-            color: #b91c1c;
-            animation: shake 0.3s;
-        }
+        .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
+        .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; animation: shake 0.3s; }
 
         @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
+            0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); } 75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
 
-        /* Focus Mode Overrides */
-        body.focus-mode header, 
-        body.focus-mode footer, 
-        body.focus-mode .back-link,
-        body.focus-mode #test-header-bar { 
-            display: none !important;
-        }
-        
-        body.focus-mode {
-            background-color: #fbf0d9; /* Kindle Sepia */
-            color: #433422;
-        }
-        
-        body.focus-mode #test-area {
-            background-color: transparent !important;
-            box-shadow: none !important;
-        }
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link, body.focus-mode #test-header-bar { display: none !important; }
+        body.focus-mode { background-color: #fbf0d9; color: #433422; }
+        body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; }
     </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col font-sans">
@@ -123,7 +73,6 @@
         </section>
 
         <section id="test-area" class="hidden max-w-2xl mx-auto">
-            
             <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
                 <div class="flex justify-between items-center mb-2">
                     <div class="text-gray-600 font-semibold">Progress</div>
@@ -132,127 +81,98 @@
                     </div>
                 </div>
                 <div class="relative w-full h-8 mt-2 mb-2 select-none">
-    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
-    
-    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
-        
-        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
-
-            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
-            
-            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
-            
-            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
-            
-            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
-            
-            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
-        </svg>
-
-        </div>
-</div>
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
+                    <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
+                        <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
+                            <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
+                            <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
+                            <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                            <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
+                            <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
+                        </svg>
+                    </div>
+                </div>
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Start</span>
                     <span id="progress-text">0/30 Solved</span>
                 </div>
             </div>
 
-            <div id="question-carousel" class="mb-6">
-                </div>
+            <div id="question-carousel" class="mb-6"></div>
             
             <div class="flex justify-between mt-6">
                 <button id="prev-btn" onclick="changeSlide(-1)" class="hidden px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-bold">Back</button>
-                
-                <button id="next-btn" onclick="changeSlide(1)" class="hidden ml-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all">
-                    Next Set &rarr;
-                </button>
-                
-                <button id="submit-button" onclick="endTest()" class="hidden ml-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-lg animate-pulse">
-                    Finish Mission 🏁
-                </button>
+                <button id="next-btn" onclick="changeSlide(1)" class="hidden ml-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all">Next Set &rarr;</button>
+                <button id="submit-button" onclick="endTest()" class="hidden ml-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-lg animate-pulse">Finish Mission 🏁</button>
             </div>
         </section>
 
         <section id="report-area" class="hidden flex justify-center">
-    <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-        
-        <div class="text-center border-b border-gray-100 pb-2 mb-4">
-            <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                Skill Mastery
-            </span>
-            <h2 class="text-2xl font-extrabold text-gray-700 mt-2">2 Digits x 1 Digit</h2>
-        </div>
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2">2 Digits x 1 Digit</h2>
+                </div>
 
-        <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
-        
-        <p class="text-center text-gray-500 mb-6 border-b pb-4">
-            <span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span>
-        </p>
-        
-        <div class="grid grid-cols-2 gap-6 mb-6">
-            <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
-                <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
-                <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/30</span></p>
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <p class="text-center text-gray-500 mb-6 border-b pb-4"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/30</span></p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                        <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
+                        <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-sm text-gray-500">Speed per Question</p>
+                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+                </div>
+
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Save Badge (Download)
+                </button>
+                
+                <button id="see-wrong-button" onclick="showSecureMistakes()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3" disabled>
+                    Review Mistakes
+                </button>
+                
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">🔄 Replay Mission</button>
             </div>
-            <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
-                <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
-                <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
-            </div>
-        </div>
-
-        <div class="bg-gray-50 p-4 rounded-lg mb-6 text-center">
-            <p class="text-sm text-gray-500">Speed per Question</p>
-            <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
-        </div>
-
-        <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Save Badge (Download)
-        </button>
+        </section>
         
-        <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">
-            Review Mistakes
-        </button>
-        
-        <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">
-            🔄 Replay Mission
-        </button>
-    </div>
-</section>
-		
         <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
             <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
             <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
                 <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center">
-                    <span>Problem</span>
-                    <span>You Said</span>
-                    <span>Correct</span>
+                    <span>Problem</span><span>You Said</span><span>Correct</span>
                 </div>
                 <div id="wrong-sums-list" class="space-y-2"></div>
             </div>
-            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
-                &larr; Back to Scoreboard
-            </button>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">&larr; Back to Scoreboard</button>
         </section>
 
     </main>
 
-    <footer class="bg-yellow-200 text-center p-3 mt-auto">
-        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
-    </footer>
+    <footer class="bg-yellow-200 text-center p-3 mt-auto"><p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p></footer>
 
     <script>
-        // --- SESSION CHECK ---
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'index.html'; 
-        }
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
         
         const TOTAL_SUMS = 30;
-        const SUMS_PER_SLIDE = 5; // Chunking Size
+        const SUMS_PER_SLIDE = 5;
         const TOTAL_SLIDES = TOTAL_SUMS / SUMS_PER_SLIDE;
+        
+        // --- YOUR SECURE SCRIPT URL ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
         let timerInterval;
         let sumsData = [];
@@ -260,79 +180,87 @@
         let currentSlideIndex = 0;
         let currentStreak = 0;
 
-        // --- UTILITY: Format Name ---
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
             return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
         }
 
-        // --- UTILITY: Download Report ---
         function downloadReport() {
             const reportElement = document.getElementById('report-card');
             const studentName = document.getElementById('report-student-name').textContent || "Student";
-            
             html2canvas(reportElement, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Mission_Report_${studentName.replace(/\s+/g, '_')}.png`;
+                link.download = `Mission_Report_Mul2x1_${studentName.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         }
         
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
-			const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-			const displayStudentName = formatStudentName(studentIdentifier); 
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            const displayStudentName = formatStudentName(studentIdentifier); 
             
-			if (studentIdentifier) {
+            if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
                 startButton.disabled = false;
             } else {
                 startButton.disabled = true;
             }
-            
-            sumsData = generateUniqueSums(TOTAL_SUMS);
-            renderChunks(); // New Rendering Logic
         });
 
-        // --- SUM GENERATION ---
-        function generateUniqueSums(count) {
-            const allPossibilities = [];
-            for (let x = 10; x <= 99; x++) {
-                for (let y = 2; y <= 9; y++) { 
-                    allPossibilities.push({ x, y, product: x * y, studentAnswer: null });
-                }
+        // --- SECURE START TEST ---
+        async function startTest() {
+            document.body.classList.add('focus-mode');
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('test-area').classList.remove('hidden');
+
+            const LEVEL_CODE = 'mul-2x1'; // <-- Correct code for 2x1
+            const startBtn = document.getElementById('start-button');
+            startBtn.textContent = "Loading Mission...";
+            startBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`);
+                const questions = await response.json();
+                
+                sumsData = questions.map(q => ({
+                    ...q, 
+                    studentAnswer: null 
+                }));
+                
+                renderChunks();
+                document.querySelectorAll('.answer-input').forEach(input => input.disabled = false);
+                document.querySelector('.answer-input').focus();
+                document.getElementById('next-btn').classList.remove('hidden');
+
+                startTime = Date.now();
+                startTimer();
+
+            } catch (err) {
+                console.error(err);
+                alert("Mission Control Error: Check internet connection.");
+                startBtn.textContent = "Launch Mission";
+                startBtn.disabled = false;
             }
-            // Shuffle
-            for (let i = allPossibilities.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [allPossibilities[i], allPossibilities[j]] = [allPossibilities[j], allPossibilities[i]];
-            }
-            return allPossibilities.slice(0, count);
         }
 
-        // --- NEW RENDERING LOGIC (CHUNKING) ---
         function renderChunks() {
             const carousel = document.getElementById('question-carousel');
             carousel.innerHTML = '';
-            
             let questionCount = 0;
 
             for (let slide = 0; slide < TOTAL_SLIDES; slide++) {
-                // Create Slide Container
                 const slideDiv = document.createElement('div');
                 slideDiv.className = `slide-container ${slide === 0 ? 'active' : ''}`;
                 slideDiv.id = `slide-${slide}`;
-                
-                // Add header for the chunk
                 slideDiv.innerHTML = `<h4 class="text-xl font-bold text-blue-800 mb-4 text-center">Set ${slide + 1} of ${TOTAL_SLIDES}</h4>`;
 
-                // Add 5 Questions
                 for (let i = 0; i < SUMS_PER_SLIDE; i++) {
+                    if (questionCount >= sumsData.length) break;
                     const data = sumsData[questionCount];
                     const index = questionCount;
                     
@@ -340,11 +268,7 @@
                         <div class="sum-item">
                             <span class="text-xl font-bold text-gray-600 w-8">${index + 1}.</span>
                             <span class="text-2xl font-bold text-gray-800 tracking-wider">${data.x} &times; ${data.y} = </span>
-                            <input type="number" 
-                                data-index="${index}" 
-                                class="answer-input w-24 p-2 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold focus:outline-none focus:border-blue-500" 
-                                placeholder="?" 
-                                disabled>
+                            <input type="number" data-index="${index}" class="answer-input w-24 p-2 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold focus:outline-none focus:border-blue-500" placeholder="?" disabled>
                         </div>
                     `;
                     slideDiv.innerHTML += sumHtml;
@@ -352,58 +276,45 @@
                 }
                 carousel.appendChild(slideDiv);
             }
-            
             setupInputInteraction();
         }
 
-        // --- UPDATED INTERACTION LOGIC (NO FEEDBACK MODE) ---
         function setupInputInteraction() {
             const inputs = document.querySelectorAll('.answer-input');
-            
             inputs.forEach((input) => {
                 input.addEventListener('input', (e) => {
                     const idx = parseInt(input.getAttribute('data-index'));
                     const val = parseInt(input.value);
-                    
-                    // Remove any previous coloring logic
                     input.classList.remove('correct-answer', 'wrong-answer');
-
-                    // Save the answer regardless of whether it is right or wrong
                     if (!isNaN(val)) {
                         sumsData[idx].studentAnswer = val;
                     } else {
                         sumsData[idx].studentAnswer = null;
                     }
-                    
-                    // Update progress bar based on filled answers
                     updateProgress();
                 });
 
-                // Enter Key Navigation
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         const nextInput = inputs[parseInt(input.getAttribute('data-index')) + 1];
                         if (nextInput) {
-                            // Check if next input is in current slide
                             if (nextInput.closest('.slide-container').classList.contains('active')) {
                                 nextInput.focus();
                             } else {
-                                // If next input is in next slide, trigger next slide logic
                                 changeSlide(1);
                             }
                         } else {
-                            // End of test - focus submit button
                             document.getElementById('submit-button').focus();
                         }
                     }
                 });
             });
         }
+
         function updateStreak(isCorrect) {
             const streakDisplay = document.getElementById('streak-display');
             const streakCount = document.getElementById('streak-count');
-            
             if (isCorrect) {
                 currentStreak++;
                 if (currentStreak > 2) {
@@ -421,35 +332,24 @@
         function updateProgress() {
             const totalAnswered = sumsData.filter(s => s.studentAnswer !== null).length;
             const percentage = (totalAnswered / TOTAL_SUMS) * 100;
-            //document.getElementById('progress-bar').style.width = `${percentage}%`;
-			document.getElementById('progress-bead').style.left = `${percentage}%`;
+            document.getElementById('progress-bead').style.left = `${percentage}%`;
             document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_SUMS} Solved`;
         }
 
-        // --- NAVIGATION CONTROL ---
         function changeSlide(direction) {
             const slides = document.querySelectorAll('.slide-container');
-            
-            // Hide current
             slides[currentSlideIndex].classList.remove('active');
-            
-            // Update Index
             currentSlideIndex += direction;
-            
-            // Show new
             slides[currentSlideIndex].classList.add('active');
             
-            // Focus first input of new slide
             const firstInput = slides[currentSlideIndex].querySelector('input');
             if (firstInput) firstInput.focus();
             
-            // Button Logic
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const submitBtn = document.getElementById('submit-button');
             
             prevBtn.classList.toggle('hidden', currentSlideIndex === 0);
-            
             if (currentSlideIndex === TOTAL_SLIDES - 1) {
                 nextBtn.classList.add('hidden');
                 submitBtn.classList.remove('hidden');
@@ -457,185 +357,113 @@
                 nextBtn.classList.remove('hidden');
                 submitBtn.classList.add('hidden');
             }
-            
             window.scrollTo(0,0);
         }
 
-        // --- TEST CONTROL FLOW ---
-        function startTest() {
-            document.body.classList.add('focus-mode'); // Enable Kindle Mode
-            
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('test-area').classList.remove('hidden');
-            
-            const displayStudentName = formatStudentName(document.getElementById('student-identifier-input').value);
-            
-            // Enable inputs
-            document.querySelectorAll('.answer-input').forEach(input => input.disabled = false);
-            document.querySelector('.answer-input').focus();
-            
-            // Show first navigation button
-            document.getElementById('next-btn').classList.remove('hidden');
+        function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
-            startTime = Date.now();
-            startTimer(); // Internal timer only
-        }
+        // --- NETWORK-PROOF END TEST ---
+        async function endTest() {
+            // 1. UI: Lock Button
+            const submitBtn = document.getElementById('submit-button');
+            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.disabled = true;
+            submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            submitBtn.classList.add('bg-gray-500');
 
-        function startTimer() {
-            // Timer runs in background for reporting, not shown on screen
-            timerInterval = setInterval(() => {
-                // Tracking logic if needed
-            }, 1000);
-        }
+            // 2. Stop Timer (Visual only)
+            clearInterval(timerInterval);
 
-        function endTest() {
-    document.body.classList.remove('focus-mode');
-    clearInterval(timerInterval);
-    
-    document.getElementById('test-area').classList.add('hidden');
-    document.getElementById('report-area').classList.remove('hidden');
-    
-    let correctCount = 0;
-    let attemptedCount = 0;
-    let solvedWrongCount = 0;
-    
-    // 1. CREATE ARRAYS TO STORE DATA
-    let mistakesLogStrings = [];    // For the summary report
-    let detailedMistakesArray = []; // <--- NEW CODE: For the 'Mistakes' sheet
+            // 3. Prepare Data
+            const endTime = Date.now();
+            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeElapsedSeconds / 60);
+            const seconds = timeElapsedSeconds % 60;
+            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-    sumsData.forEach((data, index) => {
-        const isAttempted = data.studentAnswer !== null;
-        if (isAttempted) {
-            attemptedCount++;
-            const isCorrect = data.studentAnswer === data.product;
-            data.isCorrect = isCorrect;
-            
-            if (isCorrect) {
-                correctCount++;
-            } else {
-                solvedWrongCount++;
-                
-                // 2. CAPTURE THE WRONG ANSWER DETAILS
-                // Summary for Report Tab:
-                mistakesLogStrings.push(`Q${index + 1}: ${data.studentAnswer} vs ${data.product}`);
-                
-                // Detailed Object for Mistakes Tab:  <--- NEW CODE BLOCK
-                detailedMistakesArray.push({
-                    question: `${data.x} × ${data.y}`,
-                    wrong: data.studentAnswer,
-                    correct: data.product
+            const payload = {
+                levelCode: 'mul-2x1',
+                name: formatStudentName(document.getElementById('student-identifier-input').value),
+                challengeType: "2x1", 
+                timeTaken: timeFormatted,
+                userAnswers: sumsData.map(s => ({
+                    x: s.x, y: s.y, 
+                    type: 'mul',
+                    studentAnswer: s.studentAnswer 
+                }))
+            };
+
+            // 4. Try Submit (With Retry)
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
                 });
+                
+                const result = await response.json();
+                
+                // --- SUCCESS! ---
+                const gradeData = result.gradeData;
+
+                document.getElementById('report-correct').textContent = gradeData.score;
+                sessionStorage.setItem('mistakesData', JSON.stringify(gradeData.mistakesArray));
+
+                const wrongBtn = document.getElementById('see-wrong-button');
+                if (gradeData.mistakesArray.length > 0) {
+                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
+                    wrongBtn.disabled = false;
+                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    wrongBtn.textContent = "Perfect Score!";
+                    wrongBtn.disabled = true;
+                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
+                // Time calc
+                document.getElementById('report-time-elapsed').textContent = timeFormatted;
+                
+                let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
+                let avgTimeDisplay = attemptedCount > 0 ? `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s` : 'N/A';
+                document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+
+                // Name/Date
+                const now = new Date();
+                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('report-student-name').textContent = payload.name;
+
+                // Switch Screens
+                document.body.classList.remove('focus-mode');
+                document.getElementById('test-area').classList.add('hidden');
+                document.getElementById('report-area').classList.remove('hidden');
+
+            } catch (err) {
+                // --- FAILURE (Network Error) ---
+                console.error(err);
+                
+                // Unlock button for Retry
+                submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-gray-500');
+                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'animate-pulse');
+                
+                alert("Connection lost! Your answers are safe. \n\nPlease check your internet and click 'Retry' to save your score.");
+                
+                startTimer();
             }
-        } else {
-            data.isCorrect = null;
         }
-    });
 
-    const mistakesString = mistakesLogStrings.length > 0 ? mistakesLogStrings.join(", ") : "None";
-    sessionStorage.setItem('multiplication2x1SumsData', JSON.stringify(sumsData));
-
-    const endTime = Date.now();
-    const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
-    const minutes = Math.floor(timeElapsedSeconds / 60);
-    const seconds = timeElapsedSeconds % 60;
-    const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    
-    let avgTimeDisplay = 'N/A';
-    if (attemptedCount > 0) {
-        avgTimeDisplay = `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s`;
-    }
-
-    const rawName = document.getElementById('student-identifier-input').value;
-    const formattedName = formatStudentName(rawName);
-
-    const now = new Date();
-    document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    document.getElementById('report-student-name').textContent = formattedName;
-    
-    document.getElementById('report-correct').textContent = correctCount;
-    document.getElementById('report-time-elapsed').textContent = timeFormatted;
-    document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-    
-    const wrongBtn = document.getElementById('see-wrong-button');
-    if (solvedWrongCount > 0) {
-        wrongBtn.textContent = `Review ${solvedWrongCount} Mistakes`;
-        wrongBtn.disabled = false;
-    } else {
-        wrongBtn.textContent = "Perfect Score! No Mistakes.";
-        wrongBtn.disabled = true;
-        wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    }
-
-    // --- SEND TO GOOGLE SHEETS ---
-    const CHALLENGE_NAME = "2x1"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
-
-    if(SCRIPT_URL.includes("script.google.com")) {
-        const payload = {
-            challengeType: CHALLENGE_NAME, 
-            name: formattedName,
-            score: correctCount + "/30",
-            timeTaken: timeFormatted,
-            accuracy: Math.round((correctCount / 30) * 100) + "%",
-            mistakesString: mistakesString,       
-            detailedMistakes: detailedMistakesArray
-        };
-		sendReportWithRetry(SCRIPT_URL, payload);
-		}
-}
-
-        // --- NEW HELPER FUNCTION TO HANDLE "SERVER BUSY" ---
-        function sendReportWithRetry(url, payload, attempt = 1) {
-            // Note: We use "text/plain" to avoid CORS Preflight checks in simple requests
-            fetch(url, {
-                method: 'POST',
-                redirect: 'follow', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json()) // Expect JSON from updated Script
-            .then(data => {
-                if (data.result === "success") {
-                    console.log("Report saved successfully!");
-                    // OPTIONAL: Visual cue
-                    const h2 = document.querySelector('#report-card h2');
-                    if(h2) {
-                        h2.innerText += " (Saved ✅)";
-                        h2.style.color = "green";
-                    }
-                } 
-                else if (data.message === "Server Busy" && attempt <= 3) {
-                    console.warn(`Server busy. Retrying attempt ${attempt}...`);
-                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000); // Retry after 3s
-                } 
-                else {
-                    console.error("Server Error:", data.message);
-                }
-            })
-            .catch(err => {
-                console.error("Network Error:", err);
-                if (attempt <= 3) {
-                    console.log(`Network fail. Retrying attempt ${attempt}...`);
-                    setTimeout(() => sendReportWithRetry(url, payload, attempt + 1), 3000);
-                }
-            });
-        }
-		
-        // --- WRONG ANSWERS VIEW ---
-        function showWrongAnswers() {
-            const allSums = JSON.parse(sessionStorage.getItem('multiplication2x1SumsData'));
-            const wrongSums = allSums.filter(s => s.isCorrect === false && s.studentAnswer !== null); 
+        function showSecureMistakes() {
+            const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
             
-            wrongSums.forEach((sum, index) => {
+            mistakes.forEach(m => {
                 const row = `
                     <div class="grid grid-cols-3 text-center py-2 border-b hover:bg-red-50">
-                        <span class="font-bold text-gray-700">${sum.x} &times; ${sum.y}</span>
-                        <span class="text-red-500 font-bold line-through">${sum.studentAnswer}</span>
-                        <span class="text-green-600 font-bold">${sum.product}</span>
-                    </div>
-                `;
+                        <span class="font-bold text-gray-700">${m.question}</span>
+                        <span class="text-red-500 font-bold line-through">${m.wrong}</span>
+                        <span class="text-green-600 font-bold">${m.correct}</span>
+                    </div>`;
                 listContainer.innerHTML += row;
             });
 
@@ -650,13 +478,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
