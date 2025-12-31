@@ -64,7 +64,7 @@
                         <th class="py-3 px-6 text-left">Date</th>
                         <th class="py-3 px-6 text-left">Challenge</th>
                         <th class="py-3 px-6 text-center">Score</th>
-                        <th class="py-3 px-6 text-center">Time</th>
+                        <th class="py-3 px-6 text-center">Time (mm:ss)</th>
                         <th class="py-3 px-6 text-center">Accuracy</th>
                     </tr>
                 </thead>
@@ -102,7 +102,23 @@
             document.getElementById('startDate').valueAsDate = firstDay;
         });
 
-        // 2. FETCH DATA FUNCTION
+        // 2. HELPER FUNCTIONS FOR FORMATTING
+        function formatTime(isoString) {
+            if (!isoString) return "00:00";
+            // Check if string contains 'T' (ISO format)
+            if (isoString.toString().indexOf('T') > -1) {
+                return isoString.split('T')[1].substring(0, 5);
+            }
+            return isoString; // Return as is if format is unexpected
+        }
+
+        function formatAccuracy(val) {
+            if (val === undefined || val === null) return "0%";
+            // Multiply by 100 and add %
+            return Math.round(val * 100) + "%";
+        }
+
+        // 3. FETCH DATA FUNCTION
         function fetchReport() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
@@ -122,7 +138,7 @@
             tableContainer.classList.add('hidden');
             loader.style.display = 'block';
 
-            // *** PASTE YOUR GOOGLE SCRIPT URL HERE ***
+            // *** YOUR GOOGLE SCRIPT URL ***
             const scriptUrl = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
 
             // Construct URL with parameters
@@ -133,7 +149,7 @@
                 .then(data => {
                     loader.style.display = 'none';
 
-                    if (data.length === 0) {
+                    if (!data || data.length === 0) {
                         statusMsg.textContent = "No practice records found for this date range.";
                         return;
                     }
@@ -141,26 +157,35 @@
                     // Show Table
                     tableContainer.classList.remove('hidden');
 
-                    // Sort data (Newest date first)
-                    data.reverse();
+                    // Sort data (Newest date first - Optional, depends on if API sorts it)
+                    // data.reverse(); 
 
                     data.forEach(row => {
                         const tr = document.createElement('tr');
                         tr.className = "border-b border-gray-200 hover:bg-gray-50";
-
-                        let accVal = parseInt(row.accuracy) || 0;
                         
-                        // Color code accuracy
+                        // Calculate formatted values
+                        const displayTime = formatTime(row.time);
+                        const displayAccuracy = formatAccuracy(row.accuracy);
+
+                        // Color code accuracy (Using raw value for logic: 0.9 = 90%)
                         let accuracyColor = "text-green-600";
                         if(row.accuracy < 0.7) accuracyColor = "text-red-600";
                         else if(row.accuracy < 0.9) accuracyColor = "text-yellow-600";
+                        
+                        // Handle Date Format: Google Sheets sometimes sends full date string
+                        // We take just the first part if it's too long, or leave it if it's "DD/MM/YYYY"
+                        let displayDate = row.date;
+                        if(displayDate.includes('T')) {
+                             displayDate = displayDate.split('T')[0];
+                        }
 
                         tr.innerHTML = `
-                            <td class="py-3 px-6 font-medium">${row.date}</td>
+                            <td class="py-3 px-6 font-medium">${displayDate}</td>
                             <td class="py-3 px-6">${row.challenge}</td>
                             <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score}</td>
-                            <td class="py-3 px-6 text-center">${row.time}</td>
-                            <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${row.accuracy}</td>
+                            <td class="py-3 px-6 text-center">${displayTime}</td>
+                            <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${displayAccuracy}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -168,17 +193,9 @@
                 .catch(err => {
                     loader.style.display = 'none';
                     statusMsg.textContent = "Error loading data. Please try again.";
-                    console.error(err);
+                    console.error("Fetch Error:", err);
                 });
         }
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
