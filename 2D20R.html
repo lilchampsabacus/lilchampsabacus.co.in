@@ -184,6 +184,7 @@
         let startTime;
         let currentSlideIndex = 0;
         let timerInterval;
+        let isSubmitting = false;
 
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
@@ -312,6 +313,7 @@
 
         // --- SUBMIT LOGIC (STRICT - NO SKIPPING) ---
         function submitAndNext() {
+            if (isSubmitting) return;
             const input = document.getElementById('answer-input');
             const valStr = input.value.trim();
             
@@ -352,6 +354,8 @@
         // --- NEW: ROBUST END TEST (Handles Weak Network) ---
         async function endTest() {
             // 1. UI: Lock the button so they don't click twice
+            if (isSubmitting) return;
+            isSubmitting = true;
             const submitBtn = document.getElementById('submit-button');
             submitBtn.textContent = "📡 Contacting HQ...";
             submitBtn.disabled = true;
@@ -438,6 +442,7 @@
                 console.error("Network Error:", err);
                 
                 // Unlock the button and let them try again
+                isSubmitting = false;
                 submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('bg-gray-500');
