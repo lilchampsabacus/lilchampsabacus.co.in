@@ -223,37 +223,65 @@
             } else {
                 startButton.disabled = true;
             }
+            // START PRE-LOADING IMMEDIATELY
+            preLoadQuestions(); 
+            document.getElementById('practice-type').addEventListener('change', preLoadQuestions);
         });
 
-        // --- NEW: FETCH QUESTIONS FROM GOOGLE ---
-        async function startTest() {
-            document.body.classList.add('focus-mode');
-            const startBtn = document.getElementById('start-button');
-            startBtn.textContent = "Loading...";
-            startBtn.disabled = true;
+        // --- NEW: PRE-LOAD VARIABLES ---
+        let pendingQuestionsPromise = null; 
 
-            // 1. Determine Level Code from Dropdown
+        // 1. Helper: Start loading data immediately (Call this on page load!)
+        function preLoadQuestions() {
             const typeSelect = document.getElementById('practice-type');
             const val = typeSelect.value;
+            
             let digits = "2"; 
             if (val === "3") digits = "1";
             if (val === "1") digits = "2";
             if (val === "2") digits = "3";
             if (val === "4") digits = "4";
             if (val === "5") digits = "5";
+
+            const LEVEL_CODE = `add-${digits}d10r`;
             
+            console.log("Pre-fetching data for:", LEVEL_CODE);
+            
+            // Fetch and store the promise
+            pendingQuestionsPromise = fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`)
+                .then(response => response.json())
+                .catch(err => {
+                    console.error("Pre-load failed", err);
+                    return null;
+                });
+        }
+
+        // 2. Updated Start Function: Uses the pre-loaded data
+        async function startTest() {
+            document.body.classList.add('focus-mode');
+            const startBtn = document.getElementById('start-button');
+            
+            // Visual feedback
+            startBtn.textContent = "Starting..."; 
+            startBtn.disabled = true;
+
             // Set Title
+            const typeSelect = document.getElementById('practice-type');
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
             document.getElementById('report-level-title').textContent = levelText;
 
-            const LEVEL_CODE = `add-${digits}d10r`; 
-            
             try {
-                // 2. Fetch from Google Script
-                const response = await fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`);
-                const questions = await response.json();
+                // CHECK: Did we pre-load? If not, do it now.
+                if (!pendingQuestionsPromise) {
+                    preLoadQuestions(); 
+                }
                 
-                // 3. Prepare Data
+                // WAIT: If data is already here, this is instant. If not, we wait.
+                const questions = await pendingQuestionsPromise;
+                
+                if (!questions) throw new Error("Pre-load failed or returned empty.");
+
+                // Prepare Data
                 sumsData = questions.map(q => ({
                     numbers: q.numbers,
                     type: 'addition',
@@ -292,7 +320,6 @@
                 startBtn.disabled = false;
             }
         }
-
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
             numbers.forEach((num, rIndex) => {
