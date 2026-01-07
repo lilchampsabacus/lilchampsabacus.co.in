@@ -11,7 +11,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        html { scroll-padding-top: 100px; }
+        body {
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
+		
+		html { scroll-padding-top: 100px; }
         .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -38,7 +44,7 @@
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans">
 
     <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -478,4 +484,5 @@
     </script>
 </body>
 </html>
+
 
