@@ -9,6 +9,15 @@
     <script src="gamify.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+	body {
+    font-family: 'Nunito', sans-serif; /* Add this line */
+    background-color: #f0f9ff; 
+    background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+    background-size: 24px 24px;
+	}
     
     <style>
         html { scroll-padding-top: 100px; }
@@ -38,16 +47,16 @@
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans">
 
-    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+    <header class="bg-indigo-600 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
     <main class="flex-grow max-w-4xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center back-link">2-digit x 1-digit Mission</h2>
+        <h2 class="text-3xl font-extrabold text-gray-800 mb-6 text-center back-link">2-digit x 1-digit Mission</h2>
 
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center">
             <h3 class="text-2xl font-bold mb-4 text-gray-800">Ready for your Mission?</h3>			
@@ -162,7 +171,7 @@
 
     </main>
 
-    <footer class="bg-yellow-200 text-center p-3 mt-auto"><p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p></footer>
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200"><p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p></footer>
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
@@ -478,3 +487,4 @@
     </script>
 </body>
 </html>
+
