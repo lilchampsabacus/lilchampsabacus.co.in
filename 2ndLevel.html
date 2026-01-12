@@ -515,17 +515,26 @@
                 };
 
                 fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    console.log("Report sent!");
-                }).catch(err => {
-                    console.error("Error sending report:", err);
-                });
+        method: 'POST',
+        redirect: 'follow', // Important: Follow Google's redirect
+        headers: {
+             "Content-Type": "text/plain;charset=utf-8", // Change to text/plain to avoid "Preflight" checks
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json()) // Wait for the JSON response
+    .then(data => {
+        console.log("Report sent successfully!", data);
+        if(reportBtn) reportBtn.textContent = "Save Badge (Download)"; // Reset button text
+    })
+    .catch(err => {
+        console.error("Error sending report:", err);
+        alert("Warning: Score saved locally but not uploaded. Check internet connection.");
+        if(reportBtn) reportBtn.textContent = "Save Failed - Retry";
+    });
             }
         }
+		
         // --- REVIEW MISTAKES ---
         function showWrongAnswers() {
             const wrongSums = quizData.filter(s => s.isCorrect === false);
