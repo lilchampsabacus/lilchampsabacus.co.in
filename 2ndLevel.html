@@ -15,6 +15,13 @@
     <style>
         /* Base Settings */
         html { scroll-padding-top: 20px; }
+
+		body {
+            font-family: 'Nunito', sans-serif; /* Optional: matches other page font */
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
         
         /* Animations */
         .slide-container {
@@ -60,7 +67,7 @@
 
         /* --- FOCUS MODE --- */
         body.focus-mode {
-            background-color: #fbf0d9 !important; 
+            background-color: #f0f9ff !important; 
             color: #433422;
             height: 100vh;
             overflow-y: auto;
@@ -79,7 +86,8 @@
         }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+
+	<body class="min-h-screen flex flex-col font-sans">
 
     <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
