@@ -232,6 +232,7 @@
         let currentQuestionIndex = 0;
         let startTime;
         let timerInterval;
+		let isSubmitting = false;
 
         // --- UTILITIES ---
         function formatStudentName(identifier) {
@@ -364,6 +365,7 @@
 
         // --- GAME FLOW (NEW LOGIC) ---
         function submitAndNext() {
+			if (isSubmitting) return;
             const input = document.getElementById('answer-input');
             const valStr = input.value.trim();
             const validationMsg = document.getElementById('validation-message');
@@ -433,30 +435,31 @@
             timerInterval = setInterval(() => {}, 1000);
         }
 
-        function endTest() {
-            document.body.classList.remove('focus-mode');
+        async function endTest() {
+            // 1. Lock the UI
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            const submitBtn = document.getElementById('submit-button');
+            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.disabled = true;
+            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            submitBtn.classList.add('bg-gray-500');
+
             clearInterval(timerInterval);
             
-            document.getElementById('test-area').classList.add('hidden');
-            document.getElementById('report-area').classList.remove('hidden');
-            
-            // --- STATS CALCULATION ---
+            // 2. Calculate Stats
             let correctCount = 0;
-            let mistakesLogStrings = [];    // For 'Report' tab
-            let detailedMistakesArray = []; // For 'Mistakes' tab
+            let mistakesLogStrings = [];    
+            let detailedMistakesArray = []; 
 
             quizData.forEach((q, index) => {
                 if (q.isCorrect) {
                     correctCount++;
                 } else {
-                    // 1. Format the question (e.g. "10 + 20 - 5")
                     const qText = q.numbers.join(' + ').replace(/\+ -/g, '- ');
                     const userAns = q.userAnswer !== null ? q.userAnswer : "Skipped";
-                    
-                    // 2. Add to Summary String
                     mistakesLogStrings.push(`Q${index + 1}: ${userAns} vs ${q.correctAnswer}`);
-                    
-                    // 3. Add to Detailed Object
                     detailedMistakesArray.push({
                         question: qText,
                         wrong: userAns,
@@ -467,7 +470,7 @@
 
             const mistakesString = mistakesLogStrings.length > 0 ? mistakesLogStrings.join(", ") : "None";
             
-            // Time Calculation
+            // Time & Accuracy
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
@@ -476,66 +479,70 @@
             const avgTimeDisplay = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
             const accuracyVal = Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%";
 
-            // UI Updates
-            const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
+            // Prepare Payload
             const rawName = document.getElementById('student-identifier-input').value;
             const formattedName = formatStudentName(rawName);
-            document.getElementById('report-student-name').textContent = formattedName;
-            
-            document.getElementById('report-correct').textContent = correctCount;
-            document.getElementById('report-time-elapsed').textContent = timeFormatted;
-            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-            
-            const wrongBtn = document.getElementById('see-wrong-button');
-            if (correctCount === TOTAL_QUESTIONS) {
-                wrongBtn.disabled = true;
-                wrongBtn.textContent = "Perfect Score! No Mistakes";
-                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                wrongBtn.disabled = false;
-                wrongBtn.textContent = "Review Mistakes";
-                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            const CHALLENGE_NAME = "2ndLevel";
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
 
-            // --- SEND TO GOOGLE SHEETS ---
-            const CHALLENGE_NAME = "2ndLevel"; 
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
+            const payload = {
+                challengeType: CHALLENGE_NAME, 
+                name: formattedName,
+                score: correctCount + "/" + TOTAL_QUESTIONS,
+                timeTaken: timeFormatted,
+                accuracy: accuracyVal,
+                mistakesString: mistakesString,       
+                detailedMistakes: detailedMistakesArray 
+            };
 
-			// Define the button safely here
-    		const saveButton = document.getElementById('save-btn');
-    		if(saveButton) saveButton.textContent = "Saving to Server...";
+            // 3. Send to Server (Async)
+            try {
+                // Send request
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
 
-            if(SCRIPT_URL.includes("script.google.com")) {
-                const payload = {
-                    challengeType: CHALLENGE_NAME, 
-                    name: formattedName,
-                    score: correctCount + "/" + TOTAL_QUESTIONS,
-                    timeTaken: timeFormatted,
-                    accuracy: accuracyVal,
-                    mistakesString: mistakesString,       
-                    detailedMistakes: detailedMistakesArray 
-                };
+                // --- SUCCESS: NOW Update UI & Show Report ---
+                
+                // 1. Fill Report Data
+                const now = new Date();
+                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('report-student-name').textContent = formattedName;
+                document.getElementById('report-correct').textContent = correctCount;
+                document.getElementById('report-time-elapsed').textContent = timeFormatted;
+                document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+                
+                // 2. Configure "Review Mistakes" Button
+                const wrongBtn = document.getElementById('see-wrong-button');
+                if (correctCount === TOTAL_QUESTIONS) {
+                    wrongBtn.disabled = true;
+                    wrongBtn.textContent = "Perfect Score! No Mistakes";
+                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    wrongBtn.disabled = false;
+                    wrongBtn.textContent = "Review Mistakes";
+                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
 
-                fetch(SCRIPT_URL, {
-        method: 'POST',
-        redirect: 'follow', // Important: Follow Google's redirect
-        headers: {
-             "Content-Type": "text/plain;charset=utf-8", // Change to text/plain to avoid "Preflight" checks
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json()) // Wait for the JSON response
-    .then(data => {
-        console.log("Report sent successfully!", data);
-        if(saveButton) saveButton.textContent = "Save Badge (Download)"; // Reset button text
-    })
-    .catch(err => {
-        console.error("Error sending report:", err);
-        alert("Warning: Score saved locally but not uploaded. Check internet connection.");
-        if(saveButton) saveButton.textContent = "Save Failed - Retry";
-    });
+                // 3. Switch Screens
+                document.body.classList.remove('focus-mode');
+                document.getElementById('test-area').classList.add('hidden');
+                document.getElementById('report-area').classList.remove('hidden');
+
+            } catch (err) {
+                // --- FAILURE: Allow Retry ---
+                console.error("Error sending report:", err);
+                isSubmitting = false;
+                
+                submitBtn.textContent = "⚠️ Network Error. Retry?";
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-gray-500');
+                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                
+                alert("Connection problem! Your score is safe, but couldn't be uploaded. \n\nPlease check your internet and click Retry.");
             }
         }
 		
