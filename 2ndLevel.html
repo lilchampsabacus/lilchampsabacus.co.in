@@ -529,12 +529,12 @@
     .then(response => response.json()) // Wait for the JSON response
     .then(data => {
         console.log("Report sent successfully!", data);
-        if(reportBtn) reportBtn.textContent = "Save Badge (Download)"; // Reset button text
+        if(saveButton) saveButton.textContent = "Save Badge (Download)"; // Reset button text
     })
     .catch(err => {
         console.error("Error sending report:", err);
         alert("Warning: Score saved locally but not uploaded. Check internet connection.");
-        if(reportBtn) reportBtn.textContent = "Save Failed - Retry";
+        if(saveButton) saveButton.textContent = "Save Failed - Retry";
     });
             }
         }
