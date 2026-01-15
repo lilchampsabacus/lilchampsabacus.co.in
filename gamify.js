@@ -1,16 +1,19 @@
-/* gamify.js - The "Brain" of Li'l Champs Website */
+/* gamify.js - The "Brain" of Li'l Champs (Supabase + Math Engine) */
 
-// 1. DYNAMICALLY LOAD SUPABASE (If you forgot to add it in HTML)
+// ==================================================
+// PART 1: SUPABASE & UTILS (Sounds, Saving)
+// ==================================================
+
+// 1. DYNAMICALLY LOAD SUPABASE
 if (typeof supabase === 'undefined') {
     const script = document.createElement('script');
     script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-    script.onload = () => initSupabase(); // Initialize after loading
+    script.onload = () => initSupabase();
     document.head.appendChild(script);
 } else {
     initSupabase();
 }
 
-// 2. INITIALIZE SUPABASE CLIENT
 let supabaseClient;
 const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
@@ -18,16 +21,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 function initSupabase() {
     if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("✅ Supabase Connected in gamify.js");
+        console.log("✅ Supabase Connected");
     }
 }
 
-// 3. LOAD CONFETTI (Celebration)
+// 2. CONFETTI & SOUNDS
 const confettiScript = document.createElement('script');
 confettiScript.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
 document.head.appendChild(confettiScript);
 
-// 4. SOUND EFFECTS
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -60,30 +62,19 @@ function triggerWinConfetti() {
     }
 }
 
-// 5. THE SAVE ENGINE (This is what you need!)
+// 3. THE SAVE ENGINE
 async function saveExamResult(data) {
-    console.log("🚀 Attempting to save...", data);
-
-    // Re-check client in case it loaded late
-    if (!supabaseClient && window.supabase) initSupabase();
+    console.log("🚀 Saving...", data);
     
-    if (!supabaseClient) {
-        alert("❌ Error: Database not connected yet. Please wait 2 seconds and click Submit again.");
-        return;
-    }
+    if (!supabaseClient && window.supabase) initSupabase();
+    if (!supabaseClient) { alert("Database connecting... Please wait 2s and click again."); return; }
 
-    // Check Login
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-        alert("⚠️ Not Logged In! Please go back to the login page.");
-        return;
-    }
+    if (!session) { alert("⚠️ Not Logged In!"); return; }
 
-    // Get Name & Clean Score
     const studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
     const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
 
-    // INSERT INTO DATABASE
     const { data: reportData, error } = await supabaseClient
         .from('reports')
         .insert({
@@ -100,13 +91,8 @@ async function saveExamResult(data) {
         .select()
         .single();
 
-    if (error) {
-        console.error("❌ Save Failed:", error);
-        alert("Save Failed: " + error.message);
-        return;
-    }
+    if (error) { console.error(error); alert("Save Error: " + error.message); return; }
 
-    // Insert Mistakes (if any)
     if (data.mistakes && data.mistakes.length > 0) {
         const mistakeRows = data.mistakes.map(m => ({
             report_id: reportData.id,
@@ -116,13 +102,12 @@ async function saveExamResult(data) {
         }));
         await supabaseClient.from('mistakes').insert(mistakeRows);
     }
-
-    console.log("✅ Saved Successfully!");
+    
+    console.log("✅ Saved!");
     triggerWinConfetti();
     alert("✅ Report Saved Successfully!");
 }
 
-// 6. EXPORT (Make these functions available to 1x1.html)
 window.lilChampUtils = {
     playCorrect: () => playSound('correct'),
     playWrong: () => playSound('wrong'),
@@ -131,17 +116,15 @@ window.lilChampUtils = {
 };
 
 // ==================================================
-// LI'L CHAMPS MATH ENGINE (Migrated from Google)
+// PART 2: MATH GENERATOR ENGINE (Migrated from Google)
 // ==================================================
 
-// 1. QUESTION GENERATOR
 window.generateQuestions = function(code, countParam) {
     console.log("Generating questions for:", code);
     var questions = [];
     var uniqueKeys = {}; 
     var defaultCount = 30;
     
-    // Force 20 questions for specific types
     if (code.startsWith('add-') || code.startsWith('dec-') || code.startsWith('neg-')) {
         defaultCount = 20;
     }
@@ -225,7 +208,6 @@ function generateNegativeSum(digits, rows) {
     var limit = Math.pow(10, digits); 
     var nums = [];
     var isValid = false;
-
     while (!isValid) {
         nums = [];
         var sum = 0;
@@ -246,7 +228,6 @@ function generateDecimalSum(code) {
     else if (code === 'dec-3d10r') { minGen = 100; maxGen = 999; minStart = 555; maxStart = 999; } 
     else if (code === 'dec-4d10r') { minGen = 1000; maxGen = 9999; minStart = 5555; maxStart = 9999; } 
     else { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; }
-    
     var nums = [];
     var isValid = false;
     while (!isValid) {
@@ -282,8 +263,6 @@ function generateAdditionSum(digits, rows) {
 function generateMathQuestion(code) {
     var xD=[1,1], yD=[1,1], type='mul';
     var minVal = 2; 
-    
-    // Define Levels
     if (code === 'mul-1x1') { xD=[1,1]; yD=[1,1]; }
     else if (code === 'mul-2x1') { xD=[2,2]; yD=[1,1]; }
     else if (code === 'mul-3x1') { xD=[3,3]; yD=[1,1]; }
@@ -292,7 +271,6 @@ function generateMathQuestion(code) {
     else if (code === 'mul-3x2') { xD=[3,3]; yD=[2,2]; }
     else if (code === 'mul-4x2') { xD=[4,4]; yD=[2,2]; }
     else if (code === 'mul-5x1') { xD=[5,5]; yD=[1,1]; }
-    
     else if (code.startsWith('div-')) {
         type = 'div';
         yD=[1,1]; xD=[3,3]; 
@@ -304,7 +282,6 @@ function generateMathQuestion(code) {
         else if (code === 'div-5d2d') { xD=[5,5]; yD=[2,2]; }
         else if (code === 'div-5d3d') { xD=[5,5]; yD=[3,3]; } 
     }
-
     var x, y, q;
     if (type === 'mul') {
         x = getRand(xD, minVal); 
@@ -317,10 +294,8 @@ function generateMathQuestion(code) {
         var maxDividend = Math.pow(10, xD[1])-1;
         var minQ = Math.ceil(minDividend / y);
         var maxQ = Math.floor(maxDividend / y);
-        
         if (maxQ < minQ) { q = minQ; }
         else { q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ; }
-        
         x = q * y; 
         return { x: x, y: y, quotient: q, type: 'div' };
     }
@@ -332,4 +307,3 @@ function getRand(r, minOverride) {
     var max = Math.pow(10, r[1])-1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
