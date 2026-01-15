@@ -1,30 +1,38 @@
-/* gamify.js - Sounds, Confetti, and SUPABASE SAVING ENGINE */
+/* gamify.js - The "Brain" of Li'l Champs Website */
 
-// --- 1. INITIALIZE SUPABASE GLOBALLY ---
-// This saves you from editing 50 HTML files to add the connection script!
+// 1. DYNAMICALLY LOAD SUPABASE (If you forgot to add it in HTML)
+if (typeof supabase === 'undefined') {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    script.onload = () => initSupabase(); // Initialize after loading
+    document.head.appendChild(script);
+} else {
+    initSupabase();
+}
+
+// 2. INITIALIZE SUPABASE CLIENT
+let supabaseClient;
 const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
 
-// Check if Supabase SDK is loaded
-if (typeof supabase !== 'undefined') {
-    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} else {
-    console.error("Supabase SDK script is missing in HEAD tag!");
+function initSupabase() {
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase Connected in gamify.js");
+    }
 }
 
-// --- 2. LOAD CONFETTI LIBRARY DYNAMICALLY ---
+// 3. LOAD CONFETTI (Celebration)
 const confettiScript = document.createElement('script');
 confettiScript.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
 document.head.appendChild(confettiScript);
 
-// --- 3. SOUND EFFECTS ---
+// 4. SOUND EFFECTS
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     
@@ -34,16 +42,14 @@ function playSound(type) {
         osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-    } else if (type === 'wrong') {
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    } else {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
     }
 }
 
@@ -54,32 +60,34 @@ function triggerWinConfetti() {
     }
 }
 
-// --- 4. NEW: SUPABASE SAVE FUNCTION ---
+// 5. THE SAVE ENGINE (This is what you need!)
 async function saveExamResult(data) {
-    // data expects: { challenge: "1x1", score: 20, total: 20, time: "05:00", accuracy: "100%", mistakes: [] }
+    console.log("🚀 Attempting to save...", data);
 
-    console.log("🚀 Saving to Supabase...", data);
-
-    // 1. Get User
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    const user = session?.user;
-
-    if (!user) {
-        alert("⚠️ You are not logged in. Result cannot be saved.");
+    // Re-check client in case it loaded late
+    if (!supabaseClient && window.supabase) initSupabase();
+    
+    if (!supabaseClient) {
+        alert("❌ Error: Database not connected yet. Please wait 2 seconds and click Submit again.");
         return;
     }
 
-    // 2. Get Name (from our Login Fix)
-    const studentName = sessionStorage.getItem('studentIdentifier') || user.email.split('@')[0];
+    // Check Login
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        alert("⚠️ Not Logged In! Please go back to the login page.");
+        return;
+    }
 
-    // 3. Clean numeric score
+    // Get Name & Clean Score
+    const studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
     const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
 
-    // 4. Insert into 'reports' table
-    const { data: reportData, error } = await window.supabaseClient
+    // INSERT INTO DATABASE
+    const { data: reportData, error } = await supabaseClient
         .from('reports')
         .insert({
-            user_id: user.id,
+            user_id: session.user.id,
             student_name: studentName,
             challenge_type: data.challenge,
             score_text: `${data.score}/${data.total}`,
@@ -93,12 +101,12 @@ async function saveExamResult(data) {
         .single();
 
     if (error) {
-        console.error("❌ Save Error:", error);
-        alert("Error saving result. Check console.");
+        console.error("❌ Save Failed:", error);
+        alert("Save Failed: " + error.message);
         return;
     }
 
-    // 5. Insert Mistakes (if any)
+    // Insert Mistakes (if any)
     if (data.mistakes && data.mistakes.length > 0) {
         const mistakeRows = data.mistakes.map(m => ({
             report_id: reportData.id,
@@ -106,21 +114,20 @@ async function saveExamResult(data) {
             wrong_answer: String(m.wrong),
             correct_answer: String(m.correct)
         }));
-        
-        await window.supabaseClient.from('mistakes').insert(mistakeRows);
+        await supabaseClient.from('mistakes').insert(mistakeRows);
     }
 
-    console.log("✅ Saved!");
-    triggerWinConfetti(); // Celebrate successful save!
-    alert("Result Saved to Server!");
+    console.log("✅ Saved Successfully!");
+    triggerWinConfetti();
+    alert("✅ Report Saved Successfully!");
 }
 
-// --- 5. EXPOSE FUNCTIONS ---
+// 6. EXPORT (Make these functions available to 1x1.html)
 window.lilChampUtils = {
     playCorrect: () => playSound('correct'),
     playWrong: () => playSound('wrong'),
     celebrate: triggerWinConfetti,
-    saveResult: saveExamResult // <--- New function exposed here
+    saveResult: saveExamResult 
 };
 
 // ==================================================
@@ -325,3 +332,4 @@ function getRand(r, minOverride) {
     var max = Math.pow(10, r[1])-1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
