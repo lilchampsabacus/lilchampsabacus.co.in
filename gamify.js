@@ -1,18 +1,23 @@
-/* gamify.js - Adds Sounds and Confetti */
+/* gamify.js - Sounds, Confetti, and SUPABASE SAVING ENGINE */
 
-// 1. LOAD CONFETTI LIBRARY DYNAMICALLY
+// --- 1. INITIALIZE SUPABASE GLOBALLY ---
+// This saves you from editing 50 HTML files to add the connection script!
+const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
+
+// Check if Supabase SDK is loaded
+if (typeof supabase !== 'undefined') {
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.error("Supabase SDK script is missing in HEAD tag!");
+}
+
+// --- 2. LOAD CONFETTI LIBRARY DYNAMICALLY ---
 const confettiScript = document.createElement('script');
 confettiScript.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
 document.head.appendChild(confettiScript);
 
-// 2. SOUND EFFECTS (Encoded as Data URIs to avoid external file issues)
-const sounds = {
-    correct: new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."), // (Shortened for brevity, see note below)
-    wrong: new Audio("data:audio/wav;base64,UklGRi..."), 
-    // Using simple beep synthesis for reliability instead of long base64 strings
-};
-
-// Use Web Audio API for cleaner synthesized beeps (No downloads needed)
+// --- 3. SOUND EFFECTS ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSound(type) {
@@ -24,7 +29,6 @@ function playSound(type) {
     gainNode.connect(audioCtx.destination);
     
     if (type === 'correct') {
-        // Pleasant "Ding" (High pitch sine wave)
         osc.type = 'sine';
         osc.frequency.setValueAtTime(500, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
@@ -33,7 +37,6 @@ function playSound(type) {
         osc.start();
         osc.stop(audioCtx.currentTime + 0.3);
     } else if (type === 'wrong') {
-        // Dull "Thud" (Low pitch triangle wave)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
@@ -44,31 +47,281 @@ function playSound(type) {
     }
 }
 
-// 3. CELEBRATION FUNCTION
 function triggerWinConfetti() {
     if (typeof confetti === 'function') {
-        // Fire from left
         confetti({ origin: { x: 0, y: 0.7 }, angle: 60, spread: 55, colors: ['#4f46e5', '#ff7e67'] });
-        // Fire from right
         confetti({ origin: { x: 1, y: 0.7 }, angle: 120, spread: 55, colors: ['#4f46e5', '#ff7e67'] });
     }
 }
 
-// 4. ATTACH TO INPUTS (Auto-detect correct answers for immediate feedback files)
-document.addEventListener('DOMContentLoaded', () => {
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.addEventListener('change', (e) => {
-            // Simple visual effect on focus change
-            e.target.classList.add('scale-105');
-            setTimeout(() => e.target.classList.remove('scale-105'), 200);
-        });
-    });
-});
+// --- 4. NEW: SUPABASE SAVE FUNCTION ---
+async function saveExamResult(data) {
+    // data expects: { challenge: "1x1", score: 20, total: 20, time: "05:00", accuracy: "100%", mistakes: [] }
 
-// Expose functions to global scope so HTML files can call them
+    console.log("🚀 Saving to Supabase...", data);
+
+    // 1. Get User
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    const user = session?.user;
+
+    if (!user) {
+        alert("⚠️ You are not logged in. Result cannot be saved.");
+        return;
+    }
+
+    // 2. Get Name (from our Login Fix)
+    const studentName = sessionStorage.getItem('studentIdentifier') || user.email.split('@')[0];
+
+    // 3. Clean numeric score
+    const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
+
+    // 4. Insert into 'reports' table
+    const { data: reportData, error } = await window.supabaseClient
+        .from('reports')
+        .insert({
+            user_id: user.id,
+            student_name: studentName,
+            challenge_type: data.challenge,
+            score_text: `${data.score}/${data.total}`,
+            score_val: numericScore,
+            total_val: data.total,
+            time_taken: data.time,
+            accuracy: data.accuracy,
+            mistakes_summary: data.mistakes ? data.mistakes.map(m => m.question).join(', ') : ""
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error("❌ Save Error:", error);
+        alert("Error saving result. Check console.");
+        return;
+    }
+
+    // 5. Insert Mistakes (if any)
+    if (data.mistakes && data.mistakes.length > 0) {
+        const mistakeRows = data.mistakes.map(m => ({
+            report_id: reportData.id,
+            question: m.question,
+            wrong_answer: String(m.wrong),
+            correct_answer: String(m.correct)
+        }));
+        
+        await window.supabaseClient.from('mistakes').insert(mistakeRows);
+    }
+
+    console.log("✅ Saved!");
+    triggerWinConfetti(); // Celebrate successful save!
+    alert("Result Saved to Server!");
+}
+
+// --- 5. EXPOSE FUNCTIONS ---
 window.lilChampUtils = {
     playCorrect: () => playSound('correct'),
     playWrong: () => playSound('wrong'),
-    celebrate: triggerWinConfetti
+    celebrate: triggerWinConfetti,
+    saveResult: saveExamResult // <--- New function exposed here
 };
+
+// ==================================================
+// LI'L CHAMPS MATH ENGINE (Migrated from Google)
+// ==================================================
+
+// 1. QUESTION GENERATOR
+window.generateQuestions = function(code, countParam) {
+    console.log("Generating questions for:", code);
+    var questions = [];
+    var uniqueKeys = {}; 
+    var defaultCount = 30;
+    
+    // Force 20 questions for specific types
+    if (code.startsWith('add-') || code.startsWith('dec-') || code.startsWith('neg-')) {
+        defaultCount = 20;
+    }
+
+    var COUNT = countParam ? parseInt(countParam) : defaultCount;
+    var maxTries = COUNT * 30; 
+    var tries = 0;
+
+    // --- A. NEGATIVE SUMS ---
+    if (code.startsWith('neg-')) {
+        var digits = 2; var rows = 10;
+        if (code.indexOf('1d') > -1) digits = 1;
+        if (code.indexOf('2d') > -1) digits = 2;
+        if (code.indexOf('3d') > -1) digits = 3;
+        if (code.indexOf('4d') > -1) digits = 4;
+        if (code.indexOf('5d') > -1) digits = 5;
+
+        while (questions.length < COUNT && tries < maxTries) {
+            tries++;
+            var nums = generateNegativeSum(digits, rows);
+            var key = nums.join(",");
+            if (!uniqueKeys[key]) { 
+                uniqueKeys[key] = true; 
+                questions.push({ numbers: nums, type: 'addition' }); 
+            }
+        }
+        while (questions.length < COUNT) { 
+            questions.push({ numbers: generateNegativeSum(digits, rows), type: 'addition' }); 
+        }
+    }
+    // --- B. DECIMALS ---
+    else if (code.startsWith('dec-')) {
+        while (questions.length < COUNT && tries < maxTries) {
+            tries++;
+            var nums = generateDecimalSum(code); 
+            var key = nums.join("|");
+            if (!uniqueKeys[key]) {
+                uniqueKeys[key] = true;
+                questions.push({ numbers: nums, type: 'addition' });
+            }
+        }
+        while (questions.length < COUNT) {
+            questions.push({ numbers: generateDecimalSum(code), type: 'addition' });
+        }
+    }
+    // --- C. STANDARD ADD/SUB ---
+    else if (code.startsWith('add-')) {
+        var digits = 1; var rows = 10;
+        if (code.indexOf('1d') > -1) digits = 1;
+        if (code.indexOf('2d') > -1) digits = 2;
+        if (code.indexOf('3d') > -1) digits = 3;
+        if (code.indexOf('4d') > -1) digits = 4;
+        if (code.indexOf('5d') > -1) digits = 5;
+
+        while (questions.length < COUNT && tries < maxTries) {
+            tries++;
+            var nums = generateAdditionSum(digits, rows);
+            var key = nums.join(",");
+            if (!uniqueKeys[key]) { uniqueKeys[key] = true; questions.push({ numbers: nums, type: 'addition' }); }
+        }
+        while (questions.length < COUNT) { questions.push({ numbers: generateAdditionSum(digits, rows), type: 'addition' }); }
+    }
+    // --- D. MULTIPLICATION / DIVISION ---
+    else {
+        while (questions.length < COUNT && tries < maxTries) {
+            tries++;
+            var q = generateMathQuestion(code);
+            var key = q.type + "-" + q.x + "-" + q.y;
+            if (!uniqueKeys[key]) { uniqueKeys[key] = true; questions.push(q); }
+        }
+        while (questions.length < COUNT) { questions.push(generateMathQuestion(code)); }
+    }
+    return questions;
+};
+
+// --- HELPER FUNCTIONS ---
+
+function generateNegativeSum(digits, rows) {
+    var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
+    var max = Math.pow(10, digits) - 1;
+    var limit = Math.pow(10, digits); 
+    var nums = [];
+    var isValid = false;
+
+    while (!isValid) {
+        nums = [];
+        var sum = 0;
+        for (var i = 0; i < rows; i++) {
+            var n = Math.floor(Math.random() * (max - min + 1)) + min;
+            if (Math.random() > 0.4) { n = -n; }
+            nums.push(n);
+            sum += n;
+        }
+        if (sum < 0 && sum > -limit) { isValid = true; }
+    }
+    return nums;
+}
+
+function generateDecimalSum(code) {
+    var minGen, maxGen, minStart, maxStart;
+    if (code === 'dec-2d10r') { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; } 
+    else if (code === 'dec-3d10r') { minGen = 100; maxGen = 999; minStart = 555; maxStart = 999; } 
+    else if (code === 'dec-4d10r') { minGen = 1000; maxGen = 9999; minStart = 5555; maxStart = 9999; } 
+    else { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; }
+    
+    var nums = [];
+    var isValid = false;
+    while (!isValid) {
+        nums = [];
+        var runningSum = 0;
+        for (var i = 0; i < 10; i++) { 
+            var n = 0;
+            if (i === 0 || i === 1) { n = Math.floor(Math.random() * (maxStart - minStart + 1)) + minStart; } 
+            else { n = Math.floor(Math.random() * (maxGen - minGen + 1)) + minGen; }
+            if (i === 2 || i === 5 || i === 8) { n = -n; }
+            nums.push(n);
+            runningSum += n;
+        }
+        if (runningSum >= 0) { isValid = true; }
+    }
+    return nums.map(function(num) { return parseFloat((num / 100).toFixed(2)); });
+}
+
+function generateAdditionSum(digits, rows) {
+    var nums = [];
+    var sum = 0;
+    var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
+    var max = Math.pow(10, digits) - 1;
+    for (var i = 0; i < rows; i++) {
+        var n = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (i > 0 && Math.random() > 0.5 && sum - n >= 0) n = -n; 
+        nums.push(n);
+        sum += n;
+    }
+    return nums;
+}
+
+function generateMathQuestion(code) {
+    var xD=[1,1], yD=[1,1], type='mul';
+    var minVal = 2; 
+    
+    // Define Levels
+    if (code === 'mul-1x1') { xD=[1,1]; yD=[1,1]; }
+    else if (code === 'mul-2x1') { xD=[2,2]; yD=[1,1]; }
+    else if (code === 'mul-3x1') { xD=[3,3]; yD=[1,1]; }
+    else if (code === 'mul-4x1') { xD=[4,4]; yD=[1,1]; }
+    else if (code === 'mul-2x2') { xD=[2,2]; yD=[2,2]; }
+    else if (code === 'mul-3x2') { xD=[3,3]; yD=[2,2]; }
+    else if (code === 'mul-4x2') { xD=[4,4]; yD=[2,2]; }
+    else if (code === 'mul-5x1') { xD=[5,5]; yD=[1,1]; }
+    
+    else if (code.startsWith('div-')) {
+        type = 'div';
+        yD=[1,1]; xD=[3,3]; 
+        if (code === 'div-3d1d') { xD=[3,3]; yD=[1,1]; }
+        else if (code === 'div-4d1d') { xD=[4,4]; yD=[1,1]; }
+        else if (code === 'div-5d1d') { xD=[5,5]; yD=[1,1]; }
+        else if (code === 'div-4d2d') { xD=[4,4]; yD=[2,2]; }
+        else if (code === 'div-4d3d') { xD=[4,4]; yD=[3,3]; } 
+        else if (code === 'div-5d2d') { xD=[5,5]; yD=[2,2]; }
+        else if (code === 'div-5d3d') { xD=[5,5]; yD=[3,3]; } 
+    }
+
+    var x, y, q;
+    if (type === 'mul') {
+        x = getRand(xD, minVal); 
+        y = getRand(yD, minVal);
+        if(y > x) { var t=x; x=y; y=t; }
+        return { x: x, y: y, type: 'mul' };
+    } else {
+        y = getRand(yD, 2); 
+        var minDividend = Math.pow(10, xD[0]-1);
+        var maxDividend = Math.pow(10, xD[1])-1;
+        var minQ = Math.ceil(minDividend / y);
+        var maxQ = Math.floor(maxDividend / y);
+        
+        if (maxQ < minQ) { q = minQ; }
+        else { q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ; }
+        
+        x = q * y; 
+        return { x: x, y: y, quotient: q, type: 'div' };
+    }
+}
+
+function getRand(r, minOverride) {
+    var min = Math.pow(10, r[0]-1);
+    if (minOverride && minOverride > min) min = minOverride;
+    var max = Math.pow(10, r[1])-1;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
