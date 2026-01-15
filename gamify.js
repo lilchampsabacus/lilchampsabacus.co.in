@@ -4,7 +4,6 @@
 // PART 1: CONFIGURATION (KEYS MUST BE AT THE TOP)
 // ==================================================
 
-// 1. Define Keys FIRST so they are always available
 const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
 let supabaseClient;
@@ -15,13 +14,11 @@ let supabaseClient;
 
 function initSupabase() {
     if (window.supabase) {
-        // Now it's safe to use the constants because they were defined at the top
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log("✅ Supabase Connected");
     }
 }
 
-// Check if Supabase SDK is loaded, if not, load it
 if (typeof supabase === 'undefined') {
     const script = document.createElement('script');
     script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
@@ -31,7 +28,6 @@ if (typeof supabase === 'undefined') {
     initSupabase();
 }
 
-// Load Confetti Library
 const confettiScript = document.createElement('script');
 confettiScript.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
 document.head.appendChild(confettiScript);
@@ -73,13 +69,12 @@ function triggerWinConfetti() {
 }
 
 // ==================================================
-// PART 4: THE SAVE ENGINE
+// PART 4: THE SAVE ENGINE (NOW WITH INDIAN TIME)
 // ==================================================
 
 async function saveExamResult(data) {
     console.log("🚀 Saving...", data);
     
-    // Safety check
     if (!supabaseClient && window.supabase) initSupabase();
     if (!supabaseClient) { 
         alert("Database connecting... Please wait 2 seconds and click Submit again."); 
@@ -95,6 +90,13 @@ async function saveExamResult(data) {
     const studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
     const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
 
+    // CAPTURE LOCAL INDIAN TIME
+    const indianTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata", 
+        dateStyle: "medium", 
+        timeStyle: "short"
+    });
+
     const { data: reportData, error } = await supabaseClient
         .from('reports')
         .insert({
@@ -106,7 +108,8 @@ async function saveExamResult(data) {
             total_val: data.total,
             time_taken: data.time,
             accuracy: data.accuracy,
-            mistakes_summary: data.mistakes ? data.mistakes.map(m => m.question).join(', ') : ""
+            mistakes_summary: data.mistakes ? data.mistakes.map(m => m.question).join(', ') : "",
+            indian_time: indianTime // <--- NEW FIELD SAVES READABLE TIME
         })
         .select()
         .single();
@@ -140,7 +143,7 @@ window.lilChampUtils = {
 };
 
 // ==================================================
-// PART 5: MATH GENERATOR ENGINE (This fixes your 1x1 error!)
+// PART 5: MATH GENERATOR ENGINE
 // ==================================================
 
 window.generateQuestions = function(code, countParam) {
