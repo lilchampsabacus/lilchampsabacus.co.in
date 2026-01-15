@@ -83,9 +83,9 @@
     <script>
     // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
-    // ⚠️ IMPORTANT: REPLACE 'YOUR_ANON_KEY' WITH THE KEY FROM SUPABASE DASHBOARD
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
     
+    // Create client
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleLogin() {
@@ -97,20 +97,18 @@
 
         // Reset message
         messageElement.innerHTML = '';
-        messageElement.className = 'mt-4 text-center text-sm font-semibold min-h-[20px]';
-
+        
         if(!emailInput || !password) {
-            messageElement.classList.add('text-red-500');
-            messageElement.innerHTML = 'Please enter both email and password.';
+            messageElement.innerHTML = '<span class="text-red-600">Please enter email and password.</span>';
             return;
         }
 
-        // AUTO-FIX: If they forget "@gmail.com", we add it for them
+        // AUTO-ADD GMAIL if missing
         if (!emailInput.includes('@')) {
             emailInput = emailInput + "@gmail.com";
         }
 
-        // UI Feedback: Loading State
+        // Loading State
         loginBtn.disabled = true;
         loginBtn.innerHTML = `Verifying...`;
         
@@ -123,49 +121,46 @@
 
             if (error) throw error;
 
-            // 2. NAME FORMATTING (The Critical Fix)
-            let rawName = data.user.email.split('@')[0];
-            let cleanName = rawName.replace('.', ' ');
-            // Capitalize first letters
-            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase());
+            // --- THE CRITICAL FIX: RESTORE 'IDENTIFIER' ---
+            
+            // Extract name from email: "nehal.tayade@gmail.com" -> "Nehal Tayade"
+            let rawName = data.user.email.split('@')[0]; // "nehal.tayade"
+            let cleanName = rawName.replace('.', ' ');   // "nehal tayade"
+            
+            // Capitalize (Optional, looks nicer)
+            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase()); // "Nehal Tayade"
 
-            // 3. Save to Session Storage (Covering all possible keys your other files might use)
+            // SAVE AS 'studentIdentifier' (This is what 1x1.html looks for!)
             sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('studentIdentifier', cleanName);
-            sessionStorage.setItem('studentName', cleanName);       // Backup
-            sessionStorage.setItem('studentEmail', data.user.email);
+            sessionStorage.setItem('studentIdentifier', cleanName); 
+            
+            // Also save ID for the database saving later
             sessionStorage.setItem('studentId', data.user.id);
 
-            // SUCCESS!
-            messageElement.classList.add('text-green-600');
-            messageElement.innerHTML = '✅ Welcome, ' + cleanName + '! Redirecting...';
+            // Success Message
+            messageElement.innerHTML = '<span class="text-green-600">✅ Welcome, ' + cleanName + '! Redirecting...</span>';
             
             // Redirect
             setTimeout(function() {
                 window.location.href = 'practice_options.html'; 
-            }, 800);
+            }, 1000);
 
         } catch (error) {
             console.error('Login Error:', error);
-            
-            // Restore button
             loginBtn.disabled = false;
             loginBtn.innerHTML = originalBtnText;
-
-            // Show error
-            messageElement.classList.add('text-red-600');
-            messageElement.innerHTML = '❌ Incorrect Email or Password.';
+            messageElement.innerHTML = '<span class="text-red-600">❌ Login Failed. Check Password.</span>';
         }
     }
-    // Allow "Enter" key to submit
+    
+    // Enter key support
     document.getElementById('password').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
+        if (e.key === 'Enter') handleLogin();
     });
-    </script>
+</script>
 </body>
 </html>
+
 
 
 
