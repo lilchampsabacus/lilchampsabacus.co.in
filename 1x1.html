@@ -373,7 +373,7 @@
 
         // --- NETWORK-PROOF END TEST ---
         async function endTest() {
-            console.log("🚀 Ending Test..."); // Debug log
+            console.log("🚀 Ending Test..."); 
 
             // 1. UI: Lock Button
             const submitBtn = document.getElementById('submit-button');
@@ -395,19 +395,22 @@
             let mistakesArray = [];
 
             sumsData.forEach((q, index) => {
-                let correctVal = q.x * q.y; // Calculate answer locally
-                
-                // Handle empty or null answers
+                let correctVal = q.x * q.y; 
                 let studentVal = parseInt(q.studentAnswer);
                 
                 if (studentVal === correctVal) {
                     score++;
                 } else {
-                    mistakesArray.push({
-                        question: `${q.x} × ${q.y}`,
-                        wrong: q.studentAnswer || "Empty",
-                        correct: correctVal
-                    });
+                    // --- THE FIX IS HERE ---
+                    // Only add to "Mistakes List" if the student actually typed something.
+                    // If it is null or empty, we count it as wrong (no score point), but we don't save it as a "Mistake" to review.
+                    if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                        mistakesArray.push({
+                            question: `${q.x} × ${q.y}`,
+                            wrong: q.studentAnswer, 
+                            correct: correctVal
+                        });
+                    }
                 }
             });
 
@@ -422,36 +425,37 @@
             const now = new Date();
             document.getElementById('report-datetime').textContent = now.toLocaleDateString();
             
-            // Fix Name Display (Use the one from login)
             const studentName = sessionStorage.getItem('studentIdentifier') || "Student";
             document.getElementById('report-student-name').textContent = studentName;
 
             // Handle Mistakes Button
             sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
             const wrongBtn = document.getElementById('see-wrong-button');
+            
             if (mistakesArray.length > 0) {
                 wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
                 wrongBtn.disabled = false;
                 wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
-                wrongBtn.textContent = "Perfect Score!";
+                // If they got everything right OR only left blanks
+                wrongBtn.textContent = "No Mistakes to Review";
                 wrongBtn.disabled = true;
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // 6. SAVE TO SUPABASE (Corrected Variable)
+            // 6. SAVE TO SUPABASE
             if (window.lilChampUtils && window.lilChampUtils.saveResult) {
                 window.lilChampUtils.saveResult({
                     challenge: "1x1",
                     score: score,
-                    total: sumsData.length, // <--- FIXED HERE (Was TOTAL_SUMS)
+                    total: sumsData.length, 
                     time: timeFormatted,
                     accuracy: Math.round((score / sumsData.length) * 100) + "%",
-                    mistakes: mistakesArray
+                    mistakes: mistakesArray // Now sends only the filtered list
                 });
             } else {
-                console.error("❌ lilChampUtils not found! check gamify.js");
-                alert("Error: Could not save result. Please refresh and try again.");
+                console.error("❌ lilChampUtils not found!");
+                alert("Error: Could not save result. Please refresh.");
             }
 
             // 7. Switch Screens
@@ -459,11 +463,11 @@
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
-            // Play sound if perfect
             if (score === sumsData.length && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
+		
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
             const listContainer = document.getElementById('wrong-sums-list');
@@ -490,6 +494,7 @@
     </script>
 </body>
 </html>
+
 
 
 
