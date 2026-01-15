@@ -373,6 +373,8 @@
 
         // --- NETWORK-PROOF END TEST ---
         async function endTest() {
+            console.log("🚀 Ending Test..."); // Debug log
+
             // 1. UI: Lock Button
             const submitBtn = document.getElementById('submit-button');
             submitBtn.textContent = "Processing...";
@@ -388,14 +390,17 @@
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // --- CHANGED: GRADE LOCALLY ---
+            // 4. GRADE LOCALLY
             let score = 0;
             let mistakesArray = [];
 
             sumsData.forEach((q, index) => {
                 let correctVal = q.x * q.y; // Calculate answer locally
                 
-                if (parseInt(q.studentAnswer) === correctVal) {
+                // Handle empty or null answers
+                let studentVal = parseInt(q.studentAnswer);
+                
+                if (studentVal === correctVal) {
                     score++;
                 } else {
                     mistakesArray.push({
@@ -406,7 +411,7 @@
                 }
             });
 
-            // 4. Update Report Card UI (Show immediately)
+            // 5. Update Report Card UI
             document.getElementById('report-correct').textContent = score;
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             
@@ -416,7 +421,10 @@
 
             const now = new Date();
             document.getElementById('report-datetime').textContent = now.toLocaleDateString();
-            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
+            
+            // Fix Name Display (Use the one from login)
+            const studentName = sessionStorage.getItem('studentIdentifier') || "Student";
+            document.getElementById('report-student-name').textContent = studentName;
 
             // Handle Mistakes Button
             sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
@@ -431,28 +439,31 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // 5. SAVE TO SUPABASE (Background)
-            // This calls your new gamify.js function
-            window.lilChampUtils.saveResult({
-                challenge: "1x1",
-                score: score,
-                total: TOTAL_SUMS,
-                time: timeFormatted,
-                accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                mistakes: mistakesArray
-            });
+            // 6. SAVE TO SUPABASE (Corrected Variable)
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: "1x1",
+                    score: score,
+                    total: sumsData.length, // <--- FIXED HERE (Was TOTAL_SUMS)
+                    time: timeFormatted,
+                    accuracy: Math.round((score / sumsData.length) * 100) + "%",
+                    mistakes: mistakesArray
+                });
+            } else {
+                console.error("❌ lilChampUtils not found! check gamify.js");
+                alert("Error: Could not save result. Please refresh and try again.");
+            }
 
-            // 6. Switch Screens
+            // 7. Switch Screens
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
             // Play sound if perfect
-            if (score === TOTAL_SUMS) {
+            if (score === sumsData.length && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
-
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
             const listContainer = document.getElementById('wrong-sums-list');
@@ -479,6 +490,7 @@
     </script>
 </body>
 </html>
+
 
 
 
