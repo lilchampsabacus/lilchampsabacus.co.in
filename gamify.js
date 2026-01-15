@@ -1,10 +1,25 @@
-/* gamify.js - The "Brain" of Li'l Champs (Supabase + Math Engine) */
+/* gamify.js - The "Brain" of Li'l Champs */
 
 // ==================================================
-// PART 1: SUPABASE & UTILS (Sounds, Saving)
+// PART 1: CONFIGURATION (KEYS MUST BE AT THE TOP)
 // ==================================================
 
-// 1. DYNAMICALLY LOAD SUPABASE
+const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
+let supabaseClient;
+
+// ==================================================
+// PART 2: INITIALIZATION LOGIC
+// ==================================================
+
+function initSupabase() {
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase Connected");
+    }
+}
+
+// Check if Supabase is already loaded
 if (typeof supabase === 'undefined') {
     const script = document.createElement('script');
     script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
@@ -14,21 +29,14 @@ if (typeof supabase === 'undefined') {
     initSupabase();
 }
 
-let supabaseClient;
-const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
-
-function initSupabase() {
-    if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("✅ Supabase Connected");
-    }
-}
-
-// 2. CONFETTI & SOUNDS
+// Load Confetti
 const confettiScript = document.createElement('script');
 confettiScript.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
 document.head.appendChild(confettiScript);
+
+// ==================================================
+// PART 3: SOUNDS & UTILS
+// ==================================================
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
@@ -62,7 +70,10 @@ function triggerWinConfetti() {
     }
 }
 
-// 3. THE SAVE ENGINE
+// ==================================================
+// PART 4: THE SAVE ENGINE
+// ==================================================
+
 async function saveExamResult(data) {
     console.log("🚀 Saving...", data);
     
@@ -70,7 +81,7 @@ async function saveExamResult(data) {
     if (!supabaseClient) { alert("Database connecting... Please wait 2s and click again."); return; }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) { alert("⚠️ Not Logged In!"); return; }
+    if (!session) { alert("⚠️ Not Logged In! Please login again."); return; }
 
     const studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
     const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
@@ -116,7 +127,7 @@ window.lilChampUtils = {
 };
 
 // ==================================================
-// PART 2: MATH GENERATOR ENGINE (Migrated from Google)
+// PART 5: MATH GENERATOR ENGINE (Migrated Logic)
 // ==================================================
 
 window.generateQuestions = function(code, countParam) {
