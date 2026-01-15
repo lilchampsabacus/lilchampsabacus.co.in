@@ -115,26 +115,31 @@
         loginBtn.innerHTML = `Verifying...`;
         
         try {
-            // NEW: Supabase Login
-           const { data, error } = await supabaseClient.auth.signInWithPassword({
+            // 1. Supabase Login
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: emailInput,
                 password: password
             });
 
-            if (error) {
-                throw error;
-            }
+            if (error) throw error;
 
-            // SUCCESS!
-            messageElement.classList.add('text-green-600');
-            messageElement.innerHTML = '✅ Access Granted! Redirecting...';
-            
-            // Store session data (Supabase handles tokens automatically, but for your other pages:)
+            // 2. NAME FORMATTING (The Critical Fix)
+            let rawName = data.user.email.split('@')[0];
+            let cleanName = rawName.replace('.', ' ');
+            // Capitalize first letters
+            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase());
+
+            // 3. Save to Session Storage (Covering all possible keys your other files might use)
             sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('studentIdentifier', data.user.email);
+            sessionStorage.setItem('studentIdentifier', cleanName);
+            sessionStorage.setItem('studentName', cleanName);       // Backup
             sessionStorage.setItem('studentEmail', data.user.email);
             sessionStorage.setItem('studentId', data.user.id);
 
+            // SUCCESS!
+            messageElement.classList.add('text-green-600');
+            messageElement.innerHTML = '✅ Welcome, ' + cleanName + '! Redirecting...';
+            
             // Redirect
             setTimeout(function() {
                 window.location.href = 'practice_options.html'; 
@@ -152,7 +157,6 @@
             messageElement.innerHTML = '❌ Incorrect Email or Password.';
         }
     }
-
     // Allow "Enter" key to submit
     document.getElementById('password').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -162,6 +166,7 @@
     </script>
 </body>
 </html>
+
 
 
 
