@@ -86,7 +86,7 @@
     // ⚠️ IMPORTANT: REPLACE 'YOUR_ANON_KEY' WITH THE KEY FROM SUPABASE DASHBOARD
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
     
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleLogin() {
         let emailInput = document.getElementById('emailInput').value.trim(); 
@@ -116,7 +116,7 @@
         
         try {
             // NEW: Supabase Login
-            const { data, error } = await supabase.auth.signInWithPassword({
+           const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: emailInput,
                 password: password
             });
@@ -161,3 +161,4 @@
     </script>
 </body>
 </html>
+
