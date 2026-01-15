@@ -131,6 +131,7 @@
             
             // Store session data (Supabase handles tokens automatically, but for your other pages:)
             sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('studentIdentifier', data.user.email);
             sessionStorage.setItem('studentEmail', data.user.email);
             sessionStorage.setItem('studentId', data.user.id);
 
@@ -161,5 +162,6 @@
     </script>
 </body>
 </html>
+
 
 
