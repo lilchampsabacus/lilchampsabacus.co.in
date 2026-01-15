@@ -6,6 +6,7 @@
     <title>1-digit x 1-digit Challenge</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="gamify.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -227,14 +228,14 @@
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
 
-            const LEVEL_CODE = 'mul-1x1';
             const startBtn = document.getElementById('start-button');
-            startBtn.textContent = "Loading Mission...";
             startBtn.disabled = true;
 
+            // --- CHANGED: GENERATE LOCALLY (INSTANT) ---
             try {
-                const response = await fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`);
-                const questions = await response.json();
+                // 1. Generate questions using your new gamify.js engine
+                // 'mul-1x1' is the code, 30 is the count
+                const questions = window.generateQuestions('mul-1x1', 30); 
                 
                 sumsData = questions.map(q => ({
                     ...q, 
@@ -251,12 +252,11 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Mission Control Error: Check internet connection.");
-                startBtn.textContent = "Launch Mission";
+                alert("Error launching mission. Please refresh.");
                 startBtn.disabled = false;
             }
         }
-
+		
         function renderChunks() {
             const carousel = document.getElementById('question-carousel');
             carousel.innerHTML = '';
@@ -375,89 +375,81 @@
         async function endTest() {
             // 1. UI: Lock Button
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.textContent = "Processing...";
             submitBtn.disabled = true;
-            submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-            submitBtn.classList.add('bg-gray-500');
 
-            // 2. Stop Timer (Visual only)
+            // 2. Stop Timer
             clearInterval(timerInterval);
 
-            // 3. Prepare Data
+            // 3. Calculate Time
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            const payload = {
-                levelCode: 'mul-1x1',
-                name: formatStudentName(document.getElementById('student-identifier-input').value),
-                challengeType: "1x1", 
-                timeTaken: timeFormatted,
-                userAnswers: sumsData.map(s => ({
-                    x: s.x, y: s.y, 
-                    type: 'mul',
-                    studentAnswer: s.studentAnswer 
-                }))
-            };
+            // --- CHANGED: GRADE LOCALLY ---
+            let score = 0;
+            let mistakesArray = [];
 
-            // 4. Try Submit (With Retry)
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+            sumsData.forEach((q, index) => {
+                let correctVal = q.x * q.y; // Calculate answer locally
                 
-                const result = await response.json();
-                
-                // --- SUCCESS! ---
-                const gradeData = result.gradeData;
-
-                document.getElementById('report-correct').textContent = gradeData.score;
-                sessionStorage.setItem('mistakesData', JSON.stringify(gradeData.mistakesArray));
-
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (gradeData.mistakesArray.length > 0) {
-                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
-                    wrongBtn.disabled = false;
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (parseInt(q.studentAnswer) === correctVal) {
+                    score++;
                 } else {
-                    wrongBtn.textContent = "Perfect Score!";
-                    wrongBtn.disabled = true;
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    mistakesArray.push({
+                        question: `${q.x} × ${q.y}`,
+                        wrong: q.studentAnswer || "Empty",
+                        correct: correctVal
+                    });
                 }
+            });
 
-                // Time calc
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                
-                let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
-                let avgTimeDisplay = attemptedCount > 0 ? `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s` : 'N/A';
-                document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+            // 4. Update Report Card UI (Show immediately)
+            document.getElementById('report-correct').textContent = score;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            
+            let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
+            let avgTimeDisplay = attemptedCount > 0 ? `${(timeElapsedSeconds / attemptedCount).toFixed(2)}s` : 'N/A';
+            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
 
-                // Name/Date
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('report-student-name').textContent = payload.name;
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString();
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
 
-                // Switch Screens
-                document.body.classList.remove('focus-mode');
-                document.getElementById('test-area').classList.add('hidden');
-                document.getElementById('report-area').classList.remove('hidden');
+            // Handle Mistakes Button
+            sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
 
-            } catch (err) {
-                // --- FAILURE (Network Error) ---
-                console.error(err);
-                
-                // Unlock button for Retry
-                submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-500');
-                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'animate-pulse');
-                
-                alert("Connection lost! Your answers are safe. \n\nPlease check your internet and click 'Retry' to save your score.");
-                
-                startTimer();
+            // 5. SAVE TO SUPABASE (Background)
+            // This calls your new gamify.js function
+            window.lilChampUtils.saveResult({
+                challenge: "1x1",
+                score: score,
+                total: TOTAL_SUMS,
+                time: timeFormatted,
+                accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                mistakes: mistakesArray
+            });
+
+            // 6. Switch Screens
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            // Play sound if perfect
+            if (score === TOTAL_SUMS) {
+                window.lilChampUtils.celebrate();
             }
         }
 
@@ -487,6 +479,7 @@
     </script>
 </body>
 </html>
+
 
 
 
