@@ -12,6 +12,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
+        body {
+            font-family: 'Nunito', sans-serif; /* Optional: matches other pages */
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
         html { scroll-padding-top: 20px; }
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
@@ -25,7 +31,7 @@
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
         .negative-number { color: #dc2626; } 
         
-        body.focus-mode { background-color: #fbf0d9 !important; color: #433422; height: 100vh; overflow-y: auto; }
+        body.focus-mode { background-color: #f0f9ff !important; color: #433422; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
         .hidden { display: none !important; }
@@ -41,9 +47,9 @@
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
     </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans">
 
-    <header class="bg-yellow-200 text-black p-4 shadow-lg sticky top-0 z-10">
+    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy</h1>
         </div>
@@ -160,8 +166,8 @@
         </section>
     </main>
 
-    <footer class="bg-yellow-200 text-center p-3 mt-auto">
-        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200">
+    <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
     <script>
