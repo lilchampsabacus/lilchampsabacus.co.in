@@ -9,6 +9,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
+        /* Import Nunito Font */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
         /* --- LAYOUT RESET --- */
         html, body {
             height: 100%;
@@ -16,7 +19,12 @@
             overflow: hidden; /* STRICTLY NO SCROLL ON BODY */
             position: fixed; 
             touch-action: none;
-            background-color: #fbf0d9;
+            
+            /* ACADEMY THEME */
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
         }
 
         /* --- TABLE STYLES --- */
@@ -73,10 +81,10 @@
 </head>
 <body class="font-sans text-gray-800">
 
-    <header class="bg-yellow-200 text-black p-3 shadow-md z-10 config-section absolute top-0 w-full">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">Li'l Champs Abacus</h1>
-        </div>
+    <header class="bg-indigo-600 text-white p-3 shadow-md z-10 config-section absolute top-0 w-full">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold text-white">Li'l Champs Abacus</h1>
+    </div>
     </header>
 
     <main class="w-full h-full p-4 flex flex-col items-center config-section overflow-y-auto pt-16">
@@ -193,8 +201,8 @@
         </div>
     </section>
 
-    <footer class="bg-yellow-200 text-center p-3 mt-auto config-section fixed bottom-0 w-full">
-        <p class="text-sm font-semibold text-yellow-900">Contact: 9730482620</p>
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200 config-section fixed bottom-0 w-full">
+        <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
     <script>
@@ -579,4 +587,5 @@
     </script>
 </body>
 </html>
+
 
