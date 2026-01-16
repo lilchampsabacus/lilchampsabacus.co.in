@@ -6,7 +6,8 @@
     <title>Decimal Master (10 Rows)</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="gamify.js?v=2" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -207,56 +208,45 @@
         });
 
         async function startTest() {
-            document.body.classList.add('focus-mode');
-            const startBtn = document.getElementById('start-button');
-            startBtn.textContent = "Loading...";
-            startBtn.disabled = true;
+    document.body.classList.add('focus-mode');
+    const startBtn = document.getElementById('start-button');
+    startBtn.textContent = "Starting...";
+    startBtn.disabled = true;
 
-            const typeSelect = document.getElementById('practice-type');
-            const LEVEL_CODE = typeSelect.value;
-            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
-            document.getElementById('report-level-title').textContent = levelText;
+    const typeSelect = document.getElementById('practice-type');
+    const LEVEL_CODE = typeSelect.value;
+    document.getElementById('report-level-title').textContent = typeSelect.options[typeSelect.selectedIndex].text;
 
-            try {
-                const response = await fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`);
-                const questions = await response.json();
-                
-                sumsData = questions.map(q => ({
-                    numbers: q.numbers,
-                    type: 'addition',
-                    studentAnswer: null
-                }));
-                
-                TOTAL_SUMS = sumsData.length;
-                renderCards();
-                document.getElementById('start-screen').classList.add('hidden');
-                document.getElementById('test-area').classList.remove('hidden');
-                
-                const input = document.getElementById('answer-input');
-                input.value = '';
-                input.disabled = false;
-                input.focus();
-                
-                const newNode = input.cloneNode(true);
-                input.parentNode.replaceChild(newNode, input);
-                document.getElementById('answer-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        submitAndNext();
-                    }
-                });
+    try {
+        // GENERATE LOCALLY
+        const questions = window.generateQuestions(LEVEL_CODE, 20);
+        
+        sumsData = questions.map(q => ({
+            numbers: q.numbers,
+            type: 'addition',
+            studentAnswer: null
+        }));
+        
+        TOTAL_SUMS = sumsData.length;
+        renderCards();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('test-area').classList.remove('hidden');
+        
+        // Reset Input logic... (keep your existing input reset code here)
+        const input = document.getElementById('answer-input');
+        input.value = '';
+        input.focus();
+        // ...
 
-                startTime = Date.now();
-                startTimer();
-
-            } catch (err) {
-                console.error(err);
-                alert("Mission Control Error: Check internet connection.");
-                startBtn.textContent = "Launch Mission";
-                startBtn.disabled = false;
-            }
-        }
-
+        startTime = Date.now();
+        startTimer();
+    } catch (err) {
+        console.error(err);
+        startBtn.disabled = false;
+        alert("Error starting.");
+    }
+}
+        
         // FORMAT DISPLAY for Integers or Decimals
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
@@ -333,79 +323,58 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
-            if (isSubmitting) return;
-            isSubmitting = true;
-            const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "📡 Contacting HQ...";
-            submitBtn.disabled = true;
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitBtn.classList.add('bg-gray-500');
-            clearInterval(timerInterval);
+    if (isSubmitting) return;
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submit-button');
+    submitBtn.textContent = "Processing...";
+    submitBtn.disabled = true;
+    clearInterval(timerInterval);
 
-            const typeSelect = document.getElementById('practice-type');
-            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
-            const levelCode = typeSelect.value; // GET CODE HERE
+    // Time
+    const endTime = Date.now();
+    // ... Calculate timeFormatted variable here ...
+    const timeElapsed = Math.floor((endTime - startTime) / 1000); 
+    const mins = Math.floor(timeElapsed / 60);
+    const secs = timeElapsed % 60;
+    const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
-            const endTime = Date.now();
-            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
-            const minutes = Math.floor(timeElapsedSeconds / 60);
-            const seconds = timeElapsedSeconds % 60;
-            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
-            const payload = {
-                levelCode: levelCode, // SEND CODE HERE
-                name: formatStudentName(document.getElementById('student-identifier-input').value),
-                challengeType: levelText,
-                timeTaken: timeFormatted,
-                userAnswers: sumsData
-            };
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await response.json();
-                const gradeData = result.gradeData;
-
-                document.getElementById('report-correct').textContent = gradeData.score;
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
-                
-                sessionStorage.setItem('decimalSumsData', JSON.stringify(sumsData)); 
-
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (gradeData.mistakesArray.length > 0) {
-                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
-                    wrongBtn.disabled = false;
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    wrongBtn.textContent = "Perfect Score!";
-                    wrongBtn.disabled = true;
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('report-student-name').textContent = payload.name;
-
-                document.body.classList.remove('focus-mode');
-                document.getElementById('test-area').classList.add('hidden');
-                document.getElementById('report-area').classList.remove('hidden');
-
-            } catch (err) {
-                console.error("Network Error:", err);
-                isSubmitting = false;
-                submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-500');
-                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'animate-pulse');
-                alert("Connection lost! Your answers are safe. \n\nPlease check your internet and click 'Retry' to save your score.");
-                startTimer();
-            }
+    // Grade Locally
+    let score = 0;
+    let mistakesArray = [];
+    sumsData.forEach((q, i) => {
+        // FIX PRECISION
+        let rawSum = q.numbers.reduce((a,b)=>a+b, 0);
+        let correct = parseFloat(rawSum.toFixed(2));
+        
+        if (q.studentAnswer === correct) score++;
+        else if (q.studentAnswer !== null) {
+            mistakesArray.push({ question: "Q"+(i+1), wrong: q.studentAnswer, correct: correct });
         }
+    });
 
+    // Update UI
+    document.getElementById('report-correct').textContent = score;
+    document.getElementById('report-time-elapsed').textContent = timeFormatted;
+
+    // SAVE TO SUPABASE
+    const levelText = document.getElementById('practice-type').options[document.getElementById('practice-type').selectedIndex].text;
+    if (window.lilChampUtils) {
+        window.lilChampUtils.saveResult({
+            challenge: levelText,
+            score: score,
+            total: TOTAL_SUMS,
+            time: timeFormatted,
+            accuracy: Math.round((score/TOTAL_SUMS)*100) + "%",
+            mistakes: mistakesArray
+        });
+    }
+
+    // Switch Screens
+    document.body.classList.remove('focus-mode');
+    document.getElementById('test-area').classList.add('hidden');
+    document.getElementById('report-area').classList.remove('hidden');
+}
+            
         function showWrongAnswers() {
             const storedSums = JSON.parse(sessionStorage.getItem('decimalSumsData'));
             const listContainer = document.getElementById('wrong-sums-list');
