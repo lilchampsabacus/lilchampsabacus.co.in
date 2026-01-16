@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="gamify.js?v=2" defer></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700&display=swap');
@@ -215,16 +217,16 @@
         // --- STEP 1: FETCH 500 QUESTIONS ---
         async function startMission() {
             const btn = document.getElementById('start-btn');
-            btn.textContent = "Loading 500 Sums...";
+            btn.textContent = "Generating 500 Sums...";
             btn.disabled = true;
 
             try {
-                // Request 500 questions from the Brain
-                const response = await fetch(`${SCRIPT_URL}?levelCode=mul-2x1&count=${TOTAL_QUESTIONS}`);
-                const data = await response.json();
+                // --- CHANGED: GENERATE LOCALLY ---
+                // 'mul-2x1' is the code, 500 is the count
+                const questions = window.generateQuestions('mul-2x1', 500);
                 
                 // Initialize Data
-                questionsData = data.map(q => ({
+                questionsData = questions.map(q => ({
                     x: q.x, 
                     y: q.y, 
                     type: 'mul',
@@ -242,10 +244,10 @@
                 console.error(err);
                 btn.textContent = "Error. Retry?";
                 btn.disabled = false;
-                alert("Could not load questions. Please check your internet.");
+                alert("Error launching mission. Please refresh.");
             }
         }
-
+        
         function showQuestion() {
             if (currentQuestionIndex >= TOTAL_QUESTIONS) {
                 showFinishScreen();
@@ -305,7 +307,7 @@
         // --- STEP 2: NETWORK-PROOF GRADING ---
         async function endMission() {
             const btn = document.getElementById('submit-final-btn');
-            btn.textContent = "📡 Grading...";
+            btn.textContent = "Processing...";
             btn.disabled = true;
             btn.classList.remove('bg-green-600');
             btn.classList.add('bg-gray-500');
@@ -316,61 +318,67 @@
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            const payload = {
-                levelCode: 'mul-2x1',
-                name: studentNameFormatted,
-                challengeType: "2x1 (500 Sums)",
-                timeTaken: timeFormatted,
-                userAnswers: questionsData // Send all 500 answers
-            };
+            // --- GRADE LOCALLY ---
+            let score = 0;
+            let mistakesArray = [];
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await response.json();
-                const gradeData = result.gradeData;
-
-                // --- SUCCESS ---
-                document.getElementById('finish-screen').style.display = 'none';
-                document.getElementById('report-section').style.display = 'block';
-
-                document.getElementById('report-correct').textContent = gradeData.score;
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                
-                const avgTime = (timeElapsedSeconds / TOTAL_QUESTIONS).toFixed(2);
-                document.getElementById('report-avg-time').textContent = `${avgTime}s`;
-
-                // Store mistakes for review
-                sessionStorage.setItem('marathonMistakes', JSON.stringify(gradeData.mistakesArray));
-
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (gradeData.mistakesArray.length > 0) {
-                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
-                    wrongBtn.disabled = false;
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            questionsData.forEach((q, index) => {
+                let correctVal = q.x * q.y; 
+                if (q.studentAnswer === correctVal) {
+                    score++;
                 } else {
-                    wrongBtn.textContent = "Perfect Score!";
-                    wrongBtn.disabled = true;
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                     // In 500 sum marathon, we might have nulls if they quit early, 
+                     // but usually they finish all. We log everything wrong/empty.
+                     if (q.studentAnswer !== null) {
+                        mistakesArray.push({
+                            question: `${q.x} × ${q.y}`,
+                            wrong: q.studentAnswer, 
+                            correct: correctVal
+                        });
+                     }
                 }
+            });
 
-                // Date
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            // Update UI
+            document.getElementById('finish-screen').style.display = 'none';
+            document.getElementById('report-section').style.display = 'block';
 
-            } catch (err) {
-                console.error(err);
-                btn.textContent = "⚠️ Connection Failed. Click to Retry.";
-                btn.disabled = false;
-                btn.classList.remove('bg-gray-500');
-                btn.classList.add('bg-red-600');
-                alert("Connection lost! Answers are safe. Check internet and click Retry.");
+            document.getElementById('report-correct').textContent = score;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            const avgTime = (timeElapsedSeconds / TOTAL_QUESTIONS).toFixed(2);
+            document.getElementById('report-avg-time').textContent = `${avgTime}s`;
+
+            // Store mistakes
+            sessionStorage.setItem('marathonMistakes', JSON.stringify(mistakesArray));
+
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // --- SAVE TO SUPABASE ---
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: "500 Sum Marathon",
+                    score: score,
+                    total: TOTAL_QUESTIONS, 
+                    time: timeFormatted,
+                    accuracy: Math.round((score / TOTAL_QUESTIONS) * 100) + "%",
+                    mistakes: mistakesArray
+                });
+            }
+            
+            if (score === TOTAL_QUESTIONS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
             }
         }
-
+        
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('marathonMistakes') || "[]");
             const listContainer = document.getElementById('wrong-sums-list');
@@ -419,4 +427,5 @@
     </script>
 </body>
 </html>
+
 
