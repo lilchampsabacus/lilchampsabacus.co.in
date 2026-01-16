@@ -254,6 +254,37 @@
             }
         }
 
+		function renderChunks() {
+            const carousel = document.getElementById('question-carousel');
+            carousel.innerHTML = '';
+            let questionCount = 0;
+
+            for (let slide = 0; slide < TOTAL_SLIDES; slide++) {
+                const slideDiv = document.createElement('div');
+                slideDiv.className = `slide-container ${slide === 0 ? 'active' : ''}`;
+                slideDiv.id = `slide-${slide}`;
+                slideDiv.innerHTML = `<h4 class="text-xl font-bold text-blue-800 mb-4 text-center">Set ${slide + 1} of ${TOTAL_SLIDES}</h4>`;
+
+                for (let i = 0; i < SUMS_PER_SLIDE; i++) {
+                    if (questionCount >= sumsData.length) break;
+                    const data = sumsData[questionCount];
+                    const index = questionCount;
+                    
+                    const sumHtml = `
+                        <div class="sum-item">
+                            <span class="text-xl font-bold text-gray-600 w-8">${index + 1}.</span>
+                            <span class="text-2xl font-bold text-gray-800 tracking-wider">${data.x} &times; ${data.y} = </span>
+                            <input type="number" data-index="${index}" class="answer-input w-24 p-2 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold focus:outline-none focus:border-blue-500" placeholder="?" disabled>
+                        </div>
+                    `;
+                    slideDiv.innerHTML += sumHtml;
+                    questionCount++;
+                }
+                carousel.appendChild(slideDiv);
+            }
+            setupInputInteraction();
+        }
+
         function setupInputInteraction() {
             const inputs = document.querySelectorAll('.answer-input');
             inputs.forEach((input) => {
@@ -457,6 +488,7 @@
     </script>
 </body>
 </html>
+
 
 
 
