@@ -6,7 +6,8 @@
     <title>Negative Answer Mission</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="gamify.js?v=2" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -209,18 +210,20 @@
         async function startTest() {
             document.body.classList.add('focus-mode');
             const startBtn = document.getElementById('start-button');
-            startBtn.textContent = "Loading...";
+            startBtn.textContent = "Starting..."; 
             startBtn.disabled = true;
 
             const typeSelect = document.getElementById('practice-type');
-            const LEVEL_CODE = typeSelect.value;
+            const LEVEL_CODE = typeSelect.value; // e.g., "neg-2d10r"
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
             document.getElementById('report-level-title').textContent = levelText;
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`);
-                const questions = await response.json();
+                // --- CHANGED: GENERATE LOCALLY ---
+                // Ask the Brain for 20 sums based on the code (e.g. "neg-2d10r")
+                const questions = window.generateQuestions(LEVEL_CODE, 20);
                 
+                // Prepare Data Structure
                 sumsData = questions.map(q => ({
                     numbers: q.numbers,
                     type: 'addition',
@@ -232,11 +235,13 @@
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
                 
+                // Reset Input
                 const input = document.getElementById('answer-input');
                 input.value = '';
                 input.disabled = false;
                 input.focus();
                 
+                // Reset Event Listeners
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
                 document.getElementById('answer-input').addEventListener('keydown', (e) => {
@@ -251,12 +256,12 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Mission Control Error: Check internet connection.");
+                alert("Error launching mission. Please refresh.");
                 startBtn.textContent = "Launch Mission";
                 startBtn.disabled = false;
             }
         }
-
+        
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
             numbers.forEach((num, rIndex) => {
@@ -325,76 +330,89 @@
             if (isSubmitting) return;
             isSubmitting = true;
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.textContent = "Processing...";
             submitBtn.disabled = true;
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitBtn.classList.add('bg-gray-500');
+            
             clearInterval(timerInterval);
 
-            const typeSelect = document.getElementById('practice-type');
-            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
-            const levelCode = typeSelect.value;
-
+            // Time Calculation
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            const payload = {
-                levelCode: levelCode,
-                name: formatStudentName(document.getElementById('student-identifier-input').value),
-                challengeType: levelText,
-                timeTaken: timeFormatted,
-                userAnswers: sumsData
-            };
+            // --- GRADE LOCALLY ---
+            let score = 0;
+            let mistakesArray = [];
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+            sumsData.forEach((q, index) => {
+                // Calculate correct sum locally
+                let correctVal = q.numbers.reduce((a, b) => a + b, 0);
                 
-                const result = await response.json();
-                const gradeData = result.gradeData;
-
-                document.getElementById('report-correct').textContent = gradeData.score;
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
-                
-                sessionStorage.setItem('negSumsData', JSON.stringify(sumsData)); 
-
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (gradeData.mistakesArray.length > 0) {
-                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
-                    wrongBtn.disabled = false;
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (q.studentAnswer === correctVal) {
+                    score++;
                 } else {
-                    wrongBtn.textContent = "Perfect Score!";
-                    wrongBtn.disabled = true;
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                        mistakesArray.push({
+                            question: "Neg Q" + (index + 1), 
+                            wrong: q.studentAnswer, 
+                            correct: correctVal
+                        });
+                    }
                 }
+            });
 
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('report-student-name').textContent = payload.name;
+            // Update Report UI
+            document.getElementById('report-correct').textContent = score;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
 
-                document.body.classList.remove('focus-mode');
-                document.getElementById('test-area').classList.add('hidden');
-                document.getElementById('report-area').classList.remove('hidden');
+            // Save Data for Review Button
+            sessionStorage.setItem('negSumsData', JSON.stringify(sumsData)); 
 
-            } catch (err) {
-                console.error("Network Error:", err);
-                isSubmitting = false;
-                submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-500');
-                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'animate-pulse');
-                alert("Connection lost! Your answers are safe. \n\nPlease check your internet and click 'Retry' to save your score.");
-                startTimer();
+            // Setup Review Button state
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // --- SAVE TO SUPABASE ---
+            const typeSelect = document.getElementById('practice-type');
+            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
+
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: levelText, // e.g. "2-Digit 10 Rows (Negative)"
+                    score: score,
+                    total: TOTAL_SUMS, 
+                    time: timeFormatted,
+                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                    mistakes: mistakesArray
+                });
+            }
+
+            // Finish & Show Report
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleDateString();
+            const studentName = sessionStorage.getItem('studentIdentifier') || "Student";
+            document.getElementById('report-student-name').textContent = studentName;
+
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            if (score === TOTAL_SUMS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
             }
         }
-
+        
         function showWrongAnswers() {
             const storedSums = JSON.parse(sessionStorage.getItem('negSumsData'));
             const listContainer = document.getElementById('wrong-sums-list');
