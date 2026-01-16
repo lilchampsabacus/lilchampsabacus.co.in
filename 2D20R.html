@@ -7,7 +7,8 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="gamify.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="gamify.js?v=2" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -260,26 +261,27 @@
         async function startTest() {
             document.body.classList.add('focus-mode');
             const startBtn = document.getElementById('start-button');
-            
-            // Visual feedback
             startBtn.textContent = "Starting..."; 
             startBtn.disabled = true;
 
-            // Set Title
+            // Get Level Code
             const typeSelect = document.getElementById('practice-type');
+            const val = typeSelect.value;
+            let digits = "2"; 
+            if (val === "3") digits = "1";
+            if (val === "1") digits = "2";
+            if (val === "2") digits = "3";
+            if (val === "4") digits = "4";
+            if (val === "5") digits = "5";
+            
+            const LEVEL_CODE = `add-${digits}d10r`;
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
             document.getElementById('report-level-title').textContent = levelText;
 
             try {
-                // CHECK: Did we pre-load? If not, do it now.
-                if (!pendingQuestionsPromise) {
-                    preLoadQuestions(); 
-                }
-                
-                // WAIT: If data is already here, this is instant. If not, we wait.
-                const questions = await pendingQuestionsPromise;
-                
-                if (!questions) throw new Error("Pre-load failed or returned empty.");
+                // --- CHANGED: GENERATE LOCALLY ---
+                // We ask for 20 sums of the selected type
+                const questions = window.generateQuestions(LEVEL_CODE, 20);
 
                 // Prepare Data
                 sumsData = questions.map(q => ({
@@ -300,14 +302,10 @@
                 input.disabled = false;
                 input.focus();
                 
-                // Remove old listeners
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
                 document.getElementById('answer-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        submitAndNext();
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); submitAndNext(); }
                 });
 
                 startTime = Date.now();
@@ -315,11 +313,12 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Mission Control Error: Check internet connection.");
+                alert("Error launching mission. Please refresh.");
                 startBtn.textContent = "Launch Mission";
                 startBtn.disabled = false;
             }
         }
+        
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
             numbers.forEach((num, rIndex) => {
@@ -388,109 +387,87 @@
 
         // --- NEW: ROBUST END TEST (Handles Weak Network) ---
         async function endTest() {
-            // 1. UI: Lock the button so they don't click twice
             if (isSubmitting) return;
             isSubmitting = true;
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.textContent = "Processing...";
             submitBtn.disabled = true;
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitBtn.classList.add('bg-gray-500');
-
-            // 2. Stop Timer (Visual only, exact time calculated below)
+            
             clearInterval(timerInterval);
 
-            // 3. Prepare Data
-            const typeSelect = document.getElementById('practice-type');
-            const val = typeSelect.value;
-            let digits = "2"; 
-            if (val === "3") digits = "1";
-            if (val === "1") digits = "2";
-            if (val === "2") digits = "3";
-            if (val === "4") digits = "4";
-            if (val === "5") digits = "5";
-            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
-
+            // Calculate Time
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            const payload = {
-                levelCode: `add-${digits}d10r`,
-                name: formatStudentName(document.getElementById('student-identifier-input').value),
-                challengeType: levelText,
-                timeTaken: timeFormatted,
-                userAnswers: sumsData.map(s => ({
-                    numbers: s.numbers,
-                    type: 'addition',
-                    studentAnswer: s.studentAnswer
-                }))
-            };
+            // --- GRADE LOCALLY ---
+            let score = 0;
+            let mistakesArray = [];
 
-            // 4. Try to Submit (With Retry Logic)
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+            sumsData.forEach((q, index) => {
+                // Calculate correct sum locally
+                let correctVal = q.numbers.reduce((a, b) => a + b, 0);
                 
-                const result = await response.json();
-                
-                // --- SUCCESS! ---
-                // Only NOW do we switch screens.
-                const gradeData = result.gradeData;
-
-                // Update Report UI
-                document.getElementById('report-correct').textContent = gradeData.score;
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
-                
-                // Save Data for Review
-                sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
-
-                // Setup "Review" Button
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (gradeData.mistakesArray.length > 0) {
-                    wrongBtn.textContent = `Review ${gradeData.mistakesArray.length} Mistakes`;
-                    wrongBtn.disabled = false;
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (q.studentAnswer === correctVal) {
+                    score++;
                 } else {
-                    wrongBtn.textContent = "Perfect Score!";
-                    wrongBtn.disabled = true;
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                        mistakesArray.push({
+                            question: "Row Sum " + (index + 1), // Simplification for display
+                            wrong: q.studentAnswer, 
+                            correct: correctVal
+                        });
+                    }
                 }
+            });
 
-                // Fill Name & Date
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('report-student-name').textContent = payload.name;
+            // Update UI
+            document.getElementById('report-correct').textContent = score;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
 
-                // Switch Screens
-                document.body.classList.remove('focus-mode');
-                document.getElementById('test-area').classList.add('hidden');
-                document.getElementById('report-area').classList.remove('hidden');
+            // Save for Review
+            sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
 
-            } catch (err) {
-                // --- FAILURE (Weak Network) ---
-                console.error("Network Error:", err);
-                
-                // Unlock the button and let them try again
-                isSubmitting = false;
-                submitBtn.textContent = "⚠️ Network Error. Click to Retry.";
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-500');
-                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'animate-pulse');
-                
-                // Alert the user
-                alert("Connection lost! Your answers are safe. \n\nPlease check your internet and click 'Retry' to save your score.");
-                
-                // Restart timer so their "Time Taken" is accurate to when they actually submit
-                startTimer();
+            // Setup Review Button
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // --- SAVE TO SUPABASE ---
+            const typeSelect = document.getElementById('practice-type');
+            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
+
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: levelText, // e.g. "2-Digit 10 Rows"
+                    score: score,
+                    total: TOTAL_SUMS, 
+                    time: timeFormatted,
+                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                    mistakes: mistakesArray
+                });
+            }
+
+            // Switch Screens
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            if (score === TOTAL_SUMS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
             }
         }
-
+        
         // --- WRONG ANSWERS VIEW ---
         function showWrongAnswers() {
             // Retrieve data
