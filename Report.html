@@ -82,39 +82,54 @@
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ==========================================
-        // 2. INITIALIZATION
+        // 2. GLOBAL VARIABLES
         // ==========================================
         let currentStudentName = "";
 
+        // ==========================================
+        // 3. ON PAGE LOAD (Session Check)
+        // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("Page Loaded. Checking Session..."); 
+            
             const isLoggedIn = sessionStorage.getItem('isLoggedIn');
             const studentId = sessionStorage.getItem('studentIdentifier');
 
             if (isLoggedIn !== 'true' || !studentId) {
+                alert("Session missing! Please go back to the Login page.");
                 window.location.href = 'index.html'; 
                 return;
             }
 
-            // Extract Name (Matches your practice_options.html logic)
-            const namePart = studentId.split('@')[0];
-            currentStudentName = namePart.split('.').map(part => 
-                part.charAt(0).toUpperCase() + part.slice(1)
-            ).join(' ');
+            try {
+                // Name Extraction Logic
+                const namePart = studentId.split('@')[0];
+                const cleanName = namePart.replace(/[0-9]/g, '');
+                currentStudentName = cleanName.split('.').map(part => 
+                    part.charAt(0).toUpperCase() + part.slice(1)
+                ).join(' ');
 
-            document.getElementById('studentNameDisplay').textContent = currentStudentName;
+                // Update Header
+                const nameDisplay = document.getElementById('studentNameDisplay');
+                if(nameDisplay) nameDisplay.textContent = currentStudentName;
+
+            } catch (err) {
+                console.error("Name parsing error:", err);
+                currentStudentName = "Student"; 
+            }
             
-            // Set default dates (First day of current month to Today)
+            // Set default dates
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('endDate').valueAsDate = today;
-            document.getElementById('startDate').valueAsDate = firstDay;
+            if(document.getElementById('endDate')) document.getElementById('endDate').valueAsDate = today;
+            if(document.getElementById('startDate')) document.getElementById('startDate').valueAsDate = firstDay;
         });
 
         // ==========================================
-        // 3. FETCH DATA FROM SUPABASE
+        // 4. FETCH FUNCTION (Available Globally)
         // ==========================================
         async function fetchSupabaseReport() {
             const startDateVal = document.getElementById('startDate').value;
@@ -124,8 +139,8 @@
             const tableContainer = document.getElementById('tableContainer');
             const tbody = document.getElementById('reportBody');
 
-            if(!startDateVal || !endDateVal) {
-                statusMsg.textContent = "Please select both Start and End dates.";
+            if(!currentStudentName) {
+                statusMsg.textContent = "Error: Student Name not identified. Please re-login.";
                 return;
             }
 
@@ -136,32 +151,29 @@
             loader.style.display = 'block';
 
             try {
-                // Fetch data for this student
-                // Note: We fetch more data than needed and filter dates in JS 
-                // because 'indian_time' is stored as text, making SQL date filtering hard.
-                const { data, error } = await supabase
+                // Fetch data using 'supabaseClient'
+                const { data, error } = await supabaseClient
                     .from('reports')
                     .select('*')
                     .eq('student_name', currentStudentName)
-                    .order('id', { ascending: false }) // Show newest first
-                    .limit(100); // Limit to last 100 records to prevent overload
+                    .order('id', { ascending: false })
+                    .limit(100);
 
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
                     loader.style.display = 'none';
-                    statusMsg.textContent = "No practice records found for " + currentStudentName;
+                    statusMsg.textContent = `No practice records found for "${currentStudentName}".`;
                     return;
                 }
 
-                // Filter by Date Range (Javascript Side)
+                // Filter by Date
                 const start = new Date(startDateVal);
                 start.setHours(0,0,0,0);
                 const end = new Date(endDateVal);
                 end.setHours(23,59,59,999);
 
                 const filteredData = data.filter(row => {
-                    // Convert "16 Jan 2026, 11:51 am" to JS Date
                     const rowDate = new Date(row.indian_time); 
                     return rowDate >= start && rowDate <= end;
                 });
@@ -175,19 +187,15 @@
                 loader.style.display = 'none';
                 tableContainer.classList.remove('hidden');
 
-                // Render Table
+                // Render
                 filteredData.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-gray-200 hover:bg-gray-50";
                     
-                    // Calculate Accuracy
                     let accuracyVal = 0;
-                    if (row.total_val > 0) {
-                        accuracyVal = row.score_val / row.total_val;
-                    }
+                    if (row.total_val > 0) accuracyVal = row.score_val / row.total_val;
                     const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
 
-                    // Color Coding
                     let accuracyColor = "text-green-600";
                     if(accuracyVal < 0.7) accuracyColor = "text-red-600";
                     else if(accuracyVal < 0.9) accuracyColor = "text-yellow-600";
@@ -211,3 +219,4 @@
     </script>
 </body>
 </html>
+
