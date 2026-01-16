@@ -6,7 +6,8 @@
     <title>2nd Level Addition Challenge</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
-    <script src="gamify.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  	<script src="gamify.js?v=2" defer></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -444,22 +445,18 @@
         }
 
         async function endTest() {
-            // 1. Lock the UI
+            // 1. Lock UI
             if (isSubmitting) return;
             isSubmitting = true;
-            
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "📡 Contacting HQ...";
+            submitBtn.textContent = "Processing...";
             submitBtn.disabled = true;
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitBtn.classList.add('bg-gray-500');
 
             clearInterval(timerInterval);
             
             // 2. Calculate Stats
             let correctCount = 0;
-            let mistakesLogStrings = [];    
-            let detailedMistakesArray = []; 
+            let mistakesArray = [];
 
             quizData.forEach((q, index) => {
                 if (q.isCorrect) {
@@ -467,8 +464,8 @@
                 } else {
                     const qText = q.numbers.join(' + ').replace(/\+ -/g, '- ');
                     const userAns = q.userAnswer !== null ? q.userAnswer : "Skipped";
-                    mistakesLogStrings.push(`Q${index + 1}: ${userAns} vs ${q.correctAnswer}`);
-                    detailedMistakesArray.push({
+                    
+                    mistakesArray.push({
                         question: qText,
                         wrong: userAns,
                         correct: q.correctAnswer
@@ -476,81 +473,54 @@
                 }
             });
 
-            const mistakesString = mistakesLogStrings.length > 0 ? mistakesLogStrings.join(", ") : "None";
-            
-            // Time & Accuracy
+            // Time Calc
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
             const secs = totalTime % 60;
             const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             const avgTimeDisplay = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
-            const accuracyVal = Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%";
 
-            // Prepare Payload
-            const rawName = document.getElementById('student-identifier-input').value;
-            const formattedName = formatStudentName(rawName);
-            const CHALLENGE_NAME = "2ndLevel";
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
+            // 3. Update UI
+            document.getElementById('report-correct').textContent = correctCount;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            document.getElementById('report-avg-time').textContent = avgTimeDisplay;
+            
+            const studentName = document.getElementById('student-identifier-input').value;
+            const formattedName = formatStudentName(studentName);
+            document.getElementById('report-student-name').textContent = formattedName;
 
-            const payload = {
-                challengeType: CHALLENGE_NAME, 
-                name: formattedName,
-                score: correctCount + "/" + TOTAL_QUESTIONS,
-                timeTaken: timeFormatted,
-                accuracy: accuracyVal,
-                mistakesString: mistakesString,       
-                detailedMistakes: detailedMistakesArray 
-            };
+            // 4. Setup Review Button
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (correctCount === TOTAL_QUESTIONS) {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Review Mistakes";
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
 
-            // 3. Send to Server (Async)
-            try {
-                // Send request
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify(payload)
+            // 5. --- SAVE TO SUPABASE ---
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: "2nd Level Addition",
+                    score: correctCount,
+                    total: TOTAL_QUESTIONS,
+                    time: timeFormatted,
+                    accuracy: Math.round((correctCount / TOTAL_QUESTIONS) * 100) + "%",
+                    mistakes: mistakesArray
                 });
+            }
 
-                // --- SUCCESS: NOW Update UI & Show Report ---
-                
-                // 1. Fill Report Data
-                const now = new Date();
-                document.getElementById('report-datetime').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('report-student-name').textContent = formattedName;
-                document.getElementById('report-correct').textContent = correctCount;
-                document.getElementById('report-time-elapsed').textContent = timeFormatted;
-                document.getElementById('report-avg-time').textContent = avgTimeDisplay;
-                
-                // 2. Configure "Review Mistakes" Button
-                const wrongBtn = document.getElementById('see-wrong-button');
-                if (correctCount === TOTAL_QUESTIONS) {
-                    wrongBtn.disabled = true;
-                    wrongBtn.textContent = "Perfect Score! No Mistakes";
-                    wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                } else {
-                    wrongBtn.disabled = false;
-                    wrongBtn.textContent = "Review Mistakes";
-                    wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-
-                // 3. Switch Screens
-                document.body.classList.remove('focus-mode');
-                document.getElementById('test-area').classList.add('hidden');
-                document.getElementById('report-area').classList.remove('hidden');
-
-            } catch (err) {
-                // --- FAILURE: Allow Retry ---
-                console.error("Error sending report:", err);
-                isSubmitting = false;
-                
-                submitBtn.textContent = "⚠️ Network Error. Retry?";
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-500');
-                submitBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-                
-                alert("Connection problem! Your score is safe, but couldn't be uploaded. \n\nPlease check your internet and click Retry.");
+            // Switch Screens
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            if (correctCount === TOTAL_QUESTIONS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
             }
         }
 		
