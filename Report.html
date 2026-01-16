@@ -7,11 +7,11 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
-        /* Loading Spinner */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -47,7 +47,7 @@
                     <input type="date" id="endDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div class="flex items-end">
-                    <button onclick="fetchReport()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-md transform active:scale-95">
+                    <button onclick="fetchSupabaseReport()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-md transform active:scale-95">
                         Show Report
                     </button>
                 </div>
@@ -75,7 +75,18 @@
     </main>
 
     <script>
-        // 1. AUTO-LOGIN CHECK & NAME EXTRACTION
+        // ==========================================
+        // 1. SUPABASE CONFIGURATION (FILL THESE IN!)
+        // ==========================================
+        // Go to Supabase Dashboard -> Project Settings -> API
+        const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==========================================
+        // 2. INITIALIZATION
+        // ==========================================
         let currentStudentName = "";
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -83,11 +94,11 @@
             const studentId = sessionStorage.getItem('studentIdentifier');
 
             if (isLoggedIn !== 'true' || !studentId) {
-                window.location.href = 'index.html'; // Kick out if not logged in
+                window.location.href = 'index.html'; 
                 return;
             }
 
-            // Extract Name logic (Matches your practice_options.html logic)
+            // Extract Name (Matches your practice_options.html logic)
             const namePart = studentId.split('@')[0];
             currentStudentName = namePart.split('.').map(part => 
                 part.charAt(0).toUpperCase() + part.slice(1)
@@ -102,32 +113,18 @@
             document.getElementById('startDate').valueAsDate = firstDay;
         });
 
-        // 2. HELPER FUNCTIONS FOR FORMATTING
-        function formatTime(isoString) {
-            if (!isoString) return "00:00";
-            // Check if string contains 'T' (ISO format)
-            if (isoString.toString().indexOf('T') > -1) {
-                return isoString.split('T')[1].substring(0, 5);
-            }
-            return isoString; // Return as is if format is unexpected
-        }
-
-        function formatAccuracy(val) {
-            if (val === undefined || val === null) return "0%";
-            // Multiply by 100 and add %
-            return Math.round(val * 100) + "%";
-        }
-
-        // 3. FETCH DATA FUNCTION
-        function fetchReport() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
+        // ==========================================
+        // 3. FETCH DATA FROM SUPABASE
+        // ==========================================
+        async function fetchSupabaseReport() {
+            const startDateVal = document.getElementById('startDate').value;
+            const endDateVal = document.getElementById('endDate').value;
             const statusMsg = document.getElementById('statusMsg');
             const loader = document.getElementById('loader');
             const tableContainer = document.getElementById('tableContainer');
             const tbody = document.getElementById('reportBody');
 
-            if(!start || !end) {
+            if(!startDateVal || !endDateVal) {
                 statusMsg.textContent = "Please select both Start and End dates.";
                 return;
             }
@@ -138,63 +135,78 @@
             tableContainer.classList.add('hidden');
             loader.style.display = 'block';
 
-            // *** YOUR GOOGLE SCRIPT URL ***
-            const scriptUrl = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec"; 
+            try {
+                // Fetch data for this student
+                // Note: We fetch more data than needed and filter dates in JS 
+                // because 'indian_time' is stored as text, making SQL date filtering hard.
+                const { data, error } = await supabase
+                    .from('reports')
+                    .select('*')
+                    .eq('student_name', currentStudentName)
+                    .order('id', { ascending: false }) // Show newest first
+                    .limit(100); // Limit to last 100 records to prevent overload
 
-            // Construct URL with parameters
-            const url = `${scriptUrl}?name=${encodeURIComponent(currentStudentName)}&start=${start}&end=${end}`;
+                if (error) throw error;
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
+                if (!data || data.length === 0) {
                     loader.style.display = 'none';
+                    statusMsg.textContent = "No practice records found for " + currentStudentName;
+                    return;
+                }
 
-                    if (!data || data.length === 0) {
-                        statusMsg.textContent = "No practice records found for this date range.";
-                        return;
-                    }
+                // Filter by Date Range (Javascript Side)
+                const start = new Date(startDateVal);
+                start.setHours(0,0,0,0);
+                const end = new Date(endDateVal);
+                end.setHours(23,59,59,999);
 
-                    // Show Table
-                    tableContainer.classList.remove('hidden');
-
-                    // Sort data (Newest date first - Optional, depends on if API sorts it)
-                    // data.reverse(); 
-
-                    data.forEach(row => {
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-200 hover:bg-gray-50";
-                        
-                        // Calculate formatted values
-                        const displayTime = formatTime(row.time);
-                        const displayAccuracy = formatAccuracy(row.accuracy);
-
-                        // Color code accuracy (Using raw value for logic: 0.9 = 90%)
-                        let accuracyColor = "text-green-600";
-                        if(row.accuracy < 0.7) accuracyColor = "text-red-600";
-                        else if(row.accuracy < 0.9) accuracyColor = "text-yellow-600";
-                        
-                        // Handle Date Format: Google Sheets sometimes sends full date string
-                        // We take just the first part if it's too long, or leave it if it's "DD/MM/YYYY"
-                        let displayDate = row.date;
-                        if(displayDate.includes('T')) {
-                             displayDate = displayDate.split('T')[0];
-                        }
-
-                        tr.innerHTML = `
-                            <td class="py-3 px-6 font-medium">${displayDate}</td>
-                            <td class="py-3 px-6">${row.challenge}</td>
-                            <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score}</td>
-                            <td class="py-3 px-6 text-center">${displayTime}</td>
-                            <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${displayAccuracy}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                })
-                .catch(err => {
-                    loader.style.display = 'none';
-                    statusMsg.textContent = "Error loading data. Please try again.";
-                    console.error("Fetch Error:", err);
+                const filteredData = data.filter(row => {
+                    // Convert "16 Jan 2026, 11:51 am" to JS Date
+                    const rowDate = new Date(row.indian_time); 
+                    return rowDate >= start && rowDate <= end;
                 });
+
+                if (filteredData.length === 0) {
+                    loader.style.display = 'none';
+                    statusMsg.textContent = "No records found in this date range.";
+                    return;
+                }
+
+                loader.style.display = 'none';
+                tableContainer.classList.remove('hidden');
+
+                // Render Table
+                filteredData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-200 hover:bg-gray-50";
+                    
+                    // Calculate Accuracy
+                    let accuracyVal = 0;
+                    if (row.total_val > 0) {
+                        accuracyVal = row.score_val / row.total_val;
+                    }
+                    const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
+
+                    // Color Coding
+                    let accuracyColor = "text-green-600";
+                    if(accuracyVal < 0.7) accuracyColor = "text-red-600";
+                    else if(accuracyVal < 0.9) accuracyColor = "text-yellow-600";
+                    
+                    tr.innerHTML = `
+                        <td class="py-3 px-6 font-medium text-gray-700">${row.indian_time}</td>
+                        <td class="py-3 px-6">${row.challenge_type}</td>
+                        <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
+                        <td class="py-3 px-6 text-center">${row.time_taken}</td>
+                        <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                loader.style.display = 'none';
+                statusMsg.textContent = "Error loading data: " + err.message;
+                console.error("Supabase Error:", err);
+            }
         }
     </script>
 </body>
