@@ -13,40 +13,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
+        /* Import Nunito Font */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
         /* Base Settings */
         html { scroll-padding-top: 20px; }
         
-        /* --- FOCUS MODE (Kindle Style) --- */
+        /* --- ACADEMY THEME BODY --- */
         body {
-            background-color: #fbf0d9 !important; /* Kindle Sepia */
-            color: #433422;
-            font-family: sans-serif;
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
+            color: #333;
             height: 100vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header/Footer Styles */
+        /* Updated Header (Indigo) */
         header {
-            background-color: #fef08a; /* Yellow-200 */
-            color: #000;
+            background-color: #4f46e5; /* Indigo-600 */
+            color: white;
             padding: 1rem;
             text-align: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: 800; /* Extra bold */
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             z-index: 10;
         }
 
+        /* Updated Footer (White) */
         footer {
-            background-color: #fef08a;
-            color: #000;
+            background-color: white;
+            color: #6b7280; /* Gray-500 */
             text-align: center;
-            padding: 0.5rem;
+            padding: 1.5rem;
             font-size: 0.9rem;
             margin-top: auto;
+            border-top: 1px solid #e5e7eb; /* Gray-200 border */
         }
-
+        
         /* Main Content Area */
         main {
             flex-grow: 1;
@@ -219,7 +227,7 @@
     </main>
 
     <footer>
-        For any queries call 9730482620
+        <p>For any queries call <span style="color: #4f46e5; font-weight: bold;">9730482620</span></p>
     </footer>
 
     <script>
