@@ -2,61 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Li'l Champs Abacus Academy Ambernath</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Flash Cards - Li'l Champs Abacus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&display=swap');
+        /* --- THEME FROM 3by1.html --- */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
 
-        /* Responsive Variables */
+        /* --- ABACUS VISUALS --- */
         :root {
-            --bead-w: 50px;
-            --bead-h: 30px;
-            --col-w: 60px;
-            --rod-h: 240px;
-            --heaven-h: 60px;
-            --earth-h: 150px;
-            --beam-top: 60px;
+            --bead-w: 60px;
+            --bead-h: 36px;
+            --col-w: 70px;
+            --rod-h: 280px;
+            --heaven-h: 70px;
+            --earth-h: 180px;
+            --beam-top: 70px;
             --bead-radius: 5px;
         }
 
-        /* Mobile Breakpoint (Small screens) */
-        @media (max-width: 640px) {
-            :root {
-                --bead-w: 34px;
-                --bead-h: 22px;
-                --col-w: 40px;
-                --rod-h: 180px;
-                --heaven-h: 45px;
-                --earth-h: 110px;
-                --beam-top: 45px;
-                --bead-radius: 3px;
-            }
-        }
-
-        body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: #f0f9ff;
-            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
-            overflow-x: hidden;
-            min-h-screen: 100dvh; /* Dynamic viewport height for mobile */
-        }
-
-        /* Abacus Bead Styling */
+        /* Abacus Components */
         .bead-shape {
             width: var(--bead-w);
             height: var(--bead-h);
-            background: linear-gradient(145deg, #4a2c2c, #2d1b1b);
+            background: linear-gradient(145deg, #2d1b1b, #000000); 
             border-radius: var(--bead-radius);
             clip-path: polygon(15% 0%, 85% 0%, 100% 50%, 85% 100%, 15% 100%, 0% 50%);
             margin: 0;
-            transition: top 0.3s ease-in-out; 
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         
         .bead-shape::after {
@@ -66,15 +56,14 @@
             left: 50%;
             width: 20%;
             height: 30%;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
 
-        /* Rod and Beam Styling */
         .abacus-rod {
-            width: 4px;
-            background-color: #555;
+            width: 6px;
+            background-color: #cbd5e1;
             height: var(--rod-h);
             position: absolute;
             left: 50%;
@@ -83,425 +72,448 @@
         }
 
         .abacus-beam {
-            height: 10px;
-            background-color: #333;
+            height: 14px;
+            background-color: #334155;
             width: 100%;
             position: absolute;
             top: var(--beam-top); 
             z-index: 20;
             border-radius: 2px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border-top: 1px solid #666;
-            border-bottom: 1px solid #666;
+            border-top: 2px solid #94a3b8;
+            border-bottom: 2px solid #0f172a;
         }
 
-        /* Layout Helpers */
         .column-container {
             position: relative;
             width: var(--col-w);
             height: calc(var(--rod-h) + 10px);
             display: inline-block;
-            margin: 0 1px;
+            margin: 0 2px;
         }
 
-        .heaven-deck {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: var(--heaven-h);
-        }
-
-        .earth-deck {
-            position: absolute;
-            top: calc(var(--beam-top) + 10px); /* Beam height is roughly 10px */
-            width: 100%;
-            height: var(--earth-h);
-        }
+        .heaven-deck { position: absolute; top: 0; width: 100%; height: var(--heaven-h); }
+        .earth-deck { position: absolute; top: calc(var(--beam-top) + 14px); width: 100%; height: var(--earth-h); }
 
         /* Animations */
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .fade-enter { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Modal Backdrop */
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
         }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-        }
-
-        @keyframes shine {
-            0% { background-position: -100px; }
-            100% { background-position: 200px; }
-        }
-
-        .card-enter { animation: popIn 0.4s ease-out forwards; }
-        .floating-title { animation: float 3s ease-in-out infinite; }
-
-        .highscore-badge {
-            background: linear-gradient(90deg, #FFF 0%, #fef3c7 50%, #FFF 100%);
-            background-size: 200px;
-            animation: shine 3s infinite linear;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            animation: fall linear forwards;
-            z-index: 100;
-        }
-
-        @keyframes fall {
-            to { transform: translateY(100vh) rotate(720deg); }
-        }
-
-        /* Utility for hiding scrollbar */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-blue-50 text-gray-800 min-h-[100dvh] flex flex-col items-center overflow-y-auto overflow-x-hidden">
+<body class="min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER -->
-    <header class="w-full p-3 md:p-4 flex justify-between items-center bg-white shadow-sm z-50 sticky top-0">
-        <div class="flex items-center gap-2">
-            <i class="fa-solid fa-calculator text-yellow-500 text-xl md:text-2xl"></i>
-            <h1 class="text-lg md:text-2xl font-bold text-pink-600 tracking-wide truncate max-w-[200px] md:max-w-none">Li'l Champs Abacus Academy Ambernath</h1>
+    <header class="bg-indigo-600 text-black p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+        <div class="max-w-7xl flex items-center gap-4">
+            <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy, Ambernath</h1>
+            <span class="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold backdrop-blur-sm border border-white/30">Flash Cards</span>
         </div>
-        <div id="header-stats" class="hidden flex gap-3 md:gap-6 font-semibold text-sm md:text-lg">
-            <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded-lg"><i class="fa-solid fa-hashtag mr-1"></i> <span id="card-counter">1/20</span></span>
-            <span class="text-green-600 bg-green-50 px-2 py-1 rounded-lg"><i class="fa-solid fa-star mr-1"></i> <span id="score-display">0</span></span>
+        
+        <div class="flex gap-2">
+            <button onclick="toggleHistory()" id="btn-history" class="hidden px-4 py-2 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-400 transition-colors text-sm border border-indigo-400">
+                <i class="fa-solid fa-list-ol mr-2"></i> History
+            </button>
+            <button onclick="stopSequence()" id="btn-stop" class="hidden px-6 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors shadow-md text-sm border border-red-400">
+                <i class="fa-solid fa-stop mr-2"></i> Stop
+            </button>
         </div>
-        <button onclick="location.reload()" class="text-gray-400 hover:text-gray-600 text-sm md:text-base"><i class="fa-solid fa-rotate-right"></i> <span class="hidden sm:inline">Restart</span></button>
     </header>
 
-    <!-- MAIN CONTENT AREA -->
-    <main id="app" class="flex-1 w-full max-w-4xl p-2 md:p-4 flex flex-col justify-start md:justify-center items-center relative">
-        
-        <!-- SCREEN: SETUP -->
-        <div id="setup-screen" class="bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-lg text-center border-b-8 border-yellow-400 card-enter mt-4 md:mt-0">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-700 mb-2 floating-title">Let's Practice!</h2>
-            
-            <!-- High Score Badge -->
-            <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-300 text-yellow-700 font-bold text-sm md:text-base highscore-badge shadow-sm">
-                <i class="fa-solid fa-trophy text-yellow-500"></i>
-                Personal Best (<span id="hs-digit-label">3</span> digits): 
-                <span id="highscore-display" class="text-lg ml-1 text-yellow-800">0</span>/20
-            </div>
+    <main class="flex-grow flex flex-col items-center justify-center p-4 overflow-y-auto w-full relative">
 
-            <p class="text-gray-500 mb-6 hidden">Configure your flash cards</p>
+        <div id="setup-panel" class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-2xl border-4 border-indigo-100 fade-enter my-auto">
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
+                <i class="fa-solid fa-sliders text-indigo-600"></i> Configuration
+            </h2>
 
-            <!-- Digits Selection -->
-            <div class="mb-4 md:mb-6">
-                <label class="block text-left font-bold text-gray-600 mb-2 ml-1 text-sm md:text-base">How many digits?</label>
-                <div class="flex justify-between gap-1 md:gap-2">
-                    <button onclick="selectDigits(1)" class="digit-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-pink-100 border-2 border-transparent hover:border-pink-400 font-bold text-lg md:text-xl transition-all" data-val="1">1</button>
-                    <button onclick="selectDigits(2)" class="digit-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-pink-100 border-2 border-transparent hover:border-pink-400 font-bold text-lg md:text-xl transition-all" data-val="2">2</button>
-                    <button onclick="selectDigits(3)" class="digit-btn flex-1 py-2 md:py-3 rounded-xl bg-blue-100 border-2 border-blue-500 text-blue-700 font-bold text-lg md:text-xl transition-all shadow-md" data-val="3">3</button>
-                    <button onclick="selectDigits(4)" class="digit-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-pink-100 border-2 border-transparent hover:border-pink-400 font-bold text-lg md:text-xl transition-all" data-val="4">4</button>
-                    <button onclick="selectDigits(5)" class="digit-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-pink-100 border-2 border-transparent hover:border-pink-400 font-bold text-lg md:text-xl transition-all" data-val="5">5</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 font-bold mb-1 text-sm uppercase tracking-wide">Number of Flash cards</label>
+                        <input type="number" id="inp-count" value="20" min="1" max="100" class="w-full p-3 border-2 border-gray-200 rounded-xl font-bold text-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 font-bold mb-1 text-sm uppercase tracking-wide">Speed</label>
+                        <div class="flex gap-2">
+                            <select id="inp-speed" class="flex-1 p-3 border-2 border-gray-200 rounded-xl font-bold text-base focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                                <option value="slowest">Slowest</option>
+                                <option value="slow">Slow</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="fast">Fast</option>
+                                <option value="fastest">Fastest</option>
+                            </select>
+                            <button onclick="openSpeedModal()" class="px-4 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors border-2 border-transparent hover:border-gray-300" title="Edit Speed Timings">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-2 text-sm uppercase tracking-wide">Group (Digits)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="digits" value="1" class="peer sr-only">
+                            <div class="p-2 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 font-bold text-gray-600 peer-checked:text-indigo-700 transition-all text-sm text-center shadow-sm">
+                                1 Digit
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="digits" value="2" class="peer sr-only">
+                            <div class="p-2 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 font-bold text-gray-600 peer-checked:text-indigo-700 transition-all text-sm text-center shadow-sm">
+                                2 Digits
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="digits" value="3" checked class="peer sr-only">
+                            <div class="p-2 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 font-bold text-gray-600 peer-checked:text-indigo-700 transition-all text-sm text-center shadow-sm">
+                                3 Digits
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="digits" value="4" class="peer sr-only">
+                            <div class="p-2 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 font-bold text-gray-600 peer-checked:text-indigo-700 transition-all text-sm text-center shadow-sm">
+                                4 Digits
+                            </div>
+                        </label>
+                        <label class="cursor-pointer col-span-2">
+                            <input type="radio" name="digits" value="5" class="peer sr-only">
+                            <div class="p-2 border-2 border-gray-200 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-50 font-bold text-gray-600 peer-checked:text-indigo-700 transition-all text-sm text-center shadow-sm">
+                                5 Digits
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- Speed Selection -->
-            <div class="mb-4 md:mb-6">
-                <label class="block text-left font-bold text-gray-600 mb-2 ml-1 text-sm md:text-base">Speed</label>
-                <div class="grid grid-cols-3 gap-2 md:gap-3">
-                    <button onclick="selectSpeed('slow')" class="speed-btn py-2 md:py-3 rounded-xl bg-green-100 border-2 border-green-500 text-green-700 font-bold transition-all shadow-md text-sm md:text-base" data-val="slow">
-                        <i class="fa-solid fa-bicycle mb-1 block text-xl md:text-2xl"></i> Slow
-                    </button>
-                    <button onclick="selectSpeed('fast')" class="speed-btn py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-yellow-100 border-2 border-transparent hover:border-yellow-400 text-gray-600 font-bold transition-all text-sm md:text-base" data-val="fast">
-                        <i class="fa-solid fa-car mb-1 block text-xl md:text-2xl"></i> Fast
-                    </button>
-                    <button onclick="selectSpeed('fastest')" class="speed-btn py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-red-100 border-2 border-transparent hover:border-red-400 text-gray-600 font-bold transition-all text-sm md:text-base" data-val="fastest">
-                        <i class="fa-solid fa-rocket mb-1 block text-xl md:text-2xl"></i> Turbo
-                    </button>
-                </div>
-            </div>
-
-             <!-- Mode Selection -->
-             <div class="mb-6 md:mb-8">
-                <label class="block text-left font-bold text-gray-600 mb-2 ml-1 text-sm md:text-base">Mode</label>
-                <div class="flex gap-2 md:gap-3">
-                    <button onclick="selectMode('practice')" class="mode-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-purple-100 border-2 border-transparent hover:border-purple-400 font-bold transition-all text-sm md:text-base" data-val="practice">
-                        <i class="fa-solid fa-eye mr-1 md:mr-2"></i>Learn
-                    </button>
-                    <button onclick="selectMode('quiz')" class="mode-btn flex-1 py-2 md:py-3 rounded-xl bg-purple-100 border-2 border-purple-500 text-purple-700 font-bold transition-all shadow-md text-sm md:text-base" data-val="quiz">
-                        <i class="fa-solid fa-keyboard mr-1 md:mr-2"></i>Quiz
-                    </button>
-                </div>
-                <p id="mode-desc" class="text-xs md:text-sm text-gray-500 mt-2">The beads flash, you type the number!</p>
-            </div>
-
-            <button onclick="startGame()" class="w-full py-3 md:py-4 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-bold text-xl md:text-2xl shadow-lg transform hover:scale-105 active:scale-95 transition-all">
-                Start Playing <i class="fa-solid fa-play ml-2"></i>
+            <button onclick="startSequence()" class="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xl shadow-lg transform hover:scale-[1.02] active:scale-95 transition-all">
+                🚀 Launch Flash Cards
             </button>
         </div>
 
-        <!-- SCREEN: GAME -->
-        <div id="game-screen" class="hidden w-full flex flex-col items-center mt-2 md:mt-0">
+        <div id="display-panel" class="hidden w-full h-full flex flex-col items-center justify-center">
             
-            <!-- Progress Bar -->
-            <div class="w-full max-w-2xl bg-gray-200 rounded-full h-2 mb-4 md:mb-6">
-                <div id="timer-bar" class="bg-pink-500 h-2 rounded-full transition-all duration-75" style="width: 100%"></div>
+            <div class="relative mt-4 md:mt-12 p-10 bg-white rounded-3xl shadow-2xl border-4 border-indigo-100 scale-90 md:scale-100 origin-center transition-all">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-6 py-2 rounded-full border border-gray-200 shadow-sm font-bold text-xl text-indigo-800 z-20 whitespace-nowrap">
+                    <span id="current-index">1</span> / <span id="total-count">10</span>
+                </div>
+                <div id="abacus-stage" class="flex items-center justify-center gap-2 min-h-[300px] transition-opacity duration-100"></div>
             </div>
+            
+        </div>
 
-            <!-- The Card -->
-            <div id="flash-card" class="relative bg-white p-1 rounded-2xl shadow-xl flex flex-col md:flex-row w-full max-w-3xl overflow-hidden border-4 border-yellow-400 card-enter min-h-[300px] md:min-h-[350px]">
-                
-                <!-- Number Side -->
-                <div id="number-panel" class="h-32 md:h-auto md:w-1/3 bg-yellow-400 flex items-center justify-center p-4 relative transition-all duration-300 border-b-2 md:border-b-0 md:border-r-2 border-yellow-500/30">
-                    <!-- Removed hardcoded size classes -->
-                    <div id="number-display" class="font-serif font-bold text-gray-900 opacity-0 transform scale-50 transition-all duration-500">
-                        ?
-                    </div>
-                    <div class="absolute top-2 left-2 text-yellow-800 opacity-50 font-bold text-xs md:text-sm tracking-widest">NUMBER</div>
-                </div>
-
-                <!-- Abacus Side -->
-                <div class="flex-1 bg-pink-500 flex items-center justify-center p-2 md:p-4 relative min-h-[200px]">
-                    <div class="absolute top-2 left-2 text-pink-200 opacity-60 font-bold text-xs md:text-sm tracking-widest">ABACUS</div>
-                    
-                    <!-- Abacus Container -->
-                    <div id="abacus-stage" class="bg-pink-600/20 rounded-xl p-2 md:p-4 shadow-inner flex items-center justify-center gap-0 md:gap-2 border border-pink-400/50 backdrop-blur-sm">
-                        <!-- Columns injected by JS -->
-                    </div>
-                </div>
-
-                <!-- Feedback Overlay -->
-                <div id="feedback-overlay" class="absolute inset-0 pointer-events-none flex items-center justify-center z-50 opacity-0 transition-opacity duration-300 bg-white/80 backdrop-blur-sm">
-                    <i class="fa-solid fa-check-circle text-green-500 text-8xl md:text-9xl drop-shadow-lg hidden scale-in" id="icon-correct"></i>
-                    <i class="fa-solid fa-xmark-circle text-red-500 text-8xl md:text-9xl drop-shadow-lg hidden scale-in" id="icon-wrong"></i>
-                </div>
-            </div>
-
-            <!-- Input Area (For Quiz Mode) -->
-            <div id="input-area" class="mt-4 md:mt-8 w-full max-w-sm flex gap-2 hidden opacity-0 transition-opacity duration-300">
-                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="user-input" class="flex-1 p-3 md:p-4 text-2xl md:text-3xl text-center font-bold rounded-xl border-4 border-blue-300 focus:border-blue-500 outline-none shadow-lg" placeholder="?" autocomplete="off">
-                <button onclick="checkAnswer()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 md:px-8 rounded-xl font-bold text-xl shadow-lg active:scale-95 transition-transform">
-                    GO
+        <div id="history-panel" class="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-[100] flex flex-col border-l border-gray-200 pt-16 md:pt-0">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="font-bold text-lg text-indigo-800"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Answer Key</h3>
+                <button onclick="toggleHistory()" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
-
-            <!-- Control Area (For Practice Mode) -->
-            <div id="practice-controls" class="mt-6 hidden">
-                <div class="px-6 py-2 bg-white rounded-full shadow-sm text-lg font-bold text-gray-500 animate-pulse flex items-center gap-2">
-                    <i class="fa-solid fa-forward text-pink-400"></i> Auto-playing...
-                </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-xs font-bold text-gray-400 uppercase tracking-wider border-b">
+                            <th class="pb-2 pl-2">#</th>
+                            <th class="pb-2">Number</th>
+                            <th class="pb-2 text-right">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list" class="divide-y divide-gray-100"></tbody>
+                </table>
             </div>
-
-        </div>
-
-        <!-- SCREEN: RESULTS -->
-        <div id="result-screen" class="hidden bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-lg text-center border-b-8 border-green-400 card-enter mt-4">
-    <div id="new-record-msg" class="hidden mb-4">
-        <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-bold border border-yellow-400 animate-bounce inline-block">
-            <i class="fa-solid fa-crown mr-1"></i> New High Score!
-        </span>
-    </div>
-
-    <i class="fa-solid fa-trophy text-5xl md:text-6xl text-yellow-400 mb-4 floating-title"></i>
-    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Great Job!</h2>
-    
-    <p class="text-gray-400 text-sm mb-6 font-semibold">
-        <i class="fa-regular fa-calendar mr-1"></i> <span id="report-date">Loading...</span>
-    </p>
-    
-    <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <div class="text-xs text-blue-400 uppercase tracking-wide font-bold">Score</div>
-            <div class="text-3xl md:text-4xl font-bold text-blue-600">
-                <span id="final-score">0</span><span class="text-lg text-gray-400">/20</span>
+            <div class="p-4 border-t border-gray-100 bg-gray-50">
+                <button onclick="downloadHistory()" class="w-full py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-bold text-sm transition-colors shadow-sm">
+                    <i class="fa-solid fa-download mr-1"></i> Save Report
+                </button>
             </div>
         </div>
-        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-            <div class="text-xs text-purple-400 uppercase tracking-wide font-bold">Difficulty</div>
-            <div class="text-3xl md:text-4xl font-bold text-purple-600">
-                <span id="report-digits">0</span> <span class="text-base">Digits</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="feedback-text" class="text-base md:text-lg font-semibold text-gray-600 mb-8">Master of the beads!</div>
-
-    <button onclick="location.reload()" class="w-full py-3 md:py-4 rounded-full bg-green-500 hover:bg-green-600 text-white font-bold text-xl shadow-lg transform hover:scale-105 transition-all">
-        Practice Again
-    </button>
-</div>
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="w-full p-4 flex justify-center mt-auto z-10">
-        <a href="practice_options.html" class="px-6 py-3 rounded-full bg-white/80 hover:bg-white border-2 border-pink-200 text-pink-500 hover:text-pink-700 font-bold flex items-center gap-2 transition-all shadow-sm hover:shadow-md">
-            <i class="fa-solid fa-arrow-left"></i> Back to Options
-        </a>
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200 z-40">
+        <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
-    <!-- SCRIPTS -->
+    <div id="speed-modal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center z-[200] opacity-0 transition-opacity duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform scale-95 transition-transform duration-200 m-4 border-4 border-indigo-100" id="speed-modal-content">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-gray-800">Edit Speed Timings (ms)</h3>
+                <button onclick="closeSpeedModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-3 mb-6">
+                <div class="grid grid-cols-3 gap-2 text-xs font-bold text-gray-500 uppercase tracking-wide text-center">
+                    <div class="text-left pl-2">Profile</div>
+                    <div>Display</div>
+                    <div>Interval</div>
+                </div>
+                <div id="speed-rows"></div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="resetSpeeds()" class="flex-1 py-2 rounded-lg border border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition-colors">Default</button>
+                <button onclick="saveSpeeds()" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-md">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- Game State ---
-        const state = {
-            digits: 3,
-            speed: 'slow',
-            mode: 'quiz',
-            currentCard: 0,
-            totalCards: 20,
-            score: 0,
-            currentNumber: 0,
-            timerInterval: null,
-            isInputLocked: false
+        // --- AUTHENTICATION CHECK ---
+        // Checks if user is logged in, otherwise redirects to index.html
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+             window.location.href = 'index.html';
+        }
+
+        // --- CONFIGURATION ---
+        const defaultSpeeds = {
+            slowest: { display: 2500, interval: 1000 },
+            slow:    { display: 1500, interval: 1000 },
+            normal:  { display: 1000, interval: 500 },
+            fast:    { display: 500,  interval: 500 },
+            fastest: { display: 300,  interval: 200 }
         };
 
-        const speeds = {
-            slow: 3000,
-            fast: 1000,
-            fastest: 500
+        let speeds = JSON.parse(localStorage.getItem('abacus_teacher_speeds')) || JSON.parse(JSON.stringify(defaultSpeeds));
+
+        let appState = {
+            sequence: [],
+            currentIndex: 0,
+            isPlaying: false,
+            timer: null,
+            config: { total: 10, digits: 3, speedKey: 'normal' }
         };
 
-        // --- High Score Logic ---
-        function getHighScore(digits) {
-            // Key is e.g. "abacus_hs_3"
-            const key = `abacus_hs_${digits}`;
-            return parseInt(localStorage.getItem(key)) || 0;
-        }
-
-        function saveHighScore(digits, score) {
-            const key = `abacus_hs_${digits}`;
-            const currentBest = getHighScore(digits);
-            if (score > currentBest) {
-                localStorage.setItem(key, score);
-                return true; // New record!
-            }
-            return false;
-        }
-
-        function updateHighScoreDisplay(digits) {
-            const best = getHighScore(digits);
-            document.getElementById('hs-digit-label').innerText = digits;
-            document.getElementById('highscore-display').innerText = best;
-        }
-
-        // Initialize High Score on Load
-        window.addEventListener('load', () => {
-            updateHighScoreDisplay(state.digits);
-        });
-
-
-        // --- Screen Size Handling ---
-        let dimensions = {
-            beadH: 30,
-            heavenH: 60,
-            gap: 45
+        const els = {
+            setup: document.getElementById('setup-panel'),
+            display: document.getElementById('display-panel'),
+            history: document.getElementById('history-panel'),
+            historyList: document.getElementById('history-list'),
+            abacusStage: document.getElementById('abacus-stage'),
+            countInp: document.getElementById('inp-count'),
+            speedInp: document.getElementById('inp-speed'),
+            counterCurrent: document.getElementById('current-index'),
+            counterTotal: document.getElementById('total-count'),
+            btnStop: document.getElementById('btn-stop'),
+            btnHistory: document.getElementById('btn-history'),
+            speedModal: document.getElementById('speed-modal')
         };
 
-        function updateDimensions() {
-            // Matches CSS breakpoints
-            if (window.innerWidth < 640) {
-                dimensions = { beadH: 22, heavenH: 45, gap: 35 };
-            } else {
-                dimensions = { beadH: 30, heavenH: 60, gap: 45 };
-            }
-            // Re-render if game is active
-            if(!document.getElementById('game-screen').classList.contains('hidden')) {
-                renderAbacus(state.currentNumber);
-            }
-        }
-        window.addEventListener('resize', updateDimensions);
-        updateDimensions(); // Initial call
-
-        // --- Setup Functions ---
-        function selectDigits(n) {
-            state.digits = n;
-            // Update high score display when digits change
-            updateHighScoreDisplay(n);
-
-            document.querySelectorAll('.digit-btn').forEach(btn => {
-                const val = parseInt(btn.dataset.val);
-                if(val === n) {
-                    btn.className = "digit-btn flex-1 py-2 md:py-3 rounded-xl bg-blue-100 border-2 border-blue-500 text-blue-700 font-bold text-lg md:text-xl transition-all shadow-md";
-                } else {
-                    btn.className = "digit-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-pink-100 border-2 border-transparent hover:border-pink-400 font-bold text-lg md:text-xl transition-all";
-                }
-            });
-        }
-
-        function selectSpeed(s) {
-            state.speed = s;
-            document.querySelectorAll('.speed-btn').forEach(btn => {
-                const isSelected = btn.dataset.val === s;
-                // Reset
-                btn.classList.remove('bg-green-100', 'border-green-500', 'text-green-700', 
-                                   'bg-yellow-100', 'border-yellow-500', 'text-yellow-700',
-                                   'bg-red-100', 'border-red-500', 'text-red-700', 'border-2', 'shadow-md');
-                btn.classList.add('bg-gray-100', 'text-gray-600', 'border-transparent');
-
-                if (isSelected) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-600', 'border-transparent');
-                    btn.classList.add('border-2', 'shadow-md');
-                    if(s === 'slow') btn.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
-                    if(s === 'fast') btn.classList.add('bg-yellow-100', 'border-yellow-500', 'text-yellow-700');
-                    if(s === 'fastest') btn.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
-                } else {
-                    // Hover states
-                    if(btn.dataset.val === 'slow') btn.classList.add('hover:bg-green-50', 'hover:border-green-300');
-                    if(btn.dataset.val === 'fast') btn.classList.add('hover:bg-yellow-50', 'hover:border-yellow-300');
-                    if(btn.dataset.val === 'fastest') btn.classList.add('hover:bg-red-50', 'hover:border-red-300');
-                    btn.classList.add('border-2'); // Placeholder for border
-                }
-            });
-        }
-
-        function selectMode(m) {
-            state.mode = m;
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                if(btn.dataset.val === m) {
-                    btn.className = "mode-btn flex-1 py-2 md:py-3 rounded-xl bg-purple-100 border-2 border-purple-500 text-purple-700 font-bold transition-all shadow-md text-sm md:text-base";
-                } else {
-                    btn.className = "mode-btn flex-1 py-2 md:py-3 rounded-xl bg-gray-100 hover:bg-purple-100 border-2 border-transparent hover:border-purple-400 font-bold transition-all text-sm md:text-base";
-                }
-            });
-            const desc = document.getElementById('mode-desc');
-            desc.textContent = m === 'quiz' 
-                ? "The beads flash, you type the number!" 
-                : "Relax and watch the numbers and beads together.";
-        }
-
-        function startGame() {
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('header-stats').classList.remove('hidden');
-            document.getElementById('header-stats').classList.add('flex');
+        function openSpeedModal() {
+            const container = document.getElementById('speed-rows');
+            container.innerHTML = '';
             
-            if(state.mode === 'quiz') {
-                document.getElementById('input-area').classList.remove('hidden');
-                setTimeout(() => document.getElementById('input-area').classList.remove('opacity-0'), 50);
-            } else {
-                document.getElementById('practice-controls').classList.remove('hidden');
-            }
+            const keys = ['slowest', 'slow', 'normal', 'fast', 'fastest'];
+            keys.forEach(key => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-3 gap-2 items-center';
+                row.innerHTML = `
+                    <div class="font-bold text-gray-700 capitalize pl-2">${key}</div>
+                    <input type="number" id="spd-disp-${key}" value="${speeds[key].display}" class="w-full p-2 border rounded-lg text-center font-bold text-sm focus:border-indigo-500 outline-none">
+                    <input type="number" id="spd-int-${key}" value="${speeds[key].interval}" class="w-full p-2 border rounded-lg text-center font-bold text-sm focus:border-indigo-500 outline-none">
+                `;
+                container.appendChild(row);
+            });
 
-            state.currentCard = 0;
-            state.score = 0;
-            nextCard();
+            els.speedModal.classList.remove('hidden');
+            setTimeout(() => {
+                els.speedModal.classList.remove('opacity-0');
+                document.getElementById('speed-modal-content').classList.remove('scale-95');
+                document.getElementById('speed-modal-content').classList.add('scale-100');
+            }, 10);
         }
 
-        function generateNumber() {
-            const min = Math.pow(10, state.digits - 1);
-            const max = Math.pow(10, state.digits) - 1;
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        function closeSpeedModal() {
+            els.speedModal.classList.add('opacity-0');
+            document.getElementById('speed-modal-content').classList.remove('scale-100');
+            document.getElementById('speed-modal-content').classList.add('scale-95');
+            setTimeout(() => els.speedModal.classList.add('hidden'), 200);
+        }
+
+        function saveSpeeds() {
+            const keys = ['slowest', 'slow', 'normal', 'fast', 'fastest'];
+            keys.forEach(key => {
+                const disp = parseInt(document.getElementById(`spd-disp-${key}`).value);
+                const int = parseInt(document.getElementById(`spd-int-${key}`).value);
+                if (!isNaN(disp) && !isNaN(int)) {
+                    speeds[key] = { display: disp, interval: int };
+                }
+            });
+            localStorage.setItem('abacus_teacher_speeds', JSON.stringify(speeds));
+            closeSpeedModal();
+        }
+
+        function resetSpeeds() {
+            if(confirm("Reset all speeds to default settings?")) {
+                speeds = JSON.parse(JSON.stringify(defaultSpeeds));
+                localStorage.removeItem('abacus_teacher_speeds');
+                closeSpeedModal();
+            }
+        }
+
+        function generateSequence(count, digits) {
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            const totalPossible = max - min + 1;
+            const result = [];
+
+            if (totalPossible <= 20 || count > totalPossible) {
+                let pool = [];
+                while (result.length < count) {
+                    if (pool.length === 0) {
+                        pool = Array.from({length: totalPossible}, (_, i) => i + min);
+                        for (let i = pool.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [pool[i], pool[j]] = [pool[j], pool[i]];
+                        }
+                        if (result.length > 0 && pool[0] === result[result.length - 1]) {
+                             if (pool.length > 1) {
+                                 const swapIdx = Math.floor(Math.random() * (pool.length - 1)) + 1;
+                                 [pool[0], pool[swapIdx]] = [pool[swapIdx], pool[0]];
+                             }
+                        }
+                    }
+                    result.push(pool.pop());
+                }
+            } else {
+                const used = new Set();
+                while (result.length < count) {
+                    let num;
+                    let attempts = 0;
+                    do {
+                        num = Math.floor(Math.random() * (totalPossible)) + min;
+                        attempts++;
+                    } while (used.has(num) && attempts < 100);
+                    used.add(num);
+                    result.push(num);
+                }
+            }
+            return result;
+        }
+
+        function startSequence() {
+            appState.config.total = parseInt(els.countInp.value) || 10;
+            appState.config.speedKey = els.speedInp.value;
+            const radioDigits = document.querySelector('input[name="digits"]:checked');
+            appState.config.digits = radioDigits ? parseInt(radioDigits.value) : 3;
+
+            appState.sequence = generateSequence(appState.config.total, appState.config.digits);
+            appState.currentIndex = 0;
+            appState.isPlaying = true;
+
+            els.setup.classList.add('hidden');
+            els.display.classList.remove('hidden');
+            els.btnStop.classList.remove('hidden');
+            els.btnHistory.classList.add('hidden'); 
+            els.counterTotal.innerText = appState.config.total;
+            els.historyList.innerHTML = '';
+            
+            els.abacusStage.style.opacity = '1';
+            els.abacusStage.innerHTML = '<div class="text-5xl md:text-6xl font-extrabold text-indigo-600 animate-pulse">Ready?</div>';
+
+            appState.timer = setTimeout(() => {
+                if(appState.isPlaying) runLoop();
+            }, 2000);
+        }
+
+        async function runLoop() {
+            if(!appState.isPlaying) return;
+
+            if(appState.currentIndex >= appState.sequence.length) {
+                endSequence();
+                return;
+            }
+
+            els.counterCurrent.innerText = appState.currentIndex + 1;
+            const num = appState.sequence[appState.currentIndex];
+            const currentSpeed = speeds[appState.config.speedKey];
+
+            renderAbacus(num);
+            els.abacusStage.style.opacity = '1';
+            
+            await wait(currentSpeed.display);
+
+            if(!appState.isPlaying) return;
+
+            els.abacusStage.style.opacity = '0';
+            await wait(currentSpeed.interval);
+
+            if(!appState.isPlaying) return;
+            
+            addToHistory(appState.currentIndex + 1, num);
+            appState.currentIndex++;
+            runLoop();
+        }
+
+        function wait(ms) {
+            return new Promise(resolve => {
+                appState.timer = setTimeout(resolve, ms);
+            });
+        }
+
+        function stopSequence() {
+            appState.isPlaying = false;
+            clearTimeout(appState.timer);
+            endSequence();
+        }
+
+        function endSequence() {
+            appState.isPlaying = false;
+            els.btnStop.classList.add('hidden');
+            els.btnHistory.classList.remove('hidden');
+            els.display.classList.add('hidden');
+            els.setup.classList.remove('hidden');
+            toggleHistory();
+            
+            els.abacusStage.style.opacity = '1';
+            els.abacusStage.innerHTML = '';
+        }
+
+        function addToHistory(idx, num) {
+            const row = document.createElement('tr');
+            row.className = "hover:bg-indigo-50 transition-colors";
+            const time = new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            row.innerHTML = `
+                <td class="py-2 pl-2 border-b border-gray-100 text-gray-400 font-bold">${idx}</td>
+                <td class="py-2 border-b border-gray-100 font-bold text-lg text-gray-800">${num}</td>
+                <td class="py-2 border-b border-gray-100 text-right text-xs text-gray-400 font-mono">${time}</td>
+            `;
+            els.historyList.appendChild(row);
+        }
+
+        function toggleHistory() {
+            const p = els.history;
+            if (p.classList.contains('translate-x-full')) {
+                p.classList.remove('translate-x-full');
+            } else {
+                p.classList.add('translate-x-full');
+            }
+        }
+
+        function downloadHistory() {
+            let csv = "Question,Number\n";
+            appState.sequence.forEach((n, i) => {
+                csv += `${i+1},${n}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'abacus_flash_report.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function renderAbacus(num) {
-            const container = document.getElementById('abacus-stage');
+            const container = els.abacusStage;
             container.innerHTML = '';
             const strNum = num.toString();
             
-            // Use responsive dimensions
-            const BEAD_H = dimensions.beadH;
-            const HEAVEN_H = dimensions.heavenH;
-            const GAP = dimensions.gap;
-
             for(let i=0; i<strNum.length; i++) {
                 const digit = parseInt(strNum[i]);
                 const topActive = digit >= 5;
@@ -514,227 +526,37 @@
                 rod.className = 'abacus-rod';
                 col.appendChild(rod);
 
-                // HEAVEN
                 const heaven = document.createElement('div');
                 heaven.className = 'heaven-deck';
                 
                 const topBead = document.createElement('div');
                 topBead.className = `bead-shape`;
-                // Active = Down (touching beam)
-                topBead.style.top = topActive ? `${HEAVEN_H - BEAD_H}px` : '0px';
+                topBead.style.top = topActive ? 'calc(var(--heaven-h) - var(--bead-h))' : '0px';
                 
                 heaven.appendChild(topBead);
                 col.appendChild(heaven);
 
-                // BEAM
                 const beam = document.createElement('div');
                 beam.className = 'abacus-beam';
                 col.appendChild(beam);
 
-                // EARTH
                 const earth = document.createElement('div');
                 earth.className = 'earth-deck';
                 
                 for(let b=0; b<4; b++) {
                     const bead = document.createElement('div');
                     bead.className = 'bead-shape';
-                    let topPos;
-
                     if (b < remainder) {
-                        // Active (UP), touching beam/stack
-                        topPos = b * BEAD_H; 
+                        bead.style.top = `calc(${b} * var(--bead-h))`;
                     } else {
-                        // Inactive (DOWN), stacking from gap
-                        topPos = (b * BEAD_H) + GAP;
+                        bead.style.top = `calc((${b} * var(--bead-h)) + 45px)`; 
                     }
-                    
-                    bead.style.top = `${topPos}px`;
                     earth.appendChild(bead);
                 }
                 col.appendChild(earth);
                 container.appendChild(col);
             }
         }
-
-        function nextCard() {
-            if(state.currentCard >= state.totalCards) {
-                endGame();
-                return;
-            }
-
-            state.currentCard++;
-            document.getElementById('card-counter').innerText = `${state.currentCard}/${state.totalCards}`;
-            
-            state.currentNumber = generateNumber();
-            state.isInputLocked = false;
-
-            const numDisplay = document.getElementById('number-display');
-            const userInput = document.getElementById('user-input');
-            const numPanel = document.getElementById('number-panel');
-            
-            userInput.value = '';
-            document.getElementById('feedback-overlay').style.opacity = '0';
-            document.getElementById('icon-correct').classList.add('hidden');
-            document.getElementById('icon-wrong').classList.add('hidden');
-
-            // Dynamic Font Sizing logic
-            // Reset base classes first
-            numDisplay.className = "font-serif font-bold text-gray-900 opacity-0 transform scale-50 transition-all duration-500";
-            
-            // Apply specific size
-            if (state.digits === 5) {
-                 numDisplay.classList.add('text-5xl', 'md:text-6xl'); // Smaller for 5 digits
-            } else if (state.digits === 4) {
-                 numDisplay.classList.add('text-6xl', 'md:text-7xl');
-            } else {
-                 numDisplay.classList.add('text-6xl', 'md:text-8xl'); // Original size for 1-3 digits
-            }
-
-            renderAbacus(state.currentNumber);
-
-            if(state.mode === 'practice') {
-                numDisplay.innerText = state.currentNumber;
-                numDisplay.style.opacity = '1';
-                numDisplay.style.transform = 'scale(1)';
-                numPanel.classList.remove('bg-yellow-400');
-                numPanel.classList.add('bg-white'); 
-                startTimer(nextCard);
-            } else {
-                // Quiz Mode
-                numDisplay.innerText = "?";
-                numDisplay.style.opacity = '0.3';
-                numDisplay.style.transform = 'scale(0.5)';
-                numPanel.classList.add('bg-yellow-400');
-                numPanel.classList.remove('bg-white');
-
-                userInput.focus(); 
-                
-                startTimer(() => {
-                    document.getElementById('abacus-stage').style.transition = 'opacity 0.2s';
-                    document.getElementById('abacus-stage').style.opacity = '0';
-                });
-            }
-        }
-
-        function startTimer(callback) {
-            const bar = document.getElementById('timer-bar');
-            const duration = speeds[state.speed];
-            let start = Date.now();
-            
-            document.getElementById('abacus-stage').style.opacity = '1';
-
-            if(state.timerInterval) clearInterval(state.timerInterval);
-
-            state.timerInterval = setInterval(() => {
-                let timePassed = Date.now() - start;
-                let pct = 100 - (timePassed / duration * 100);
-                
-                if(pct <= 0) {
-                    pct = 0;
-                    clearInterval(state.timerInterval);
-                    callback();
-                }
-                bar.style.width = pct + "%";
-            }, 50);
-        }
-
-        function checkAnswer() {
-            if(state.isInputLocked) return;
-            
-            const input = document.getElementById('user-input');
-            if(input.value === '') return;
-            
-            const val = parseInt(input.value);
-            if(isNaN(val)) return;
-
-            state.isInputLocked = true;
-            clearInterval(state.timerInterval);
-
-            const isCorrect = val === state.currentNumber;
-            
-            const overlay = document.getElementById('feedback-overlay');
-            overlay.style.opacity = '1';
-            
-            if(isCorrect) {
-                document.getElementById('icon-correct').classList.remove('hidden');
-                state.score++;
-                document.getElementById('score-display').innerText = state.score;
-                createConfetti();
-            } else {
-                document.getElementById('icon-wrong').classList.remove('hidden');
-                const numDisplay = document.getElementById('number-display');
-                numDisplay.innerText = state.currentNumber;
-                numDisplay.style.opacity = '1';
-                numDisplay.style.transform = 'scale(1)';
-                numDisplay.style.color = '#dc2626'; // red-600
-                // Reset color after a moment
-                setTimeout(() => numDisplay.style.color = '', 1500);
-            }
-
-            setTimeout(() => {
-                nextCard();
-            }, 1500);
-        }
-
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                checkAnswer();
-            }
-        });
-
-        function endGame() {
-    document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('result-screen').classList.remove('hidden');
-    
-    // 1. Set Score
-    document.getElementById('final-score').innerText = state.score;
-
-    // 2. Set Digits (NEW)
-    document.getElementById('report-digits').innerText = state.digits;
-
-    // 3. Set Date and Time (NEW)
-    const now = new Date();
-    const dateOptions = { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    };
-    document.getElementById('report-date').innerText = now.toLocaleString('en-US', dateOptions);
-    
-    // Check and Save High Score
-    if (state.mode === 'quiz') {
-        const isNewRecord = saveHighScore(state.digits, state.score);
-        if(isNewRecord) {
-            document.getElementById('new-record-msg').classList.remove('hidden');
-            createConfetti(); 
-        } else {
-            document.getElementById('new-record-msg').classList.add('hidden');
-        }
-    }
-
-    const msg = document.getElementById('feedback-text');
-    const pct = state.score / state.totalCards;
-    if(pct === 1) msg.innerText = "Perfect Score! You are a Soroban Master! 🏆";
-    else if(pct > 0.8) msg.innerText = "Amazing work! Almost perfect! 🌟";
-    else if(pct > 0.5) msg.innerText = "Good practice! Keep going! 👍";
-    else msg.innerText = "Keep practicing, you'll get it! 💪";
-}
-        function createConfetti() {
-            for(let i=0; i<30; i++) {
-                const conf = document.createElement('div');
-                conf.classList.add('confetti');
-                conf.style.left = Math.random() * 100 + 'vw';
-                conf.style.backgroundColor = ['#ff0', '#f0f', '#0ff', '#0f0'][Math.floor(Math.random()*4)];
-                conf.style.animationDuration = Math.random() * 2 + 1 + 's';
-                document.body.appendChild(conf);
-                setTimeout(() => conf.remove(), 3000);
-            }
-        }
     </script>
 </body>
 </html>
-
-
-
