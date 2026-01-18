@@ -109,7 +109,7 @@ async function saveExamResult(data) {
             time_taken: data.time,
             accuracy: data.accuracy,
             mistakes_summary: data.mistakes ? data.mistakes.map(m => m.question).join(', ') : "",
-            indian_time: indianTime // <--- NEW FIELD SAVES READABLE TIME
+            indian_time: indianTime 
         })
         .select()
         .single();
@@ -157,11 +157,24 @@ window.generateQuestions = function(code, countParam) {
     }
 
     var COUNT = countParam ? parseInt(countParam) : defaultCount;
-    var maxTries = COUNT * 30; 
+    var maxTries = COUNT * 50; 
     var tries = 0;
 
-    // --- A. NEGATIVE SUMS ---
-    if (code.startsWith('neg-')) {
+    // --- A. SPECIAL ZERO DIVISION (NEW FEATURE) ---
+    if (code.startsWith('special-div-')) {
+        while (questions.length < COUNT && tries < maxTries) {
+            tries++;
+            var q = generateSpecialZeroDivision(code);
+            // Key is Dividend-Divisor to ensure unique problems
+            var key = q.x + "-" + q.y; 
+            if (!uniqueKeys[key] && q.quotient.toString().includes('0')) { 
+                uniqueKeys[key] = true; 
+                questions.push(q); 
+            }
+        }
+    }
+    // --- B. NEGATIVE SUMS ---
+    else if (code.startsWith('neg-')) {
         var digits = 2; var rows = 10;
         if (code.indexOf('1d') > -1) digits = 1;
         if (code.indexOf('2d') > -1) digits = 2;
@@ -182,7 +195,7 @@ window.generateQuestions = function(code, countParam) {
             questions.push({ numbers: generateNegativeSum(digits, rows), type: 'addition' }); 
         }
     }
-    // --- B. DECIMALS ---
+    // --- C. DECIMALS ---
     else if (code.startsWith('dec-')) {
         while (questions.length < COUNT && tries < maxTries) {
             tries++;
@@ -197,7 +210,7 @@ window.generateQuestions = function(code, countParam) {
             questions.push({ numbers: generateDecimalSum(code), type: 'addition' });
         }
     }
-    // --- C. STANDARD ADD/SUB ---
+    // --- D. STANDARD ADD/SUB ---
     else if (code.startsWith('add-')) {
         var digits = 1; var rows = 10;
         if (code.indexOf('1d') > -1) digits = 1;
@@ -214,7 +227,7 @@ window.generateQuestions = function(code, countParam) {
         }
         while (questions.length < COUNT) { questions.push({ numbers: generateAdditionSum(digits, rows), type: 'addition' }); }
     }
-    // --- D. MULTIPLICATION / DIVISION ---
+    // --- E. MULTIPLICATION / STANDARD DIVISION ---
     else {
         while (questions.length < COUNT && tries < maxTries) {
             tries++;
@@ -224,10 +237,93 @@ window.generateQuestions = function(code, countParam) {
         }
         while (questions.length < COUNT) { questions.push(generateMathQuestion(code)); }
     }
+    
+    // Fill remaining if unique check was too strict
+    while (questions.length < COUNT) {
+         if (code.startsWith('special-div-')) {
+             questions.push(generateSpecialZeroDivision(code));
+         } else if (code.startsWith('neg-') || code.startsWith('add-') || code.startsWith('dec-')) {
+             // Fallbacks for addition are handled above inside loops, 
+             // typically we just duplicate last valid one if desperate
+             questions.push(questions[0] || {numbers:[1,1], type:'addition'});
+         } else {
+             questions.push(generateMathQuestion(code));
+         }
+    }
+    
     return questions;
 };
 
 // --- HELPER FUNCTIONS ---
+
+function generateSpecialZeroDivision(code) {
+    // 1. Define Digit Counts based on Code
+    var divDigits = 1; // Divisor Digits (y)
+    var dividendDigits = 3; // Dividend Digits (x)
+    
+    if (code === 'special-div-3d1d') { dividendDigits = 3; divDigits = 1; }
+    else if (code === 'special-div-4d1d') { dividendDigits = 4; divDigits = 1; }
+    else if (code === 'special-div-5d1d') { dividendDigits = 5; divDigits = 1; }
+    else if (code === 'special-div-4d2d') { dividendDigits = 4; divDigits = 2; }
+    else if (code === 'special-div-5d2d') { dividendDigits = 5; divDigits = 2; }
+    else if (code === 'special-div-4d3d') { dividendDigits = 4; divDigits = 3; } // Note: Usually quotient is small here
+    else if (code === 'special-div-5d3d') { dividendDigits = 5; divDigits = 3; }
+
+    // 2. Generate Divisor (y)
+    var minY = Math.pow(10, divDigits - 1);
+    var maxY = Math.pow(10, divDigits) - 1;
+    // Avoid divisor 1 if possible, unless 1d
+    if (minY === 1) minY = 2; 
+    
+    var y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+
+    // 3. Determine Quotient Range to ensure Dividend has correct # of digits
+    // Min Dividend = 100... (dividendDigits)
+    // Max Dividend = 999... (dividendDigits)
+    var minDividend = Math.pow(10, dividendDigits - 1);
+    var maxDividend = Math.pow(10, dividendDigits) - 1;
+    
+    var minQ = Math.ceil(minDividend / y);
+    var maxQ = Math.floor(maxDividend / y);
+
+    // Safety: if maxQ < minQ, parameters are impossible (e.g., 4d / 3d might not allow large quotients)
+    if (maxQ < minQ) maxQ = minQ; 
+
+    // 4. Generate a Quotient (q) that MUST contain '0'
+    var q;
+    var foundZero = false;
+    var attempts = 0;
+    
+    while (!foundZero && attempts < 100) {
+        q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ;
+        if (q.toString().indexOf('0') !== -1) {
+            foundZero = true;
+        }
+        attempts++;
+    }
+    
+    // Fallback if random fails (force a zero)
+    if (!foundZero) {
+        // Construct a number manually? Or just pick a known pattern like 10...
+        // Simple fallback: Multiply by 10 or 100 if fits
+        q = minQ; 
+        if (q.toString().indexOf('0') === -1) {
+             // Force a zero in the string if length > 1
+             var s = q.toString();
+             if (s.length > 1) {
+                 s = s.substring(0, 1) + '0' + s.substring(2);
+                 q = parseInt(s);
+             } else {
+                 q = 10; // Basic fallback
+             }
+        }
+    }
+
+    // 5. Calculate Dividend (x)
+    var x = q * y;
+    
+    return { x: x, y: y, quotient: q, type: 'div' };
+}
 
 function generateNegativeSum(digits, rows) {
     var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
