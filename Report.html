@@ -156,7 +156,7 @@
                     .from('reports')
                     .select('*')
                     .eq('student_name', currentStudentName)
-                    .order('id', { ascending: false })
+                    .order('indian_time', { ascending: false })
                     .limit(100);
 
                 if (error) throw error;
@@ -183,6 +183,10 @@
                     statusMsg.textContent = "No records found in this date range.";
                     return;
                 }
+                
+                filteredData.sort((a, b) => {
+                return new Date(b.indian_time) - new Date(a.indian_time);
+                });
 
                 loader.style.display = 'none';
                 tableContainer.classList.remove('hidden');
@@ -219,4 +223,5 @@
     </script>
 </body>
 </html>
+
 
