@@ -197,13 +197,25 @@
                     tr.className = "border-b border-gray-200 hover:bg-gray-50";
 
                     let formattedDate = row.indian_time.replace('T', ' ').slice(0, 19);
+
+                    let score = 0;
+                    let total = 1;
+
+                    if (row.score_text && row.score_text.includes('/')) {
+                    const parts = row.score_text.split('/'); // Splits "18/20" into ["18", "20"]
+                    score = parseFloat(parts[0]);
+                    total = parseFloat(parts[1]);
+                    } else {
+                    // Fallback if score_text is missing, use columns if they exist
+                    score = row.score_val || 0;
+                    total = row.total_val || 1;
+                    }
                     
-                    let accuracyVal = 0;
-                    if (row.total_val > 0) accuracyVal = row.score_val / row.total_val;
+                    let accuracyVal = score / total;
                     const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
 
                     let accuracyColor = "text-green-600";
-
+                    
                     if(accuracyVal < 0.7) { 
                         performanceColor = "text-red-600";
                         } else if(accuracyVal < 0.9) {
@@ -229,6 +241,7 @@
     </script>
 </body>
 </html>
+
 
 
 
