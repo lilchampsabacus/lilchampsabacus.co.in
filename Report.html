@@ -202,11 +202,10 @@
                     let total = 1;
 
                     if (row.score_text && row.score_text.includes('/')) {
-                    const parts = row.score_text.split('/'); // Splits "18/20" into ["18", "20"]
+                    const parts = row.score_text.split('/');
                     score = parseFloat(parts[0]);
                     total = parseFloat(parts[1]);
                     } else {
-                    // Fallback if score_text is missing, use columns if they exist
                     score = row.score_val || 0;
                     total = row.total_val || 1;
                     }
@@ -217,9 +216,9 @@
                     let accuracyColor = "text-green-600";
                     
                     if(accuracyVal < 0.7) { 
-                        performanceColor = "text-red-600";
+                        accuracyColor = "text-red-600";
                         } else if(accuracyVal < 0.9) {
-                        performanceColor = "text-yellow-600";
+                        accuracyColor = "text-yellow-600";
                     }
                     
                     tr.innerHTML = `
@@ -241,6 +240,7 @@
     </script>
 </body>
 </html>
+
 
 
 
