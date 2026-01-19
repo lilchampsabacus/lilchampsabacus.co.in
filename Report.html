@@ -195,14 +195,20 @@
                 filteredData.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-gray-200 hover:bg-gray-50";
+
+                    let formattedDate = row.indian_time.replace('T', ' ').slice(0, 19);
                     
                     let accuracyVal = 0;
                     if (row.total_val > 0) accuracyVal = row.score_val / row.total_val;
                     const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
 
-                    let accuracyColor = "text-green-600";
-                    if(accuracyVal < 0.7) accuracyColor = "text-red-600";
-                    else if(accuracyVal < 0.9) accuracyColor = "text-yellow-600";
+                    let performanceColor = "text-green-600";
+
+                    if(accuracyVal < 0.7) { 
+                        performanceColor = "text-red-600";
+                        } else if(accuracyVal < 0.9) {
+                        performanceColor = "text-yellow-600";
+                    }
                     
                     tr.innerHTML = `
                         <td class="py-3 px-6 font-medium text-gray-700">${row.indian_time}</td>
@@ -223,5 +229,6 @@
     </script>
 </body>
 </html>
+
 
 
