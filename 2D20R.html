@@ -32,6 +32,13 @@
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
         .negative-number { color: #dc2626; } 
+
+        /* Formula Hint Dots */
+        .hint-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
+        .hint-green { background-color: #22c55e; border: 1px solid #166534; }
+        .hint-yellow { background-color: #eab308; border: 1px solid #a16207; }
+        .hint-red { background-color: #ef4444; border: 1px solid #991b1b; }
+        .hint-purple { background-color: #a855f7; border: 1px solid #6b21a8; }
         
         body.focus-mode { background-color: #f0f9ff !important; color: #333; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
@@ -83,10 +90,17 @@
                 </select>
             </div>
 
-            <div class="mb-8">
+            <div class="mb-8 flex flex-col items-center gap-4">
                 <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
                     💡 For best result do this 3 times in a row on Abacus.
                 </p>
+
+                <div class="flex items-center bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                    <input type="checkbox" id="show-hints-toggle" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                    <label for="show-hints-toggle" class="ml-2 text-gray-700 font-bold select-none cursor-pointer">
+                        Show Traffic Light Formula Hints 🚦
+                    </label>
+                </div>
             </div>
             
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
@@ -321,11 +335,26 @@
         
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
+
+            // Calculate Hints
+            const hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => 'green');
+            const showHints = document.getElementById('show-hints-toggle').checked;
+            const visibilityClass = showHints ? '' : 'hidden';
+
             numbers.forEach((num, rIndex) => {
                 const isNeg = num < 0;
                 const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
                 const colorClass = isNeg ? 'negative-number' : '';
-                tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}</td></tr>`;
+                const hintColor = hints[rIndex] || 'green';
+
+                tableHtml += `
+                    <tr>
+                        <td class="row-index">${rIndex + 1}</td>
+                        <td class="number-cell ${colorClass}">
+                            ${displayNum}
+                            <span class="hint-dot hint-${hintColor} ${visibilityClass}"></span>
+                        </td>
+                    </tr>`;
             });
             tableHtml += '</table>';
             return tableHtml;
@@ -454,7 +483,10 @@
                     total: TOTAL_SUMS, 
                     time: timeFormatted,
                     accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray
+                    mistakes: mistakesArray,
+                    // Pass full data for verification (SECURE MODE)
+                    questions: sumsData,
+                    answers: sumsData.map(s => s.studentAnswer)
                 });
             }
 
