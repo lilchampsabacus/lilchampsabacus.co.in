@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="elegant-theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="gamify.js?v=2" defer></script>
+    <script src="gamify.js?v=3" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -333,7 +333,22 @@
             }
         }
         
+        function toggleHintsVisibility() {
+            const isChecked = document.getElementById('toggle-hints').checked;
+            const dots = document.querySelectorAll('.hint-dot');
+            dots.forEach(dot => {
+                if (isChecked) dot.classList.remove('hidden');
+                else dot.classList.add('hidden');
+            });
+        }
+
         function createSumTableHtml(numbers) {
+            // Calculate hints if possible
+            let hints = [];
+            if (window.calculateFormulaHints) {
+                hints = window.calculateFormulaHints(numbers);
+            }
+
             let tableHtml = '<table class="sum-table">';
 
             // Calculate Hints

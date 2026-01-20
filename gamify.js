@@ -736,3 +736,116 @@ function getRand(r, minOverride) {
     var max = Math.pow(10, r[1])-1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+// ==================================================
+// PART 6: FORMULA HINT SYSTEM (TRAFFIC LIGHT)
+// ==================================================
+
+window.calculateFormulaHints = function(numbers) {
+    let hints = [];
+    let currentBeads = 0;
+
+    for (let i = 0; i < numbers.length; i++) {
+        let move = numbers[i];
+        // Determine state of units rod (0-9)
+        // We use modulo logic to simulate the Units rod state
+        // (currentBeads % 10 + 10) % 10 handles negative totals correctly for units digit
+        let val = (currentBeads % 10 + 10) % 10;
+
+        // Logic to determine color
+        let color = getMoveColor(val, move);
+        hints.push(color);
+
+        currentBeads += move;
+    }
+    return hints;
+};
+
+function getMoveColor(currentVal, move) {
+    let m = Math.abs(move);
+    let sign = Math.sign(move);
+    if (move === 0) return 'green'; // No move
+
+    let lower = currentVal % 5;
+    let upper = Math.floor(currentVal / 5); // 0 or 1
+
+    if (sign > 0) {
+        // --- ADDITION ---
+
+        // 1. Direct Move (Green)
+        // If m < 5: Simply add to lower beads
+        if (m < 5) {
+            if (lower + m <= 4) return 'green';
+        }
+        // If m >= 5: Need Upper Bead available (0) AND space for remainder in lower
+        else {
+            if (upper === 0 && lower + (m - 5) <= 4) return 'green';
+        }
+
+        // 2. Small Friend (Yellow) - Only for 1, 2, 3, 4
+        // Formula: +m = +5 - (5-m)
+        // Requirements: Upper bead available (0) AND Lower beads have enough to subtract (5-m)
+        if (m < 5) {
+            if (upper === 0 && lower >= (5 - m)) return 'yellow';
+        }
+
+        // 3. Big Friend (Red) - For 1..9
+        // Formula: +m = - (10-m) + 10
+        // Requirements: Can we SUBTRACT the complement (10-m) directly from current rod?
+        let comp = 10 - m;
+        let canSubComp = false;
+        if (comp < 5) {
+            if (lower >= comp) canSubComp = true;
+        } else {
+            if (upper === 1 && lower >= (comp - 5)) canSubComp = true;
+        }
+        if (canSubComp) return 'red';
+
+        // 4. Combination (Purple) - For 6, 7, 8, 9
+        // Formula: +m = + (m-5) - 5 + 10
+        // Requirements: Need to subtract 5 (Upper=1) AND Add (m-5) (Space in Lower)
+        if (m >= 6) {
+            let diff = m - 5;
+            if (upper === 1 && lower + diff <= 4) return 'purple';
+        }
+
+    } else {
+        // --- SUBTRACTION ---
+
+        // 1. Direct Move (Green)
+        if (m < 5) {
+            if (lower >= m) return 'green';
+        } else {
+            if (upper === 1 && lower >= (m - 5)) return 'green';
+        }
+
+        // 2. Small Friend (Yellow) - Only for 1, 2, 3, 4
+        // Formula: -m = + (5-m) - 5
+        // Requirements: Upper bead set (1) AND Space in Lower to add (5-m)
+        if (m < 5) {
+            if (upper === 1 && lower + (5 - m) <= 4) return 'yellow';
+        }
+
+        // 3. Big Friend (Red) - For 1..9
+        // Formula: -m = + (10-m) - 10
+        // Requirements: Can we ADD the complement (10-m) directly to current rod?
+        let comp = 10 - m;
+        let canAddComp = false;
+        if (comp < 5) {
+            if (lower + comp <= 4) canAddComp = true;
+        } else {
+            if (upper === 0 && lower + (comp - 5) <= 4) canAddComp = true;
+        }
+        if (canAddComp) return 'red';
+
+        // 4. Combination (Purple) - For 6, 7, 8, 9
+        // Formula: -m = - (m-5) + 5 - 10
+        // Requirements: Need to Add 5 (Upper=0) AND Subtract (m-5) (Lower has beads)
+        let diff = m - 5;
+        if (m >= 6) {
+             if (upper === 0 && lower >= diff) return 'purple';
+        }
+    }
+
+    return 'gray'; // Should not happen in standard 10-complement abacus logic if valid
+}
