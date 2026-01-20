@@ -516,20 +516,27 @@ window.calculateFormulaHints = function(numbers) {
         let val = Math.abs(num);
         let sign = Math.sign(num);
 
-        // Split into digits (Units at index 0)
-        let digits = val.toString().split('').map(Number).reverse();
+        // Split into digits (Left to Right)
+        let digits = val.toString().split('').map(Number);
 
-        let rowHintsReversed = [];
+        let rowHints = [];
 
-        // Process each digit
+        // Process each digit (Left to Right)
         for (let i = 0; i < digits.length; i++) {
-            let rodIndex = i;
-            let digitMove = digits[i] * sign; // Apply sign to the digit value
+            // Map digit index to rod index. Assumes last digit is Units (Rod 0).
+            let rodIndex = digits.length - 1 - i;
+
+            let digitVal = digits[i];
+            let digitMove = digitVal * sign; // Apply sign to the digit value
+
+            // Ensure rodState exists
+            if (rodStates[rodIndex] === undefined) rodStates[rodIndex] = 0;
+
             let currentRodVal = rodStates[rodIndex];
 
             // Get Color
             let color = getMoveColor(currentRodVal, digitMove);
-            rowHintsReversed.push(color);
+            rowHints.push(color);
 
             // Update State (Basic Move)
             rodStates[rodIndex] = (currentRodVal + digitMove) % 10;
@@ -537,29 +544,37 @@ window.calculateFormulaHints = function(numbers) {
             if (rodStates[rodIndex] < 0) rodStates[rodIndex] += 10;
 
             // HANDLE CARRY/BORROW
+            // In Left-to-Right logic, we process higher rods first.
+            // If the current rod (lower) triggers a carry, it updates the rod to the LEFT (rodIndex + 1).
+            // That rod has already been processed for this number, but updating it maintains the correct global state.
             if (color === 'red' || color === 'purple') {
+                let nextRod = rodIndex + 1;
+                if (rodStates[nextRod] === undefined) rodStates[nextRod] = 0;
+
                 if (sign > 0) {
-                     rodStates[rodIndex + 1]++;
+                     rodStates[nextRod]++;
                 } else {
-                     rodStates[rodIndex + 1]--;
+                     rodStates[nextRod]--;
                 }
             }
 
-            // NORMALIZE RODS (Ripple)
+            // NORMALIZE RODS (Ripple Leftwards)
             let checkIndex = rodIndex + 1;
-            while (rodStates[checkIndex] > 9 || rodStates[checkIndex] < 0) {
+            while (checkIndex < rodStates.length && (rodStates[checkIndex] > 9 || rodStates[checkIndex] < 0)) {
                 if (rodStates[checkIndex] > 9) {
                     rodStates[checkIndex] -= 10;
+                    if (rodStates[checkIndex + 1] === undefined) rodStates[checkIndex + 1] = 0;
                     rodStates[checkIndex + 1]++;
-                } else {
+                } else if (rodStates[checkIndex] < 0) {
                     rodStates[checkIndex] += 10;
+                    if (rodStates[checkIndex + 1] === undefined) rodStates[checkIndex + 1] = 0;
                     rodStates[checkIndex + 1]--;
                 }
                 checkIndex++;
             }
         }
 
-        allHints.push(rowHintsReversed.reverse());
+        allHints.push(rowHints); // Pushed in Left-to-Right order
     }
 
     return allHints;
