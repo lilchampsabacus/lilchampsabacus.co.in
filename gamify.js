@@ -636,7 +636,16 @@ function getMoveColor(currentVal, move) {
         let comp = 10 - m;
         let canAddComp = false;
         if (comp < 5) {
-            if (lower + comp <= 4) canAddComp = true;
+            // Explicit constraints as per Abacus logic (User Refactor Request)
+            // Add 1: Possible if lower < 4 (Beads 0,1,2,3 -> can become 1,2,3,4)
+            // Add 2: Possible ONLY if lower < 3 (Beads 0,1,2 -> can become 2,3,4)
+            // Add 3: Possible ONLY if lower < 2 (Beads 0,1 -> can become 3,4)
+            // Add 4: Possible ONLY if lower < 1 (Bead 0 -> can become 4)
+            if (comp === 1 && lower < 4) canAddComp = true;
+            else if (comp === 2 && lower < 3) canAddComp = true;
+            else if (comp === 3 && lower < 2) canAddComp = true;
+            else if (comp === 4 && lower < 1) canAddComp = true;
+            // Otherwise, cannot add complement using lower beads.
         } else {
             if (upper === 0 && lower + (comp - 5) <= 4) canAddComp = true;
         }
