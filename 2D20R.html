@@ -370,9 +370,10 @@
 
             let tableHtml = '<table class="sum-table">';
 
-            // Calculate Hints
-            // const hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => 'green');
-            if (hints.length === 0) hints = numbers.map(() => 'green');
+            // Check if hints is empty
+            if (hints.length === 0) {
+                 hints = numbers.map(() => ['green']); // Default to array of green if logic fails
+            }
 
             const showHints = document.getElementById('show-hints-toggle').checked;
             const visibilityClass = showHints ? '' : 'hidden';
@@ -381,14 +382,24 @@
                 const isNeg = num < 0;
                 const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
                 const colorClass = isNeg ? 'negative-number' : '';
-                const hintColor = hints[rIndex] || 'green';
+
+                let rowHints = hints[rIndex] || ['green'];
+                // Backwards compatibility if logic returns string
+                if (typeof rowHints === 'string') rowHints = [rowHints];
+
+                let dotsHtml = '';
+                rowHints.forEach(color => {
+                    dotsHtml += `<span class="hint-dot hint-${color} ${visibilityClass}"></span>`;
+                });
 
                 tableHtml += `
                     <tr>
                         <td class="row-index">${rIndex + 1}</td>
                         <td class="number-cell ${colorClass}">
                             ${displayNum}
-                            <span class="hint-dot hint-${hintColor} ${visibilityClass}"></span>
+                            <div style="line-height: 0.5;">
+                            ${dotsHtml}
+                            </div>
                         </td>
                     </tr>`;
             });
