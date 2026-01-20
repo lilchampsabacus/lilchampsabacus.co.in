@@ -59,7 +59,7 @@
 
         /* --- CUSTOM NUMERIC KEYPAD --- */
         #custom-keypad {
-            display: none; /* Hidden by default */
+            display: grid; /* Always visible */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -77,7 +77,7 @@
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            height: 55px;
+            min-height: 60px; /* Touch friendly */
             font-size: 1.5rem;
             font-weight: 700;
             color: #374151;
@@ -99,7 +99,7 @@
             background-color: #4f46e5;
             color: white;
             border-color: #4338ca;
-            grid-column: span 3;
+            grid-column: span 2;
             font-size: 1.25rem;
         }
 
@@ -118,15 +118,9 @@
             color: #1e40af;
         }
 
-        /* Show on Mobile */
-        @media (max-width: 768px) {
-            #custom-keypad {
-                display: grid;
-            }
-            /* Add padding to ensure content isn't hidden behind keypad */
-            body {
-                padding-bottom: 280px;
-            }
+        /* Padding to ensure content isn't hidden behind keypad */
+        body {
+            padding-bottom: 350px;
         }
     </style>
 </head>
@@ -280,22 +274,26 @@
 
      <!-- CUSTOM KEYPAD HTML -->
      <div id="custom-keypad">
-         <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
+         <!-- Row 1 -->
+         <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
+         <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
+         <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
          <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
 
+         <!-- Row 2 -->
          <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
          <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
          <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
          <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
 
-         <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
+         <!-- Row 3 -->
+         <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
+         <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
+         <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
          <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
 
-         <button class="keypad-btn" onclick="handleKeypadInput('0')">0</button>
+         <!-- Row 4 -->
+         <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
          <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
      </div>
 
@@ -427,21 +425,19 @@
                 input.value = '';
                 input.disabled = false;
 
-                // MOBILE FIX: Prevent native keyboard
-                if (window.innerWidth <= 768) {
-                    input.readOnly = true;
-                    // Note: readonly allows focus but prevents keyboard
-                } else {
-                    input.readOnly = false;
-                }
+                // Universal Keypad: Always ReadOnly to block native keyboard
+                input.readOnly = true;
 
-                input.focus();
+                // Note: We don't focus() because it might bring up keyboard on some devices even if readonly (rare but possible)
+                // But generally readonly prevents keyboard.
+                // However, we want the user to see where the input goes.
+                // input.focus(); // Optional.
                 
+                // Remove old event listeners by cloning
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
-                document.getElementById('answer-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); submitAndNext(); }
-                });
+
+                // Note: Global key listener in gamify.js handles physical keyboard input now.
 
                 startTime = Date.now();
                 startTimer();
@@ -690,27 +686,6 @@
         function showReport() {
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-        }
-
-        // --- CUSTOM KEYPAD LOGIC ---
-        function handleKeypadInput(val) {
-            const input = document.getElementById('answer-input');
-            if (input) {
-                input.value += val;
-                input.dispatchEvent(new Event('input')); // Trigger any input listeners if any
-            }
-        }
-
-        function handleBackspace() {
-            const input = document.getElementById('answer-input');
-            if (input && input.value.length > 0) {
-                input.value = input.value.slice(0, -1);
-                input.dispatchEvent(new Event('input'));
-            }
-        }
-
-        function handleKeypadEnter() {
-            submitAndNext();
         }
     </script>
 </body>
