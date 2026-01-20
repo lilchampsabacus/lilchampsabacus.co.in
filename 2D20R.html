@@ -27,10 +27,53 @@
         
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
         .number-cell { text-align: center; font-size: 1.5rem; font-weight: 700; padding: 0; border-bottom: 1px solid #e5e7eb; color: #374151; line-height: 1.2; }
+        /* --- DESKTOP COMPACT MODE (10 Rows fit 100vh) --- */
         @media (min-width: 768px) {
-            .number-cell { font-size: 2rem; padding: 0.25rem; }
-            /* Compact padding on desktop to fit 10 rows in 100vh */
-            .sum-table td { padding: 0.1rem; }
+            /* Force remove padding from main layout elements */
+            main { padding: 0 !important; }
+            body { padding-bottom: 0; }
+
+            /* Table Compact Styles */
+            .number-cell { font-size: 1.25rem; padding: 0; line-height: 1.1; }
+            .sum-table td { padding: 0px; }
+            .sum-table tr:last-child .number-cell { border-bottom: 2px solid #1f2937; }
+
+            /* Dots Compact Styles */
+            .hint-dot { width: 6px; height: 6px; margin-top: 1px; margin-bottom: 0; }
+            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } /* Dots container */
+
+            /* Test Area & Carousel Compact Styles */
+            #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
+            #question-carousel { margin-top: 0; }
+            #question-carousel .text-center { display: none !important; } /* Hide Q header */
+
+            /* Keypad Area Compact Styles */
+            #custom-keypad {
+                position: static;
+                width: 100%;
+                background-color: transparent;
+                box-shadow: none;
+                padding: 0;
+                margin-top: 0.2rem;
+                z-index: auto;
+                gap: 4px;
+            }
+
+            .keypad-btn {
+                min-height: 35px;
+                font-size: 1.1rem;
+            }
+
+            /* Tighten Right Column Spacing */
+            .bg-blue-50.p-3 { padding: 4px; margin-bottom: 4px; }
+
+            /* Compact Progress Bar */
+            .bg-white.p-3.border-orange-400 { padding: 2px 8px; margin-bottom: 4px; display: block; }
+            .bg-white.p-3.border-orange-400 .text-xs { font-size: 0.6rem; }
+            .bg-white.p-3.border-orange-400 .h-8 { height: 1rem; margin-top: 0; margin-bottom: 0; }
+            .bg-white.p-3.border-orange-400 #progress-bead svg { width: 30px; height: 20px; }
+
+            .progress-container { margin-bottom: 4px; padding: 4px; }
         }
         .sum-table tr:nth-child(even) { background-color: #f9fafb; }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
@@ -85,18 +128,7 @@
             padding-bottom: max(8px, env(safe-area-inset-bottom));
         }
 
-        /* Desktop Keypad: Static in flow */
-        @media (min-width: 768px) {
-            #custom-keypad {
-                position: static;
-                width: 100%;
-                background-color: transparent;
-                box-shadow: none;
-                padding: 0;
-                margin-top: 1rem;
-                z-index: auto;
-            }
-        }
+        /* Desktop Keypad: Styles now handled in the unified media query above */
 
         .keypad-btn {
             background-color: white;
