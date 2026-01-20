@@ -723,11 +723,13 @@ window.setupUniversalKeypad = function() {
              }
 
              handleKeypadInput(e.key);
+             e.preventDefault(); // Prevent default behavior (e.g. scrolling or focus change)
         } else if (e.key === 'Backspace') {
              if (activeTag === 'input' && activeId !== 'answer-input' && !document.activeElement.readOnly) {
                  return;
              }
              handleBackspace();
+             e.preventDefault();
         } else if (e.key === 'Enter') {
              // If we are on a button, let it click.
              if (activeTag === 'button') return;
