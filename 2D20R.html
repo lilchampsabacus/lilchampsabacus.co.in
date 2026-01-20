@@ -104,8 +104,51 @@
             body { padding-bottom: 350px; }
         }
 
+        /* --- NEW STRICT LAYOUT CSS --- */
+        #game-layout {
+            display: block; /* Mobile Default */
+        }
+
         @media (min-width: 768px) {
              body { padding-bottom: 0; }
+
+             #game-layout {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 40px;
+                height: 100vh;
+                overflow: hidden;
+                width: 100%;
+            }
+
+            .left-panel {
+                width: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+
+            .right-panel {
+                width: 40%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 20px;
+            }
+
+            /* Override existing keypad styles */
+            #custom-keypad {
+                position: static !important;
+                bottom: auto !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                margin-top: 10px;
+            }
         }
         
         /* Review Section Styling */
@@ -227,74 +270,76 @@
         </section>
 
         <section id="test-area" class="hidden w-full max-w-4xl">
-            <div class="flex flex-col md:flex-row gap-4 items-start justify-center">
-                <div class="w-full md:w-1/2 max-w-sm mx-auto bg-white p-2 md:p-4 rounded-xl shadow-lg border-2 border-blue-100 order-1">
-                    <div id="question-carousel"></div>
+            <div id="game-layout">
+                <div class="left-panel">
+                    <div class="w-full max-w-sm mx-auto bg-white p-2 md:p-4 rounded-xl shadow-lg border-2 border-blue-100">
+                        <div id="question-carousel"></div>
+                    </div>
                 </div>
 
-                <div class="w-full md:w-1/2 max-w-sm mx-auto order-2 md:sticky md:top-4">
-                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
-                        <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
-                        <!-- CHANGED: type="text" and inputmode="none" -->
-                        <input type="text" inputmode="none" autocomplete="off" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
-                        
-                        <!-- REMOVED OLD NEXT BUTTON HERE -->
-                    </div>
-
-                    <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
+                <div class="right-panel">
+                    <div class="w-full max-w-sm mx-auto">
+                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
+                            <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
+                            <!-- CHANGED: type="text" and inputmode="none" -->
+                            <input type="text" inputmode="none" autocomplete="off" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
                         </div>
-                        <div class="relative w-full h-8 mt-2 mb-2 select-none">
-                            <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
-                            <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
-                                <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
-                                    <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
-                                    <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
-                                    <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
-                                    <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
-                                    <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
-                                </svg>
+
+                        <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
                             </div>
+                            <div class="relative w-full h-8 mt-2 mb-2 select-none">
+                                <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
+                                <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
+                                    <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
+                                        <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
+                                        <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
+                                        <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                                        <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
+                                        <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
                         </div>
-                        <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
-                    </div>
 
-                    <div id="formula-legend" class="mt-4 bg-white p-3 rounded-xl shadow-md border-l-4 border-indigo-400 hidden">
-                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Formula Key</h4>
-                         <div class="text-xs font-semibold text-gray-700 space-y-1">
-                             <div><span style='color:#22c55e'>●</span> Green: Direct Move</div>
-                             <div><span style='color:#eab308'>●</span> Yellow: Small Friend (+5)</div>
-                             <div><span style='color:#ef4444'>●</span> Red: Big Friend (+10)</div>
-                             <div><span style='color:#a855f7'>●</span> Purple: Combination</div>
+                        <div id="formula-legend" class="mt-4 bg-white p-3 rounded-xl shadow-md border-l-4 border-indigo-400 hidden">
+                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Formula Key</h4>
+                             <div class="text-xs font-semibold text-gray-700 space-y-1">
+                                 <div><span style='color:#22c55e'>●</span> Green: Direct Move</div>
+                                 <div><span style='color:#eab308'>●</span> Yellow: Small Friend (+5)</div>
+                                 <div><span style='color:#ef4444'>●</span> Red: Big Friend (+10)</div>
+                                 <div><span style='color:#a855f7'>●</span> Purple: Combination</div>
+                             </div>
+                        </div>
+
+                        <!-- CUSTOM KEYPAD MOVED HERE -->
+                        <div id="custom-keypad">
+                             <!-- Row 1 -->
+                             <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
+                             <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
+
+                             <!-- Row 2 -->
+                             <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
+                             <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
+
+                             <!-- Row 3 -->
+                             <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
+                             <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
+
+                             <!-- Row 4 -->
+                             <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
+                             <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
                          </div>
                     </div>
-
-                    <!-- CUSTOM KEYPAD MOVED HERE -->
-                    <div id="custom-keypad">
-                         <!-- Row 1 -->
-                         <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
-                         <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
-
-                         <!-- Row 2 -->
-                         <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
-                         <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
-
-                         <!-- Row 3 -->
-                         <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
-                         <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
-                         <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
-
-                         <!-- Row 4 -->
-                         <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
-                         <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
-                     </div>
                 </div>
             </div>
         </section>
