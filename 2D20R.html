@@ -27,7 +27,11 @@
         
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
         .number-cell { text-align: center; font-size: 1.5rem; font-weight: 700; padding: 0; border-bottom: 1px solid #e5e7eb; color: #374151; line-height: 1.2; }
-        @media (min-width: 768px) { .number-cell { font-size: 2rem; padding: 0.25rem; } }
+        @media (min-width: 768px) {
+            .number-cell { font-size: 2rem; padding: 0.25rem; }
+            /* Compact padding on desktop to fit 10 rows in 100vh */
+            .sum-table td { padding: 0.1rem; }
+        }
         .sum-table tr:nth-child(even) { background-color: #f9fafb; }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
@@ -52,6 +56,13 @@
             .row-index { font-size: 0.6rem !important; width: 15px !important; padding-right: 2px !important; }
             #question-carousel { margin-bottom: 0.5rem; }
             #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
+
+            /* Bottom padding only on mobile for fixed keypad */
+            body { padding-bottom: 350px; }
+        }
+
+        @media (min-width: 768px) {
+             body { padding-bottom: 0; }
         }
         
         /* Review Section Styling */
@@ -59,7 +70,8 @@
 
         /* --- CUSTOM NUMERIC KEYPAD --- */
         #custom-keypad {
-            display: grid; /* Always visible */
+            display: grid;
+            /* Mobile Default: Fixed at bottom */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -71,6 +83,19 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
             padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+
+        /* Desktop Keypad: Static in flow */
+        @media (min-width: 768px) {
+            #custom-keypad {
+                position: static;
+                width: 100%;
+                background-color: transparent;
+                box-shadow: none;
+                padding: 0;
+                margin-top: 1rem;
+                z-index: auto;
+            }
         }
 
         .keypad-btn {
@@ -116,11 +141,6 @@
         .keypad-btn.op-btn {
             background-color: #eff6ff;
             color: #1e40af;
-        }
-
-        /* Padding to ensure content isn't hidden behind keypad */
-        body {
-            padding-bottom: 350px;
         }
     </style>
 </head>
@@ -183,13 +203,10 @@
                 <div class="w-full md:w-1/2 max-w-sm mx-auto order-2 md:sticky md:top-4">
                     <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
                         <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
-                        <input type="number" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
+                        <!-- CHANGED: type="text" and inputmode="none" -->
+                        <input type="text" inputmode="none" autocomplete="off" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
                         
-                        <div class="flex flex-col gap-2 mt-2">
-                            <button id="submit-button" onclick="submitAndNext()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition-transform active:scale-95">
-                                Next &rarr;
-                            </button>
-                        </div>
+                        <!-- REMOVED OLD NEXT BUTTON HERE -->
                     </div>
 
                     <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
@@ -221,6 +238,31 @@
                              <div><span style='color:#a855f7'>●</span> Purple: Combination</div>
                          </div>
                     </div>
+
+                    <!-- CUSTOM KEYPAD MOVED HERE -->
+                    <div id="custom-keypad">
+                         <!-- Row 1 -->
+                         <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
+                         <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
+
+                         <!-- Row 2 -->
+                         <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
+                         <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
+
+                         <!-- Row 3 -->
+                         <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
+                         <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
+                         <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
+
+                         <!-- Row 4 -->
+                         <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
+                         <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
+                     </div>
                 </div>
             </div>
         </section>
@@ -271,31 +313,6 @@
     <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200">
     <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
-
-     <!-- CUSTOM KEYPAD HTML -->
-     <div id="custom-keypad">
-         <!-- Row 1 -->
-         <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
-         <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
-
-         <!-- Row 2 -->
-         <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
-         <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
-
-         <!-- Row 3 -->
-         <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
-         <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
-         <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
-
-         <!-- Row 4 -->
-         <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
-         <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
-     </div>
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
@@ -563,9 +580,9 @@
         async function endTest() {
             if (isSubmitting) return;
             isSubmitting = true;
-            const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "Processing...";
-            submitBtn.disabled = true;
+
+            // NOTE: Removed #submit-button logic since it is deleted from DOM.
+            // We can optionally update keypad 'Enter' button text if we had access, but it's fine.
             
             clearInterval(timerInterval);
 
