@@ -121,16 +121,11 @@
 
             if (error) throw error;
 
-            // --- THE CRITICAL FIX: RESTORE 'IDENTIFIER' ---
+            let rawName = data.user.email.split('@')[0];
+            let cleanName = rawName.replace('.', ' ');
 
-            // Extract name from email: "nehal.tayade@gmail.com" -> "Nehal Tayade"
-            let rawName = data.user.email.split('@')[0]; // "nehal.tayade"
-            let cleanName = rawName.replace('.', ' ');   // "nehal tayade"
+            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase());
 
-            // Capitalize (Optional, looks nicer)
-            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase()); // "Nehal Tayade"
-
-            // SAVE AS 'studentIdentifier' (This is what 1x1.html looks for!)
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('studentIdentifier', cleanName);
 
