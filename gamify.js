@@ -509,23 +509,60 @@ function getRand(r, minOverride) {
 // ==================================================
 
 window.calculateFormulaHints = function(numbers) {
-    let hints = [];
-    let currentBeads = 0;
+    let rodStates = Array(10).fill(0); // [Units, Tens, Hundreds, ...]
+    let allHints = [];
 
-    for (let i = 0; i < numbers.length; i++) {
-        let move = numbers[i];
-        // Determine state of units rod (0-9)
-        // We use modulo logic to simulate the Units rod state
-        // (currentBeads % 10 + 10) % 10 handles negative totals correctly for units digit
-        let val = (currentBeads % 10 + 10) % 10;
+    for (let num of numbers) {
+        let val = Math.abs(num);
+        let sign = Math.sign(num);
 
-        // Logic to determine color
-        let color = getMoveColor(val, move);
-        hints.push(color);
+        // Split into digits (Units at index 0)
+        let digits = val.toString().split('').map(Number).reverse();
 
-        currentBeads += move;
+        let rowHintsReversed = [];
+
+        // Process each digit
+        for (let i = 0; i < digits.length; i++) {
+            let rodIndex = i;
+            let digitMove = digits[i] * sign; // Apply sign to the digit value
+            let currentRodVal = rodStates[rodIndex];
+
+            // Get Color
+            let color = getMoveColor(currentRodVal, digitMove);
+            rowHintsReversed.push(color);
+
+            // Update State (Basic Move)
+            rodStates[rodIndex] = (currentRodVal + digitMove) % 10;
+            // Javascript modulo fix
+            if (rodStates[rodIndex] < 0) rodStates[rodIndex] += 10;
+
+            // HANDLE CARRY/BORROW
+            if (color === 'red' || color === 'purple') {
+                if (sign > 0) {
+                     rodStates[rodIndex + 1]++;
+                } else {
+                     rodStates[rodIndex + 1]--;
+                }
+            }
+
+            // NORMALIZE RODS (Ripple)
+            let checkIndex = rodIndex + 1;
+            while (rodStates[checkIndex] > 9 || rodStates[checkIndex] < 0) {
+                if (rodStates[checkIndex] > 9) {
+                    rodStates[checkIndex] -= 10;
+                    rodStates[checkIndex + 1]++;
+                } else {
+                    rodStates[checkIndex] += 10;
+                    rodStates[checkIndex + 1]--;
+                }
+                checkIndex++;
+            }
+        }
+
+        allHints.push(rowHintsReversed.reverse());
     }
-    return hints;
+
+    return allHints;
 };
 
 function getMoveColor(currentVal, move) {
