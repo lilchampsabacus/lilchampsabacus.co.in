@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Li'l Champs - Student Login</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -28,7 +28,7 @@
 <body class="min-h-screen flex flex-col justify-center items-center p-4">
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        
+
         <div class="bg-indigo-600 p-6 text-center">
             <h1 class="text-2xl font-extrabold text-white tracking-wide uppercase">Li'l Champs</h1>
             <p class="text-indigo-200 text-sm font-semibold mt-1">Abacus Academy • Ambernath</p>
@@ -41,16 +41,16 @@
             </div>
 
             <form id="loginForm" class="space-y-6">
-                
+
                 <div>
                     <label for="emailInput" class="block text-sm font-bold text-gray-700 mb-1">Email or Username</label>
-                    <input type="text" id="emailInput" name="emailInput" placeholder="e.g. rahul.patil" 
+                    <input type="text" id="emailInput" name="emailInput" placeholder="e.g. rahul.patil"
                         class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-700 bg-gray-50 placeholder-gray-400" required>
                 </div>
 
                 <div>
                     <label for="password" class="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                    <input type="password" id="password" name="password" placeholder="••••" 
+                    <input type="password" id="password" name="password" placeholder="••••"
                         class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-700 bg-gray-50 placeholder-gray-400" required>
                 </div>
 
@@ -84,12 +84,12 @@
     // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
-    
+
     // Create client
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleLogin() {
-        let emailInput = document.getElementById('emailInput').value.trim(); 
+        let emailInput = document.getElementById('emailInput').value.trim();
         const password = document.getElementById('password').value.trim();
         const messageElement = document.getElementById('login-message');
         const loginBtn = document.getElementById('loginBtn');
@@ -97,7 +97,7 @@
 
         // Reset message
         messageElement.innerHTML = '';
-        
+
         if(!emailInput || !password) {
             messageElement.innerHTML = '<span class="text-red-600">Please enter email and password.</span>';
             return;
@@ -111,7 +111,7 @@
         // Loading State
         loginBtn.disabled = true;
         loginBtn.innerHTML = `Verifying...`;
-        
+
         try {
             // 1. Supabase Login
             const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -122,27 +122,31 @@
             if (error) throw error;
 
             // --- THE CRITICAL FIX: RESTORE 'IDENTIFIER' ---
-            
+
             // Extract name from email: "nehal.tayade@gmail.com" -> "Nehal Tayade"
             let rawName = data.user.email.split('@')[0]; // "nehal.tayade"
             let cleanName = rawName.replace('.', ' ');   // "nehal tayade"
-            
+
             // Capitalize (Optional, looks nicer)
             cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase()); // "Nehal Tayade"
 
             // SAVE AS 'studentIdentifier' (This is what 1x1.html looks for!)
             sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('studentIdentifier', cleanName); 
-            
+            sessionStorage.setItem('studentIdentifier', cleanName);
+
             // Also save ID for the database saving later
             sessionStorage.setItem('studentId', data.user.id);
 
             // Success Message
-            messageElement.innerHTML = '<span class="text-green-600">✅ Welcome, ' + cleanName + '! Redirecting...</span>';
-            
+            messageElement.textContent = ''; // Clear previous content
+            const successSpan = document.createElement('span');
+            successSpan.className = 'text-green-600';
+            successSpan.textContent = '✅ Welcome, ' + cleanName + '! Redirecting...';
+            messageElement.appendChild(successSpan);
+
             // Redirect
             setTimeout(function() {
-                window.location.href = 'practice_options.html'; 
+                window.location.href = 'practice_options.html';
             }, 1000);
 
         } catch (error) {
@@ -152,7 +156,7 @@
             messageElement.innerHTML = '<span class="text-red-600">❌ Login Failed. Check Password.</span>';
         }
     }
-    
+
     // Enter key support
     document.getElementById('password').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') handleLogin();
@@ -160,8 +164,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
