@@ -145,6 +145,16 @@
                         </div>
                         <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
                     </div>
+
+                    <div id="formula-legend" class="mt-4 bg-white p-3 rounded-xl shadow-md border-l-4 border-indigo-400 hidden">
+                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Formula Key</h4>
+                         <div class="text-xs font-semibold text-gray-700 space-y-1">
+                             <div><span style='color:#22c55e'>●</span> Green: Direct Move</div>
+                             <div><span style='color:#eab308'>●</span> Yellow: Small Friend (+5)</div>
+                             <div><span style='color:#ef4444'>●</span> Red: Big Friend (+10)</div>
+                             <div><span style='color:#a855f7'>●</span> Purple: Combination</div>
+                         </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -310,6 +320,15 @@
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
                 
+                // Show/Hide Legend
+                const showHints = document.getElementById('show-hints-toggle').checked;
+                const legend = document.getElementById('formula-legend');
+                if (showHints) {
+                    legend.classList.remove('hidden');
+                } else {
+                    legend.classList.add('hidden');
+                }
+
                 // Setup Input
                 const input = document.getElementById('answer-input');
                 input.value = '';
@@ -352,7 +371,9 @@
             let tableHtml = '<table class="sum-table">';
 
             // Calculate Hints
-            const hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => 'green');
+            // const hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => 'green');
+            if (hints.length === 0) hints = numbers.map(() => 'green');
+
             const showHints = document.getElementById('show-hints-toggle').checked;
             const visibilityClass = showHints ? '' : 'hidden';
 
