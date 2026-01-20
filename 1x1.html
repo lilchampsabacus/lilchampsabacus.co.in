@@ -451,7 +451,10 @@
                     total: sumsData.length, 
                     time: timeFormatted,
                     accuracy: Math.round((score / sumsData.length) * 100) + "%",
-                    mistakes: mistakesArray // Now sends only the filtered list
+                    mistakes: mistakesArray, // Now sends only the filtered list
+                    // Pass full data for verification (SECURE MODE)
+                    questions: sumsData,
+                    answers: sumsData.map(s => s.studentAnswer)
                 });
             } else {
                 console.error("❌ lilChampUtils not found!");

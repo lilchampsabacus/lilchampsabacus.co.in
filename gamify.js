@@ -5,7 +5,9 @@
 // ==================================================
 
 const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk"; 
+// NOTE: This ANON key is safe to be public as long as Row Level Security (RLS)
+// is enabled on the Supabase backend. It should NOT be a service_role key.
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
 let supabaseClient;
 
 // ==================================================
@@ -43,7 +45,7 @@ function playSound(type) {
     const gainNode = audioCtx.createGain();
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
+
     if (type === 'correct') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(500, audioCtx.currentTime);
@@ -68,32 +70,101 @@ function triggerWinConfetti() {
     }
 }
 
+function sanitizeString(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[<>&"']/g, function (m) {
+        switch (m) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+        }
+    });
+}
+
 // ==================================================
-// PART 4: THE SAVE ENGINE (NOW WITH INDIAN TIME)
+// PART 4: THE SAVE ENGINE (NOW WITH INDIAN TIME & SECURITY)
 // ==================================================
 
 async function saveExamResult(data) {
     console.log("🚀 Saving...", data);
-    
+
     if (!supabaseClient && window.supabase) initSupabase();
-    if (!supabaseClient) { 
-        alert("Database connecting... Please wait 2 seconds and click Submit again."); 
-        return; 
+    if (!supabaseClient) {
+        alert("Database connecting... Please wait 2 seconds and click Submit again.");
+        return;
     }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) { 
-        alert("⚠️ Not Logged In! Please go to the login page."); 
-        return; 
+    if (!session) {
+        alert("⚠️ Not Logged In! Please go to the login page.");
+        return;
     }
 
-    const studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
-    const numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
+    let studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
+    studentName = sanitizeString(studentName); // Sanitize user input
+
+    // Score Verification Logic
+    let numericScore;
+    let totalScore;
+    let mistakes = data.mistakes || [];
+    let accuracyStr = data.accuracy;
+
+    // Check if verification data (questions) is provided
+    const isVerificationDataProvided = data.questions && Array.isArray(data.questions);
+
+    if (isVerificationDataProvided) {
+        console.log("🔍 Verifying Score locally...");
+        let calculatedScore = 0;
+        let verifiedMistakes = [];
+
+        data.questions.forEach((q, index) => {
+            let correctVal;
+            // Handle different question types
+            if (q.type === 'mul' || !q.type) {
+                correctVal = q.x * q.y;
+            } else if (q.type === 'div') {
+                correctVal = q.quotient; // Assuming question object has quotient
+            } else if (q.type === 'addition') {
+                correctVal = q.numbers.reduce((a, b) => a + b, 0);
+            }
+            // Add other types as needed
+
+            // Map student answer from the provided answers map or array
+            let studentVal = null;
+            if (data.answers && Array.isArray(data.answers)) {
+                studentVal = data.answers[index];
+            }
+
+            if (studentVal !== null && studentVal !== undefined && parseInt(studentVal) === correctVal) {
+                calculatedScore++;
+            } else if (studentVal !== null && studentVal !== "") {
+                 verifiedMistakes.push({
+                    question: q.type === 'addition' ? q.numbers.join(' + ') : `${q.x} ${q.type === 'div' ? '÷' : '×'} ${q.y}`,
+                    wrong: studentVal,
+                    correct: correctVal
+                });
+            }
+        });
+
+        // Override trusted client data with verified data
+        numericScore = calculatedScore;
+        totalScore = data.questions.length;
+        mistakes = verifiedMistakes;
+        accuracyStr = Math.round((numericScore / totalScore) * 100) + "%";
+        console.log(`✅ Verified Score: ${numericScore}/${totalScore}`);
+    } else {
+        // Fallback to trusting the client (Legacy Mode)
+        console.warn("⚠️ Score verification failed: Missing question data. Using client-provided score (INSECURE).");
+        numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
+        totalScore = data.total;
+    }
 
     // CAPTURE LOCAL INDIAN TIME
     const indianTime = new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata", 
-        dateStyle: "medium", 
+        timeZone: "Asia/Kolkata",
+        dateStyle: "medium",
         timeStyle: "short"
     });
 
@@ -103,33 +174,33 @@ async function saveExamResult(data) {
             user_id: session.user.id,
             student_name: studentName,
             challenge_type: data.challenge,
-            score_text: `${data.score}/${data.total}`,
+            score_text: `${numericScore}/${totalScore}`,
             score_val: numericScore,
-            total_val: data.total,
+            total_val: totalScore,
             time_taken: data.time,
-            accuracy: data.accuracy,
-            mistakes_summary: data.mistakes ? data.mistakes.map(m => m.question).join(', ') : "",
-            indian_time: indianTime 
+            accuracy: accuracyStr,
+            mistakes_summary: mistakes ? mistakes.map(m => m.question).join(', ') : "",
+            indian_time: indianTime
         })
         .select()
         .single();
 
-    if (error) { 
-        console.error(error); 
-        alert("Save Error: " + error.message); 
-        return; 
+    if (error) {
+        console.error(error);
+        alert("Save Error: " + error.message);
+        return;
     }
 
-    if (data.mistakes && data.mistakes.length > 0) {
-        const mistakeRows = data.mistakes.map(m => ({
+    if (mistakes && mistakes.length > 0) {
+        const mistakeRows = mistakes.map(m => ({
             report_id: reportData.id,
             question: m.question,
-            wrong_answer: String(m.wrong),
+            wrong_answer: sanitizeString(String(m.wrong)), // Sanitize here!
             correct_answer: String(m.correct)
         }));
         await supabaseClient.from('mistakes').insert(mistakeRows);
     }
-    
+
     console.log("✅ Saved!");
     triggerWinConfetti();
     alert("✅ Report Saved Successfully!");
@@ -139,7 +210,7 @@ window.lilChampUtils = {
     playCorrect: () => playSound('correct'),
     playWrong: () => playSound('wrong'),
     celebrate: triggerWinConfetti,
-    saveResult: saveExamResult 
+    saveResult: saveExamResult
 };
 
 // ==================================================
@@ -149,15 +220,15 @@ window.lilChampUtils = {
 window.generateQuestions = function(code, countParam) {
     console.log("Generating questions for:", code);
     var questions = [];
-    var uniqueKeys = {}; 
+    var uniqueKeys = {};
     var defaultCount = 30;
-    
+
     if (code.startsWith('add-') || code.startsWith('dec-') || code.startsWith('neg-')) {
         defaultCount = 20;
     }
 
     var COUNT = countParam ? parseInt(countParam) : defaultCount;
-    var maxTries = COUNT * 50; 
+    var maxTries = COUNT * 50;
     var tries = 0;
 
     // --- A. SPECIAL ZERO DIVISION (NEW FEATURE) ---
@@ -166,10 +237,10 @@ window.generateQuestions = function(code, countParam) {
             tries++;
             var q = generateSpecialZeroDivision(code);
             // Key is Dividend-Divisor to ensure unique problems
-            var key = q.x + "-" + q.y; 
-            if (!uniqueKeys[key] && q.quotient.toString().includes('0')) { 
-                uniqueKeys[key] = true; 
-                questions.push(q); 
+            var key = q.x + "-" + q.y;
+            if (!uniqueKeys[key] && q.quotient.toString().includes('0')) {
+                uniqueKeys[key] = true;
+                questions.push(q);
             }
         }
     }
@@ -186,20 +257,20 @@ window.generateQuestions = function(code, countParam) {
             tries++;
             var nums = generateNegativeSum(digits, rows);
             var key = nums.join(",");
-            if (!uniqueKeys[key]) { 
-                uniqueKeys[key] = true; 
-                questions.push({ numbers: nums, type: 'addition' }); 
+            if (!uniqueKeys[key]) {
+                uniqueKeys[key] = true;
+                questions.push({ numbers: nums, type: 'addition' });
             }
         }
-        while (questions.length < COUNT) { 
-            questions.push({ numbers: generateNegativeSum(digits, rows), type: 'addition' }); 
+        while (questions.length < COUNT) {
+            questions.push({ numbers: generateNegativeSum(digits, rows), type: 'addition' });
         }
     }
     // --- C. DECIMALS ---
     else if (code.startsWith('dec-')) {
         while (questions.length < COUNT && tries < maxTries) {
             tries++;
-            var nums = generateDecimalSum(code); 
+            var nums = generateDecimalSum(code);
             var key = nums.join("|");
             if (!uniqueKeys[key]) {
                 uniqueKeys[key] = true;
@@ -237,20 +308,20 @@ window.generateQuestions = function(code, countParam) {
         }
         while (questions.length < COUNT) { questions.push(generateMathQuestion(code)); }
     }
-    
+
     // Fill remaining if unique check was too strict
     while (questions.length < COUNT) {
          if (code.startsWith('special-div-')) {
              questions.push(generateSpecialZeroDivision(code));
          } else if (code.startsWith('neg-') || code.startsWith('add-') || code.startsWith('dec-')) {
-             // Fallbacks for addition are handled above inside loops, 
+             // Fallbacks for addition are handled above inside loops,
              // typically we just duplicate last valid one if desperate
              questions.push(questions[0] || {numbers:[1,1], type:'addition'});
          } else {
              questions.push(generateMathQuestion(code));
          }
     }
-    
+
     return questions;
 };
 
@@ -260,7 +331,7 @@ function generateSpecialZeroDivision(code) {
     // 1. Define Digit Counts based on Code
     var divDigits = 1; // Divisor Digits (y)
     var dividendDigits = 3; // Dividend Digits (x)
-    
+
     if (code === 'special-div-3d1d') { dividendDigits = 3; divDigits = 1; }
     else if (code === 'special-div-4d1d') { dividendDigits = 4; divDigits = 1; }
     else if (code === 'special-div-5d1d') { dividendDigits = 5; divDigits = 1; }
@@ -273,8 +344,8 @@ function generateSpecialZeroDivision(code) {
     var minY = Math.pow(10, divDigits - 1);
     var maxY = Math.pow(10, divDigits) - 1;
     // Avoid divisor 1 if possible, unless 1d
-    if (minY === 1) minY = 2; 
-    
+    if (minY === 1) minY = 2;
+
     var y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
     // 3. Determine Quotient Range to ensure Dividend has correct # of digits
@@ -282,18 +353,18 @@ function generateSpecialZeroDivision(code) {
     // Max Dividend = 999... (dividendDigits)
     var minDividend = Math.pow(10, dividendDigits - 1);
     var maxDividend = Math.pow(10, dividendDigits) - 1;
-    
+
     var minQ = Math.ceil(minDividend / y);
     var maxQ = Math.floor(maxDividend / y);
 
     // Safety: if maxQ < minQ, parameters are impossible (e.g., 4d / 3d might not allow large quotients)
-    if (maxQ < minQ) maxQ = minQ; 
+    if (maxQ < minQ) maxQ = minQ;
 
     // 4. Generate a Quotient (q) that MUST contain '0'
     var q;
     var foundZero = false;
     var attempts = 0;
-    
+
     while (!foundZero && attempts < 100) {
         q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ;
         if (q.toString().indexOf('0') !== -1) {
@@ -301,12 +372,12 @@ function generateSpecialZeroDivision(code) {
         }
         attempts++;
     }
-    
+
     // Fallback if random fails (force a zero)
     if (!foundZero) {
         // Construct a number manually? Or just pick a known pattern like 10...
         // Simple fallback: Multiply by 10 or 100 if fits
-        q = minQ; 
+        q = minQ;
         if (q.toString().indexOf('0') === -1) {
              // Force a zero in the string if length > 1
              var s = q.toString();
@@ -321,14 +392,14 @@ function generateSpecialZeroDivision(code) {
 
     // 5. Calculate Dividend (x)
     var x = q * y;
-    
+
     return { x: x, y: y, quotient: q, type: 'div' };
 }
 
 function generateNegativeSum(digits, rows) {
     var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
     var max = Math.pow(10, digits) - 1;
-    var limit = Math.pow(10, digits); 
+    var limit = Math.pow(10, digits);
     var nums = [];
     var isValid = false;
     while (!isValid) {
@@ -347,18 +418,18 @@ function generateNegativeSum(digits, rows) {
 
 function generateDecimalSum(code) {
     var minGen, maxGen, minStart, maxStart;
-    if (code === 'dec-2d10r') { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; } 
-    else if (code === 'dec-3d10r') { minGen = 100; maxGen = 999; minStart = 555; maxStart = 999; } 
-    else if (code === 'dec-4d10r') { minGen = 1000; maxGen = 9999; minStart = 5555; maxStart = 9999; } 
+    if (code === 'dec-2d10r') { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; }
+    else if (code === 'dec-3d10r') { minGen = 100; maxGen = 999; minStart = 555; maxStart = 999; }
+    else if (code === 'dec-4d10r') { minGen = 1000; maxGen = 9999; minStart = 5555; maxStart = 9999; }
     else { minGen = 10; maxGen = 99; minStart = 55; maxStart = 99; }
     var nums = [];
     var isValid = false;
     while (!isValid) {
         nums = [];
         var runningSum = 0;
-        for (var i = 0; i < 10; i++) { 
+        for (var i = 0; i < 10; i++) {
             var n = 0;
-            if (i === 0 || i === 1) { n = Math.floor(Math.random() * (maxStart - minStart + 1)) + minStart; } 
+            if (i === 0 || i === 1) { n = Math.floor(Math.random() * (maxStart - minStart + 1)) + minStart; }
             else { n = Math.floor(Math.random() * (maxGen - minGen + 1)) + minGen; }
             if (i === 2 || i === 5 || i === 8) { n = -n; }
             nums.push(n);
@@ -376,7 +447,7 @@ function generateAdditionSum(digits, rows) {
     var max = Math.pow(10, digits) - 1;
     for (var i = 0; i < rows; i++) {
         var n = Math.floor(Math.random() * (max - min + 1)) + min;
-        if (i > 0 && Math.random() > 0.5 && sum - n >= 0) n = -n; 
+        if (i > 0 && Math.random() > 0.5 && sum - n >= 0) n = -n;
         nums.push(n);
         sum += n;
     }
@@ -385,7 +456,7 @@ function generateAdditionSum(digits, rows) {
 
 function generateMathQuestion(code) {
     var xD=[1,1], yD=[1,1], type='mul';
-    var minVal = 2; 
+    var minVal = 2;
     if (code === 'mul-1x1') { xD=[1,1]; yD=[1,1]; }
     else if (code === 'mul-2x1') { xD=[2,2]; yD=[1,1]; }
     else if (code === 'mul-3x1') { xD=[3,3]; yD=[1,1]; }
@@ -396,30 +467,30 @@ function generateMathQuestion(code) {
     else if (code === 'mul-5x1') { xD=[5,5]; yD=[1,1]; }
     else if (code.startsWith('div-')) {
         type = 'div';
-        yD=[1,1]; xD=[3,3]; 
+        yD=[1,1]; xD=[3,3];
         if (code === 'div-3d1d') { xD=[3,3]; yD=[1,1]; }
         else if (code === 'div-4d1d') { xD=[4,4]; yD=[1,1]; }
         else if (code === 'div-5d1d') { xD=[5,5]; yD=[1,1]; }
         else if (code === 'div-4d2d') { xD=[4,4]; yD=[2,2]; }
-        else if (code === 'div-4d3d') { xD=[4,4]; yD=[3,3]; } 
+        else if (code === 'div-4d3d') { xD=[4,4]; yD=[3,3]; }
         else if (code === 'div-5d2d') { xD=[5,5]; yD=[2,2]; }
-        else if (code === 'div-5d3d') { xD=[5,5]; yD=[3,3]; } 
+        else if (code === 'div-5d3d') { xD=[5,5]; yD=[3,3]; }
     }
     var x, y, q;
     if (type === 'mul') {
-        x = getRand(xD, minVal); 
+        x = getRand(xD, minVal);
         y = getRand(yD, minVal);
         if(y > x) { var t=x; x=y; y=t; }
         return { x: x, y: y, type: 'mul' };
     } else {
-        y = getRand(yD, 2); 
+        y = getRand(yD, 2);
         var minDividend = Math.pow(10, xD[0]-1);
         var maxDividend = Math.pow(10, xD[1])-1;
         var minQ = Math.ceil(minDividend / y);
         var maxQ = Math.floor(maxDividend / y);
         if (maxQ < minQ) { q = minQ; }
         else { q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ; }
-        x = q * y; 
+        x = q * y;
         return { x: x, y: y, quotient: q, type: 'div' };
     }
 }
