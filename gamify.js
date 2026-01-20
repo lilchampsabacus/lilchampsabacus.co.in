@@ -137,7 +137,8 @@ async function saveExamResult(data) {
                 studentVal = data.answers[index];
             }
 
-            if (studentVal !== null && studentVal !== undefined && parseInt(studentVal) === correctVal) {
+            // Use Number() to handle decimals correctly, avoiding parseInt truncation
+            if (studentVal !== null && studentVal !== undefined && Number(studentVal) === correctVal) {
                 calculatedScore++;
             } else if (studentVal !== null && studentVal !== "") {
                  verifiedMistakes.push({
@@ -323,6 +324,240 @@ window.generateQuestions = function(code, countParam) {
     }
 
     return questions;
+};
+
+// ==================================================
+// PART 6: FORMULA HINTS LOGIC (TRAFFIC LIGHT SYSTEM)
+// ==================================================
+
+/**
+ * Calculates the 'Formula Color' for a list of single-digit numbers.
+ * @param {Array<number>} numbersArray - Array of numbers to process.
+ * @returns {Array<string>} - Array of color codes ('green', 'yellow', 'red', 'purple').
+ */
+window.calculateFormulaHints = function(numbersArray) {
+    let currentBeads = 0;
+    const hints = [];
+
+    numbersArray.forEach(n => {
+        let color = 'green'; // Default to Direct (Green)
+
+        // Get current state on the Units rod (0-9)
+        // Note: In 1D sums, we assume we only care about single digit constraints.
+        // However, if the sum exceeds 9, we are technically on two rods.
+        // The prompt says "1-Digit sums first (1D10R)".
+        // Usually, formula logic is about "how do I add/sub this digit on the current rod".
+
+        // We need to simulate the bead state.
+        // lowerBeads: 0-4
+        // upperBead: 0 (not active) or 1 (active, value 5)
+
+        let rodVal = Math.abs(currentBeads) % 10; // Simple mod 10 for the current rod state
+        // If currentBeads is negative, abacus logic is tricky.
+        // 1D10R usually implies positive result or managing sign.
+        // Let's assume standard positive abacus operations for now or handle negative logic if needed.
+        // But Abacus usually teaches complements relative to positive numbers.
+        // If we have -2 (on abacus represented as borrowing from higher rod?),
+        // let's stick to standard logic: We look at the last digit.
+
+        let lower = rodVal % 5;
+        let upper = rodVal >= 5; // boolean
+
+        if (n > 0) {
+            // --- ADDITION ---
+            if (n < 5) {
+                // Check Direct: Can we add n to lower beads?
+                if (lower + n <= 4) {
+                    color = 'green';
+                } else {
+                    // Direct failed.
+                    // Check Small Friend: Use 5?
+                    // Need to add n. Formula: +n = +5 - (5-n).
+                    // Condition: 5 is available (!upper) AND we have enough lower beads to subtract (5-n).
+                    if (!upper && lower >= (5 - n)) {
+                        color = 'yellow'; // Small Friend
+                    } else {
+                        // Small Friend failed.
+                        // Check Big Friend: Use 10?
+                        // Formula: +n = - (10-n) + 10.
+                        // Need to subtract (10-n) from current rod.
+                        let comp = 10 - n;
+                        // Can we subtract comp?
+                        // This "subtract comp" might be Direct or Small Friend (Combination).
+
+                        // Check if we can subtract comp DIRECTLY or via SMALL FRIEND from the current rod val.
+                        // If we can subtract comp, it's Big Friend (Red).
+                        // If subtracting comp requires Small Friend, it's Combination (Purple).
+
+                        // Let's check if we can subtract 'comp' from 'rodVal'.
+                        // If rodVal >= comp, we can definitely subtract it.
+                        // But HOW?
+
+                        // Example: rodVal = 5, n = 6. comp = 4.
+                        // Can we sub 4 from 5? Yes.
+                        // Direct sub 4 from 5? 5 has upper=1, lower=0. Sub 4 requires lower 4? No.
+                        // Sub 4 from 5 requires -5 + 1 (Small Friend subtraction).
+                        // So +6 = -4 + 10 = (-5 + 1) + 10.
+                        // This uses Small Friend logic for the Big Friend subtraction. -> Purple (Combination).
+
+                        // Example: rodVal = 9, n = 1. comp = 9.
+                        // Can we sub 9 from 9? Yes.
+                        // Direct sub 9? Yes. (-5 -4). -> Red (Big Friend).
+
+                        // Logic:
+                        // We need to perform operation "-comp" on rodVal.
+                        // If "-comp" is a Direct Move -> Red.
+                        // If "-comp" is a Small Friend Move -> Purple.
+
+                        // Check "Direct Subtraction of comp"
+                        // comp can be > 5 (e.g. if n=1, comp=9).
+                        let canDirectSubComp = false;
+                        if (comp < 5) {
+                             if (lower >= comp) canDirectSubComp = true; // e.g. have 4, sub 1.
+                             if (upper && lower + 5 >= comp) {
+                                 // e.g. have 5 (u=1, l=0), sub 4? No, direct sub 4 needs lower 4.
+                                 // Direct sub means simple finger movement.
+                                 // -1, -2, -3, -4 use index finger to lower beads.
+                                 // -5 uses index finger to lift upper bead.
+                                 // -6, -7, -8, -9 use scissor.
+                                 // So:
+                                 // To sub 1..4 directly: Need lower >= comp.
+                                 // To sub 5 directly: Need upper.
+                                 // To sub 6..9 directly: Need upper AND lower >= (comp-5).
+                             }
+                        }
+
+                        // Refined Direct Sub Check for 'comp':
+                        if (comp < 5) {
+                            if (lower >= comp) canDirectSubComp = true;
+                        } else if (comp === 5) {
+                            if (upper) canDirectSubComp = true;
+                        } else { // comp > 5
+                            if (upper && lower >= (comp - 5)) canDirectSubComp = true;
+                        }
+
+                        if (canDirectSubComp) {
+                            color = 'red';
+                        } else {
+                            // If we can't direct sub, but rodVal >= comp, it must be Combination (Purple).
+                            // (Since we know +n is possible in abstract math, if Direct & Small Add failed, it must be Big or Mix).
+                            // If Direct Sub Comp failed, it implies we needed Small Friend to sub comp.
+                            color = 'purple';
+                        }
+                    }
+                }
+            } else {
+                // n >= 5
+                // Direct Add n?
+                // n=5: Need !upper.
+                // n=6: Need !upper AND lower+1 <= 4? No, adding 6 is +5 and +1.
+                // So adding 6 directly needs 5 available AND 1 lower available.
+                // adding n directly needs !upper AND lower + (n-5) <= 4.
+
+                if (!upper && lower + (n - 5) <= 4) {
+                    color = 'green';
+                } else {
+                    // Direct failed.
+                    // Small Friend? No small friend for >= 5 (can't use 5 to add 5+).
+                    // Must be Big Friend or Combination.
+
+                    // Formula: +n = - (10-n) + 10.
+                    let comp = 10 - n;
+                    // comp will be <= 5. (Since n >= 5).
+
+                    // Check if we can subtract comp directly from rodVal.
+                    // Same logic as above.
+
+                    let canDirectSubComp = false;
+                     if (comp < 5) {
+                        if (lower >= comp) canDirectSubComp = true;
+                    } else if (comp === 5) { // n=5, comp=5
+                        if (upper) canDirectSubComp = true;
+                    }
+
+                    if (canDirectSubComp) {
+                        color = 'red';
+                    } else {
+                        color = 'purple';
+                    }
+                }
+            }
+        } else if (n < 0) {
+            // --- SUBTRACTION ---
+            let val = Math.abs(n);
+
+            if (val < 5) {
+                // Direct Sub?
+                if (lower >= val) {
+                    color = 'green';
+                } else {
+                    // Direct fail.
+                    // Small Friend? -val = +5 - complement? No.
+                    // -val = -5 + (5-val).
+                    // Condition: Have 5 (upper) AND can add (5-val) to lower.
+                    // Add (5-val) must be direct add? Yes, because we just removed 5?
+                    // Actually, we change 5 to (5-val).
+                    // e.g. Have 5, sub 1. -1 = -5 + 4.
+                    // We remove 5, add 4.
+                    // Condition: upper AND lower + (5-val) <= 4.
+
+                    if (upper && lower + (5 - val) <= 4) {
+                        color = 'yellow';
+                    } else {
+                        // Big Friend / Combination.
+                        // -val = -10 + (10-val).
+                        // Need to ADD (10-val).
+                        let comp = 10 - val;
+                        // Can we add comp directly?
+                        // comp is > 5. (since val < 5).
+
+                        // Check Direct Add comp:
+                        // Need !upper AND lower + (comp-5) <= 4.
+                        let canDirectAddComp = (!upper && lower + (comp - 5) <= 4);
+
+                        if (canDirectAddComp) {
+                            color = 'red';
+                        } else {
+                            color = 'purple';
+                        }
+                    }
+                }
+            } else {
+                // val >= 5
+                // Direct Sub?
+                // Need upper AND lower >= (val-5).
+                if (upper && lower >= (val - 5)) {
+                    color = 'green';
+                } else {
+                    // Direct fail.
+                    // Small friend N/A for >= 5.
+                    // Big Friend / Combination.
+                    // -val = -10 + (10-val).
+                    let comp = 10 - val;
+                    // comp <= 5.
+
+                    // Can we add comp directly?
+                    let canDirectAddComp = false;
+                    if (comp < 5) {
+                        if (lower + comp <= 4) canDirectAddComp = true;
+                    } else if (comp === 5) {
+                        if (!upper) canDirectAddComp = true;
+                    }
+
+                    if (canDirectAddComp) {
+                        color = 'red';
+                    } else {
+                        color = 'purple';
+                    }
+                }
+            }
+        }
+
+        hints.push(color);
+        currentBeads += n;
+    });
+
+    return hints;
 };
 
 // --- HELPER FUNCTIONS ---

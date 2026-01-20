@@ -35,11 +35,10 @@
 
         /* Formula Hint Dots */
         .hint-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
-        .hint-green { background-color: #22c55e; }
-        .hint-yellow { background-color: #eab308; }
-        .hint-red { background-color: #ef4444; }
-        .hint-purple { background-color: #a855f7; }
-        .hint-gray { background-color: #9ca3af; }
+        .hint-green { background-color: #22c55e; border: 1px solid #166534; }
+        .hint-yellow { background-color: #eab308; border: 1px solid #a16207; }
+        .hint-red { background-color: #ef4444; border: 1px solid #991b1b; }
+        .hint-purple { background-color: #a855f7; border: 1px solid #6b21a8; }
         
         body.focus-mode { background-color: #f0f9ff !important; color: #333; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
@@ -91,19 +90,17 @@
                 </select>
             </div>
 
-            <!-- Toggle for Formula Hints -->
-            <div class="mb-8 flex items-center justify-center">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="toggle-hints" class="sr-only peer" onchange="toggleHintsVisibility()">
-                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    <span class="ml-3 text-sm font-bold text-gray-700">Show Formula Hints (Traffic Light)</span>
-                </label>
-            </div>
-
-            <div class="mb-8">
+            <div class="mb-8 flex flex-col items-center gap-4">
                 <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
                     💡 For best result do this 3 times in a row on Abacus.
                 </p>
+
+                <div class="flex items-center bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                    <input type="checkbox" id="show-hints-toggle" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                    <label for="show-hints-toggle" class="ml-2 text-gray-700 font-bold select-none cursor-pointer">
+                        Show Traffic Light Formula Hints 🚦
+                    </label>
+                </div>
             </div>
             
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
@@ -353,20 +350,26 @@
             }
 
             let tableHtml = '<table class="sum-table">';
+
+            // Calculate Hints
+            const hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => 'green');
+            const showHints = document.getElementById('show-hints-toggle').checked;
+            const visibilityClass = showHints ? '' : 'hidden';
+
             numbers.forEach((num, rIndex) => {
                 const isNeg = num < 0;
                 const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
                 const colorClass = isNeg ? 'negative-number' : '';
+                const hintColor = hints[rIndex] || 'green';
 
-                // Get hint color
-                let dotHtml = '';
-                if (hints.length > rIndex) {
-                    const color = hints[rIndex];
-                    const visibilityClass = document.getElementById('toggle-hints').checked ? '' : 'hidden';
-                    dotHtml = `<span class="hint-dot hint-${color} ${visibilityClass}"></span>`;
-                }
-
-                tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}${dotHtml}</td></tr>`;
+                tableHtml += `
+                    <tr>
+                        <td class="row-index">${rIndex + 1}</td>
+                        <td class="number-cell ${colorClass}">
+                            ${displayNum}
+                            <span class="hint-dot hint-${hintColor} ${visibilityClass}"></span>
+                        </td>
+                    </tr>`;
             });
             tableHtml += '</table>';
             return tableHtml;
@@ -495,7 +498,10 @@
                     total: TOTAL_SUMS, 
                     time: timeFormatted,
                     accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray
+                    mistakes: mistakesArray,
+                    // Pass full data for verification (SECURE MODE)
+                    questions: sumsData,
+                    answers: sumsData.map(s => s.studentAnswer)
                 });
             }
 
