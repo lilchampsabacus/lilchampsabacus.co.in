@@ -653,3 +653,94 @@ function getMoveColor(currentVal, move) {
 
     return 'gray'; // Should not happen in standard 10-complement abacus logic if valid
 }
+
+// ==================================================
+// PART 7: UNIVERSAL CUSTOM KEYPAD LOGIC
+// ==================================================
+
+window.handleKeypadInput = function(val) {
+    const input = document.getElementById('answer-input');
+    if (input) {
+        input.value += val;
+        // Trigger input event manually so any listeners react
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+};
+
+window.handleBackspace = function() {
+    const input = document.getElementById('answer-input');
+    if (input && input.value.length > 0) {
+        input.value = input.value.slice(0, -1);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+};
+
+window.handleKeypadEnter = function() {
+    // Check if submitAndNext exists (it's defined in the game HTML)
+    if (typeof window.submitAndNext === 'function') {
+        window.submitAndNext();
+    } else {
+        console.warn("submitAndNext function not found");
+    }
+};
+
+window.setupUniversalKeypad = function() {
+    // Physical Keyboard Support
+    document.addEventListener('keydown', (e) => {
+        // Ignore if focus is on another input (like a text field, though mainly answer-input is used)
+        // But since we want to REPLACE the keyboard, we might want to capture everything
+        // unless the user is explicitly interacting with something else like a student name input?
+        // The student name input is readonly in 2D20R.html usually.
+
+        // If the active element is an input or textarea that is NOT the answer-input, we might want to respect it.
+        // But the requirement says "Universal Custom Numeric Keypad that replaces the native keyboard".
+        // And "Block Native Keyboard: Set the #answer-input HTML attribute to readonly."
+
+        const activeTag = document.activeElement.tagName.toLowerCase();
+        const activeId = document.activeElement.id;
+
+        // If we are typing in some other input (unlikely in this app, but good practice), let it be?
+        // The prompt implies we want to control the input into #answer-input specifically.
+        // "If the user presses physical keys 0-9, ., or -, append them to the input."
+        // implying #answer-input.
+
+        // If focus is on answer-input, native behavior is blocked by readonly (mostly).
+        // But we want to capture the keys globally.
+
+        const input = document.getElementById('answer-input');
+        if (!input) return;
+
+        // Map keys
+        const validKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'];
+
+        if (validKeys.includes(e.key)) {
+             // Prevent default only if we are "capturing" it for our input
+             // If the user is typing in a different legitimate input, we shouldn't interfere.
+             // But here we assume the goal is to drive #answer-input.
+             // Let's check if the active element is NOT the answer input and IS editable.
+             if (activeTag === 'input' && activeId !== 'answer-input' && !document.activeElement.readOnly) {
+                 return;
+             }
+
+             handleKeypadInput(e.key);
+        } else if (e.key === 'Backspace') {
+             if (activeTag === 'input' && activeId !== 'answer-input' && !document.activeElement.readOnly) {
+                 return;
+             }
+             handleBackspace();
+        } else if (e.key === 'Enter') {
+             // If we are on a button, let it click.
+             if (activeTag === 'button') return;
+
+             handleKeypadEnter();
+             e.preventDefault(); // Prevent form submission if any
+        }
+    });
+};
+
+// Auto-initialize if DOM is ready, or wait
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.setupUniversalKeypad);
+} else {
+    window.setupUniversalKeypad();
+}
