@@ -174,7 +174,8 @@
                 end.setHours(23,59,59,999);
 
                 const filteredData = data.filter(row => {
-                    const rowDate = new Date(row.indian_time); 
+                    const rawDateString = row.indian_time.slice(0, 19);
+                    const rowDate = new Date(rawDateString);
                     return rowDate >= start && rowDate <= end;
                 });
 
@@ -240,6 +241,7 @@
     </script>
 </body>
 </html>
+
 
 
 
