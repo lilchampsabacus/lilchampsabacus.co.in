@@ -305,18 +305,14 @@
                             <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
                         </div>
 
-                        <div id="formula-legend" class="mt-4 bg-white p-3 rounded-xl shadow-md border-l-4 border-indigo-400 hidden">
-                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Formula Key</h4>
-                             <div class="text-xs font-semibold text-gray-700 space-y-1">
-                                 <div><span style='color:#22c55e'>●</span> Green: Direct Move</div>
-                                 <div><span style='color:#eab308'>●</span> Yellow: Small Friend (+5)</div>
-                                 <div><span style='color:#ef4444'>●</span> Red: Big Friend (+10)</div>
-                                 <div><span style='color:#a855f7'>●</span> Purple: Combination</div>
-                             </div>
-                        </div>
-
                         <!-- CUSTOM KEYPAD MOVED HERE -->
                         <div id="custom-keypad">
+                             <div id="formula-legend" class="col-span-4 hidden flex flex-row justify-evenly items-center bg-gray-100 rounded mb-1 h-[35px] text-xs font-bold text-gray-700 select-none">
+                                 <div><span style='color:#22c55e'>●</span> Direct</div>
+                                 <div><span style='color:#eab308'>●</span> Small</div>
+                                 <div><span style='color:#ef4444'>●</span> Big</div>
+                                 <div><span style='color:#a855f7'>●</span> Mix</div>
+                             </div>
                              <!-- Row 1 -->
                              <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
