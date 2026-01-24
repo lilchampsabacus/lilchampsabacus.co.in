@@ -203,7 +203,7 @@
 
         <div id="display-panel" class="hidden w-full h-full flex flex-col items-center justify-center">
             
-            <div class="relative mt-4 md:mt-12 p-10 bg-white rounded-3xl shadow-2xl border-4 border-indigo-100 scale-90 md:scale-100 origin-center transition-all">
+            <div id="flash-card-container" class="relative p-10 bg-white rounded-3xl shadow-2xl border-4 border-indigo-100 origin-center transition-transform duration-300 ease-out">
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-6 py-2 rounded-full border border-gray-200 shadow-sm font-bold text-xl text-indigo-800 z-20 whitespace-nowrap">
                     <span id="current-index">1</span> / <span id="total-count">10</span>
                 </div>
@@ -519,6 +519,31 @@
             document.body.removeChild(a);
         }
 
+        function fitCardToScreen() {
+            const el = document.getElementById('flash-card-container');
+            if (!el) return;
+
+            // Reset to measure natural size
+            el.style.transform = 'none';
+
+            const cardWidth = el.offsetWidth;
+            const cardHeight = el.offsetHeight;
+
+            if (cardWidth === 0 || cardHeight === 0) return;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            const scale = Math.min(
+                (windowWidth * 0.90) / cardWidth,
+                (windowHeight * 0.90) / cardHeight
+            );
+
+            el.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', fitCardToScreen);
+
         function renderAbacus(num) {
             const container = els.abacusStage;
             container.innerHTML = '';
@@ -566,6 +591,7 @@
                 col.appendChild(earth);
                 container.appendChild(col);
             }
+            fitCardToScreen();
         }
     </script>
 </body>
