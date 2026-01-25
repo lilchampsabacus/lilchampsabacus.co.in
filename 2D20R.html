@@ -127,8 +127,8 @@
                 width: 50%;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
-                align-items: center;
+                justify-content: flex-start;
+                align-items: stretch;
                 padding: 1rem;
                 height: auto;
 
@@ -138,6 +138,16 @@
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                 border: 2px solid #dbeafe;
             }
+
+            /* Full Height Distribution Fixes */
+            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            #question-carousel { flex: 1; display: flex; flex-direction: column; }
+
+            .slide-container { height: 100%; width: 100%; }
+            .slide-container.active { display: flex !important; flex-direction: column; }
+
+            .sum-table { height: 100%; width: 100%; }
+            .number-cell { font-size: 2.5rem !important; height: auto; }
 
             .right-panel {
                 width: 40%;

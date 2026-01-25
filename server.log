@@ -1,6 +1,0 @@
-127.0.0.1 - - [25/Jan/2026 02:37:28] "GET /2D20R.html HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 02:37:28] "GET /elegant-theme.css HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 02:37:28] "GET /gamify.js?v=3 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 02:37:48] "GET /2D20R.html HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 02:37:48] "GET /elegant-theme.css HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 02:37:48] "GET /gamify.js?v=3 HTTP/1.1" 200 -
