@@ -267,13 +267,37 @@
         input.readOnly = true;
         input.focus();
 
-        document.addEventListener('keydown', function(event) {
+        // Remove any existing listeners if possible (or just ensure this runs once)
+        // Better yet, use a named function to prevent duplicates if startTest runs twice
+        document.onkeydown = function(event) {
+            if (event.defaultPrevented) return;
             const key = event.key;
-            if (/[0-9]/.test(key)) handleKey(key);
-            if (key === '.' || key === '-') handleKey(key);
-            if (key === 'Backspace') handleKey('backspace');
-            if (key === 'Enter') { event.preventDefault(); submitAndNext(); }
-        });
+            const input = document.getElementById('answer-input');
+            if (!input) return; // Safety check
+
+            // Handle Numbers
+            if (/[0-9]/.test(key)) {
+                event.preventDefault(); // STOP browser from typing
+                handleKey(key);
+                return;
+            }
+            // Handle Special Keys
+            if (key === '.' || key === '-') {
+                event.preventDefault(); // STOP browser
+                handleKey(key);
+                return;
+            }
+            if (key === 'Backspace') {
+                event.preventDefault(); // STOP browser (prevent navigation back)
+                handleKey('backspace');
+                return;
+            }
+            if (key === 'Enter') {
+                event.preventDefault();
+                submitAndNext();
+                return;
+            }
+        };
 
         startTime = Date.now();
         startTimer();
