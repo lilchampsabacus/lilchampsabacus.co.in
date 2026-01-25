@@ -116,7 +116,7 @@
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
-                align-items: flex-start;
+                align-items: stretch;
                 gap: 40px;
                 height: 100vh;
                 overflow: hidden;
@@ -126,9 +126,17 @@
             .left-panel {
                 width: 50%;
                 display: flex;
+                flex-direction: column;
                 justify-content: center;
-                align-items: flex-start;
-                padding-top: 20px;
+                align-items: center;
+                padding: 1rem;
+                height: auto;
+
+                /* Moved Card Styles to Parent Container */
+                background-color: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                border: 2px solid #dbeafe;
             }
 
             .right-panel {
@@ -272,7 +280,7 @@
         <section id="test-area" class="hidden w-full max-w-4xl">
             <div id="game-layout">
                 <div class="left-panel">
-                    <div class="w-full max-w-sm mx-auto bg-white p-2 md:p-4 rounded-xl shadow-lg border-2 border-blue-100">
+                    <div class="w-full max-w-sm mx-auto p-2 md:p-4">
                         <div id="question-carousel"></div>
                     </div>
                 </div>
@@ -307,11 +315,11 @@
 
                         <!-- CUSTOM KEYPAD MOVED HERE -->
                         <div id="custom-keypad">
-                             <div id="formula-legend" class="col-span-4 hidden flex flex-row justify-evenly items-center bg-gray-100 rounded mb-1 h-[35px] text-xs font-bold text-gray-700 select-none">
-                                 <div><span style='color:#22c55e'>●</span> Direct</div>
-                                 <div><span style='color:#eab308'>●</span> Small</div>
-                                 <div><span style='color:#ef4444'>●</span> Big</div>
-                                 <div><span style='color:#a855f7'>●</span> Mix</div>
+                             <div id="formula-legend" class="col-span-4 hidden flex flex-row justify-evenly items-center bg-gray-100 rounded mb-1 py-2 text-[1.1rem] font-bold text-gray-700 select-none">
+                                 <div><span class="text-2xl align-middle" style='color:#22c55e'>●</span> Direct</div>
+                                 <div><span class="text-2xl align-middle" style='color:#eab308'>●</span> Small</div>
+                                 <div><span class="text-2xl align-middle" style='color:#ef4444'>●</span> Big</div>
+                                 <div><span class="text-2xl align-middle" style='color:#a855f7'>●</span> Mix</div>
                              </div>
                              <!-- Row 1 -->
                              <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
