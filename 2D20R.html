@@ -18,7 +18,6 @@
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
-            /* Prevent scrolling on desktop if content fits */
             overflow-y: auto; 
         }
         
@@ -43,6 +42,11 @@
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
         .hidden { display: none !important; }
 
+        /* Slide Container Logic */
+        .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .slide-container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
         /* Review Card */
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
 
@@ -66,7 +70,7 @@
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            min-height: 60px; /* Mobile Large Touch Targets */
+            min-height: 60px;
             font-size: 1.5rem;
             font-weight: 700;
             color: #374151;
@@ -83,18 +87,18 @@
         .keypad-btn.backspace-btn { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
         .keypad-btn.op-btn { background-color: #eff6ff; color: #1e40af; }
 
-        /* --- DESKTOP / LAPTOP LAYOUT (The Fix) --- */
+        /* --- DESKTOP / LAPTOP LAYOUT --- */
         #game-layout { display: block; } /* Default */
 
         @media (min-width: 768px) {
-            body { padding-bottom: 0; overflow: hidden; } /* Lock scroll on desktop */
+            body { padding-bottom: 0; overflow: hidden; }
             main { padding: 0 !important; }
             
             #game-layout {
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
-                align-items: center; /* Center vertically */
+                align-items: center;
                 gap: 20px;
                 height: 100vh;
                 width: 100%;
@@ -108,31 +112,34 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                /* Compact padding for laptop screens */
                 padding: 0.5rem; 
-                height: 90vh; /* Don't fill 100% to avoid edge touching */
+                height: 90vh;
                 max-height: 800px;
                 background-color: white;
                 border-radius: 0.75rem;
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
                 border: 2px solid #dbeafe;
-                overflow: hidden; /* Ensure no scroll inside card */
+                overflow: hidden;
             }
 
             .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
             #question-carousel { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+            
+            /* --- THE FIX: Hide the "Q 1/20" Text Header & Next Slides on Desktop --- */
+            #question-carousel .text-center { display: none !important; }
+            .slide-container:not(.active) { display: none !important; } /* This stops the stacking glitch */
+
             .slide-container { width: 100%; }
             
             /* TIGHTER TABLE FOR LAPTOPS */
             .sum-table { height: auto; }
             .sum-table td { padding: 0 !important; }
-            /* Reduced from 2.5rem to 1.8rem to fit 10 rows */
             .number-cell { 
                 font-size: 1.8rem !important; 
                 line-height: 1.1 !important; 
                 padding: 2px 0 !important; 
             }
-            .hint-dot { width: 8px; height: 8px; margin-left: 5px; } /* Smaller dots */
+            .hint-dot { width: 8px; height: 8px; margin-left: 5px; }
 
             /* RIGHT PANEL - INPUT & KEYPAD */
             .right-panel {
@@ -158,16 +165,19 @@
             .keypad-btn { 
                 min-height: 45px !important; 
                 font-size: 1.2rem !important;
-                border-bottom-width: 3px; /* Nice clicky feel */
+                border-bottom-width: 3px; 
             }
             
-            /* Hide the default mobile progress bar text to save space */
+            /* Hide the default mobile progress bar text */
             #progress-text { display: none; }
-            .bg-blue-50.p-3 { padding: 8px; } /* Smaller input box padding */
+            .bg-blue-50.p-3 { padding: 8px; } 
             #answer-input { font-size: 2rem; padding: 0.5rem; }
+            
+            /* Progress Bar Compact */
+            .bg-white.p-3.border-orange-400 { padding: 4px 8px; margin-bottom: 4px; }
+            .bg-white.p-3.border-orange-400 .h-8 { height: 1.2rem; margin: 4px 0; }
         }
     </style>
-
 </head>
 <body class="min-h-screen flex flex-col font-sans">
     
