@@ -45,7 +45,7 @@
             /* Test Area & Carousel Compact Styles */
             #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
             #question-carousel { margin-top: 0; }
-            #question-carousel .text-center { display: none !important; } /* Hide Q header */
+            /* #question-carousel .text-center { display: none !important; }  REMOVED TO SHOW HEADER */
 
             /* Keypad Area Compact Styles */
             #custom-keypad {
@@ -81,7 +81,7 @@
             .sum-table tr:hover { background-color: #f1f5f9; transition: background-color 0.2s; }
         }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
-        .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
+        .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; display: none !important; }
         .negative-number { color: #dc2626; } 
 
         /* Formula Hint Dots */
@@ -636,7 +636,8 @@
                 slideDiv.id = `slide-${index}`;
                 
                 const tableHtml = createSumTableHtml(data.numbers);
-                slideDiv.innerHTML = `<div class="text-center mb-1 font-bold text-gray-400 text-xs uppercase">Q ${index + 1} / ${TOTAL_SUMS}</div>${tableHtml}`;
+                const headerHtml = `<div class="text-center py-2 border-b border-gray-100 font-bold text-gray-400 text-xs uppercase tracking-widest">Question ${index + 1} / ${TOTAL_SUMS}</div>`;
+                slideDiv.innerHTML = headerHtml + tableHtml;
                 carousel.appendChild(slideDiv);
             });
         }
