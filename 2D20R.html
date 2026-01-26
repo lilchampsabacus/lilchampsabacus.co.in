@@ -711,7 +711,7 @@
             document.getElementById('report-correct').textContent = score;
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
-
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
             // Save for Review
             sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
 
