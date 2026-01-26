@@ -133,6 +133,7 @@
                 height: auto;
                 min-height: 100%;
                 padding-bottom: 2rem;
+                overflow: visible;
 
                 /* Moved Card Styles to Parent Container */
                 background-color: white;
@@ -142,13 +143,13 @@
             }
 
             /* Full Height Distribution Fixes */
-            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            .left-panel > div { height: auto; min-height: 100%; width: 100%; display: flex; flex-direction: column; }
             #question-carousel { flex: 1; display: flex; flex-direction: column; }
 
-            .slide-container { height: 100%; width: 100%; }
+            .slide-container { height: auto; min-height: 100%; width: 100%; }
             .slide-container.active { display: flex !important; flex-direction: column; }
 
-            .sum-table { height: 100%; width: 100%; }
+            .sum-table { height: auto; min-height: 100%; width: 100%; }
             .number-cell { font-size: 2.5rem !important; height: auto; }
 
             .right-panel {
