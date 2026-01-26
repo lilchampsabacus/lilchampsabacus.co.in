@@ -384,57 +384,79 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
-    if (isSubmitting) return;
-    isSubmitting = true;
-    const submitBtn = document.getElementById('submit-button');
-    submitBtn.textContent = "Processing...";
-    submitBtn.disabled = true;
-    clearInterval(timerInterval);
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            // --- REMOVED THE BROKEN 'submit-button' CODE HERE ---
 
-    // Time
-    const endTime = Date.now();
-    // ... Calculate timeFormatted variable here ...
-    const timeElapsed = Math.floor((endTime - startTime) / 1000); 
-    const mins = Math.floor(timeElapsed / 60);
-    const secs = timeElapsed % 60;
-    const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            clearInterval(timerInterval);
 
-    // Grade Locally
-    let score = 0;
-    let mistakesArray = [];
-    sumsData.forEach((q, i) => {
-        // FIX PRECISION
-        let rawSum = q.numbers.reduce((a,b)=>a+b, 0);
-        let correct = parseFloat(rawSum.toFixed(2));
-        
-        if (q.studentAnswer === correct) score++;
-        else if (q.studentAnswer !== null) {
-            mistakesArray.push({ question: "Q"+(i+1), wrong: q.studentAnswer, correct: correct });
+            // Time Calculation
+            const endTime = Date.now();
+            const timeElapsed = Math.floor((endTime - startTime) / 1000); 
+            const mins = Math.floor(timeElapsed / 60);
+            const secs = timeElapsed % 60;
+            const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+            // Grade Locally
+            let score = 0;
+            let mistakesArray = [];
+            sumsData.forEach((q, i) => {
+                // FIX PRECISION
+                let rawSum = q.numbers.reduce((a,b)=>a+b, 0);
+                let correct = parseFloat(rawSum.toFixed(2));
+                
+                if (q.studentAnswer === correct) score++;
+                else if (q.studentAnswer !== null) {
+                    mistakesArray.push({ question: "Q"+(i+1), wrong: q.studentAnswer, correct: correct });
+                }
+            });
+
+            // Update UI - Scores
+            document.getElementById('report-correct').textContent = score;
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            
+            // --- ADDED: Fix for Agent Name & Date ---
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
+            
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleString('en-IN', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            // SAVE TO SUPABASE
+            const levelText = document.getElementById('practice-type').options[document.getElementById('practice-type').selectedIndex].text;
+            if (window.lilChampUtils) {
+                window.lilChampUtils.saveResult({
+                    challenge: levelText,
+                    score: score,
+                    total: TOTAL_SUMS,
+                    time: timeFormatted,
+                    accuracy: Math.round((score/TOTAL_SUMS)*100) + "%",
+                    mistakes: mistakesArray
+                });
+            }
+            
+            // Save for review button
+            sessionStorage.setItem('decimalSumsData', JSON.stringify(sumsData));
+            
+            // Enable/Disable Review Button
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50');
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+            } else {
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50');
+                wrongBtn.textContent = "Perfect Score!";
+            }
+
+            // Switch Screens
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
         }
-    });
-
-    // Update UI
-    document.getElementById('report-correct').textContent = score;
-    document.getElementById('report-time-elapsed').textContent = timeFormatted;
-
-    // SAVE TO SUPABASE
-    const levelText = document.getElementById('practice-type').options[document.getElementById('practice-type').selectedIndex].text;
-    if (window.lilChampUtils) {
-        window.lilChampUtils.saveResult({
-            challenge: levelText,
-            score: score,
-            total: TOTAL_SUMS,
-            time: timeFormatted,
-            accuracy: Math.round((score/TOTAL_SUMS)*100) + "%",
-            mistakes: mistakesArray
-        });
-    }
-
-    // Switch Screens
-    document.body.classList.remove('focus-mode');
-    document.getElementById('test-area').classList.add('hidden');
-    document.getElementById('report-area').classList.remove('hidden');
-}
             
         function showWrongAnswers() {
             const storedSums = JSON.parse(sessionStorage.getItem('decimalSumsData'));
