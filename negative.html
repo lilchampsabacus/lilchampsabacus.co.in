@@ -385,9 +385,8 @@
         async function endTest() {
             if (isSubmitting) return;
             isSubmitting = true;
-            const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "Processing...";
-            submitBtn.disabled = true;
+
+            // --- REMOVED THE BROKEN 'submit-button' CODE HERE ---
             
             clearInterval(timerInterval);
 
@@ -424,6 +423,14 @@
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
 
+            // --- ADDED: Fix for Agent Name & Date ---
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
+
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleString('en-IN', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
             // Save Data for Review Button
             sessionStorage.setItem('negSumsData', JSON.stringify(sumsData)); 
 
@@ -455,11 +462,6 @@
             }
 
             // Finish & Show Report
-            const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString();
-            const studentName = sessionStorage.getItem('studentIdentifier') || "Student";
-            document.getElementById('report-student-name').textContent = studentName;
-
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
