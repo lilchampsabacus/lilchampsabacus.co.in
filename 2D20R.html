@@ -18,63 +18,13 @@
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
+            /* Prevent scrolling on desktop if content fits */
+            overflow-y: auto; 
         }
         
-        html { scroll-padding-top: 20px; }
-        .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .slide-container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
+        /* Base Styles (Mobile First) */
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
         .number-cell { text-align: center; font-size: 1.5rem; font-weight: 700; padding: 0; border-bottom: 1px solid #e5e7eb; color: #374151; line-height: 1.2; }
-        /* --- DESKTOP COMPACT MODE (10 Rows fit 100vh) --- */
-        @media (min-width: 768px) {
-            /* Force remove padding from main layout elements */
-            main { padding: 0 !important; }
-            body { padding-bottom: 0; }
-
-            /* Table Compact Styles */
-            .number-cell { font-size: 1.25rem; padding: 0; line-height: 1.1; }
-            .sum-table td { padding: 0px; }
-            .sum-table tr:last-child .number-cell { border-bottom: 2px solid #1f2937; }
-
-            /* Dots Compact Styles */
-            .hint-dot { width: 6px; height: 6px; margin-top: 1px; margin-bottom: 0; }
-            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } /* Dots container */
-
-            /* Test Area & Carousel Compact Styles */
-            #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
-            #question-carousel { margin-top: 0; }
-            #question-carousel .text-center { display: none !important; } /* Hide Q header */
-
-            /* Keypad Area Compact Styles */
-            #custom-keypad {
-                position: static;
-                width: 100%;
-                background-color: transparent;
-                box-shadow: none;
-                padding: 0;
-                margin-top: 0.2rem;
-                z-index: auto;
-                gap: 4px;
-            }
-
-            .keypad-btn {
-                min-height: 35px;
-                font-size: 1.1rem;
-            }
-
-            /* Tighten Right Column Spacing */
-            .bg-blue-50.p-3 { padding: 4px; margin-bottom: 4px; }
-
-            /* Compact Progress Bar */
-            .bg-white.p-3.border-orange-400 { padding: 2px 8px; margin-bottom: 4px; display: block; }
-            .bg-white.p-3.border-orange-400 .text-xs { font-size: 0.6rem; }
-            .bg-white.p-3.border-orange-400 .h-8 { height: 1rem; margin-top: 0; margin-bottom: 0; }
-            .bg-white.p-3.border-orange-400 #progress-bead svg { width: 30px; height: 20px; }
-
-            .progress-container { margin-bottom: 4px; padding: 4px; }
-        }
         .sum-table tr:nth-child(even) { background-color: #f9fafb; }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
@@ -87,97 +37,18 @@
         .hint-red { background-color: #ef4444; border: 1px solid #991b1b; }
         .hint-purple { background-color: #a855f7; border: 1px solid #6b21a8; }
         
-        body.focus-mode { background-color: #f0f9ff !important; color: #333; height: 100vh; overflow-y: auto; }
+        /* Focus Mode */
+        body.focus-mode { background-color: #f0f9ff !important; color: #333; height: 100vh; overflow: hidden; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
         .hidden { display: none !important; }
 
-        /* --- MOBILE FIX FOR 10 ROWS --- */
-        @media (max-width: 768px) {
-            .sum-table td { padding: 0 !important; height: auto !important; }
-            .number-cell { font-size: 1.25rem !important; line-height: 1.1 !important; padding-bottom: 2px !important; }
-            .row-index { font-size: 0.6rem !important; width: 15px !important; padding-right: 2px !important; }
-            #question-carousel { margin-bottom: 0.5rem; }
-            #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
-
-            /* Bottom padding only on mobile for fixed keypad */
-            body { padding-bottom: 350px; }
-        }
-
-        /* --- NEW STRICT LAYOUT CSS --- */
-        #game-layout {
-            display: block; /* Mobile Default */
-        }
-
-        @media (min-width: 768px) {
-             body { padding-bottom: 0; }
-
-             #game-layout {
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
-                align-items: stretch;
-                gap: 40px;
-                height: 100vh;
-                overflow: visible;
-                width: 100%;
-            }
-
-            .left-panel {
-                width: 50%;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: stretch;
-                padding: 1rem;
-                height: auto;
-                min-height: 100%;
-                padding-bottom: 2rem;
-
-                /* Moved Card Styles to Parent Container */
-                background-color: white;
-                border-radius: 0.75rem;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                border: 2px solid #dbeafe;
-            }
-
-            /* Full Height Distribution Fixes */
-            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
-            #question-carousel { flex: 1; display: flex; flex-direction: column; }
-
-            .slide-container { height: 100%; width: 100%; }
-            .slide-container.active { display: flex !important; flex-direction: column; }
-
-            .sum-table { height: 100%; width: 100%; }
-            .number-cell { font-size: 2.5rem !important; height: auto; }
-
-            .right-panel {
-                width: 40%;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 20px;
-            }
-
-            /* Override existing keypad styles */
-            #custom-keypad {
-                position: static !important;
-                bottom: auto !important;
-                width: 100% !important;
-                box-shadow: none !important;
-                background-color: transparent !important;
-                padding: 0 !important;
-                margin-top: 10px;
-            }
-        }
-        
-        /* Review Section Styling */
+        /* Review Card */
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
 
-        /* --- CUSTOM NUMERIC KEYPAD --- */
+        /* --- KEYPAD (Mobile Default) --- */
         #custom-keypad {
             display: grid;
-            /* Mobile Default: Fixed at bottom */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -191,13 +62,11 @@
             padding-bottom: max(8px, env(safe-area-inset-bottom));
         }
 
-        /* Desktop Keypad: Styles now handled in the unified media query above */
-
         .keypad-btn {
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            min-height: 60px; /* Touch friendly */
+            min-height: 60px; /* Mobile Large Touch Targets */
             font-size: 1.5rem;
             font-weight: 700;
             color: #374151;
@@ -208,36 +77,97 @@
             touch-action: manipulation;
             user-select: none;
         }
+        .keypad-btn:active { background-color: #f9fafb; transform: translateY(2px); box-shadow: none; }
+        .keypad-btn.action-btn { background-color: #4f46e5; color: white; border-color: #4338ca; grid-column: span 2; font-size: 1.25rem; }
+        .keypad-btn.action-btn:active { background-color: #4338ca; }
+        .keypad-btn.backspace-btn { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        .keypad-btn.op-btn { background-color: #eff6ff; color: #1e40af; }
 
-        .keypad-btn:active {
-            background-color: #f9fafb;
-            transform: translateY(2px);
-            box-shadow: none;
-        }
+        /* --- DESKTOP / LAPTOP LAYOUT (The Fix) --- */
+        #game-layout { display: block; } /* Default */
 
-        .keypad-btn.action-btn {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #4338ca;
-            grid-column: span 2;
-            font-size: 1.25rem;
-        }
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; overflow: hidden; } /* Lock scroll on desktop */
+            main { padding: 0 !important; }
+            
+            #game-layout {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center; /* Center vertically */
+                gap: 20px;
+                height: 100vh;
+                width: 100%;
+                padding: 10px;
+            }
 
-        .keypad-btn.action-btn:active {
-            background-color: #4338ca;
-        }
+            /* LEFT PANEL - THE SUM */
+            .left-panel {
+                width: 45%;
+                max-width: 400px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                /* Compact padding for laptop screens */
+                padding: 0.5rem; 
+                height: 90vh; /* Don't fill 100% to avoid edge touching */
+                max-height: 800px;
+                background-color: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                border: 2px solid #dbeafe;
+                overflow: hidden; /* Ensure no scroll inside card */
+            }
 
-        .keypad-btn.backspace-btn {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border-color: #fecaca;
-        }
+            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            #question-carousel { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+            .slide-container { width: 100%; }
+            
+            /* TIGHTER TABLE FOR LAPTOPS */
+            .sum-table { height: auto; }
+            .sum-table td { padding: 0 !important; }
+            /* Reduced from 2.5rem to 1.8rem to fit 10 rows */
+            .number-cell { 
+                font-size: 1.8rem !important; 
+                line-height: 1.1 !important; 
+                padding: 2px 0 !important; 
+            }
+            .hint-dot { width: 8px; height: 8px; margin-left: 5px; } /* Smaller dots */
 
-        .keypad-btn.op-btn {
-            background-color: #eff6ff;
-            color: #1e40af;
+            /* RIGHT PANEL - INPUT & KEYPAD */
+            .right-panel {
+                width: 40%;
+                max-width: 350px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            /* COMPACT KEYPAD FOR DESKTOP */
+            #custom-keypad {
+                position: static !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                gap: 8px;
+            }
+            
+            /* Force smaller buttons on desktop */
+            .keypad-btn { 
+                min-height: 45px !important; 
+                font-size: 1.2rem !important;
+                border-bottom-width: 3px; /* Nice clicky feel */
+            }
+            
+            /* Hide the default mobile progress bar text to save space */
+            #progress-text { display: none; }
+            .bg-blue-50.p-3 { padding: 8px; } /* Smaller input box padding */
+            #answer-input { font-size: 2rem; padding: 0.5rem; }
         }
     </style>
+
 </head>
 <body class="min-h-screen flex flex-col font-sans">
     
