@@ -130,10 +130,9 @@
                 justify-content: flex-start;
                 align-items: stretch;
                 padding: 1rem;
-                height: auto;
-                min-height: 100%;
-                padding-bottom: 2rem;
-                overflow: visible;
+                height: 100%;
+                padding-bottom: 0;
+                overflow: hidden;
 
                 /* Moved Card Styles to Parent Container */
                 background-color: white;
@@ -143,14 +142,15 @@
             }
 
             /* Full Height Distribution Fixes */
-            .left-panel > div { height: auto; min-height: 100%; width: 100%; display: flex; flex-direction: column; }
+            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
             #question-carousel { flex: 1; display: flex; flex-direction: column; }
 
-            .slide-container { height: auto; min-height: 100%; width: 100%; }
+            .slide-container { height: 100%; width: 100%; }
             .slide-container.active { display: flex !important; flex-direction: column; }
 
-            .sum-table { height: auto; min-height: 100%; width: 100%; }
-            .number-cell { font-size: 2.5rem !important; height: auto; }
+            .sum-table { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            .sum-table tr { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+            .number-cell { font-size: clamp(1.5rem, 4vh, 3rem); height: auto; }
 
             .right-panel {
                 width: 40%;
