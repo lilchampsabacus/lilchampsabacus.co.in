@@ -14,34 +14,14 @@
 	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        html, body {
-            height: 100%;          /* Lock height */
-            width: 100%;
-            overflow: hidden;      /* STOP BODY SCROLL */
-            position: fixed;       /* Freeze page */
-            touch-action: none;    /* Disable browser gestures */
-            margin: 0;
-            
-            /* Theme */
-            font-family: 'Nunito', sans-serif;
-            background-color: #f0f9ff; 
-            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
-            background-size: 24px 24px;
-
-            /* Layout */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- SCROLLABLE AREA --- */
-        main {
-            flex-grow: 1;          /* Fill space */
-            overflow-y: auto;      /* Scroll inside here */
-            -webkit-overflow-scrolling: touch;
-            width: 100%;
-            padding-bottom: 2rem;
+        body {
+            font-family: 'Nunito', sans-serif; /* Add this line */
+    		background-color: #f0f9ff; 
+    		background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+    		background-size: 24px 24px;
         }
 		
+		html { scroll-padding-top: 100px; }
         .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -76,7 +56,7 @@
         </div>
     </header>
 
-    <main class="flex-grow w-full p-4 sm:p-6 flex flex-col items-center">
+    <main class="flex-grow max-w-4xl mx-auto w-full p-4 sm:p-6">
         <h2 class="text-3xl font-extrabold text-gray-800 mb-6 text-center back-link">1-digit x 1-digit Mission</h2>
 
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center">
@@ -517,11 +497,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
