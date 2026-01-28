@@ -36,11 +36,14 @@
         /* --- SCROLL CONTAINER --- */
         /* This tag handles the scrolling now, but NOT the centering/width */
         main {
-            flex-grow: 1;          
+            flex-grow: 1;  
+			width: 100%;
             overflow-y: auto;      /* Internal scroll */
             -webkit-overflow-scrolling: touch;
-            width: 100%;
         }
+		/* --- HIDE SCROLLBAR (Professional Look) --- */
+        main::-webkit-scrollbar { display: none; }
+        main { -ms-overflow-style: none; scrollbar-width: none; }
 		
         .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
         .slide-container.active { display: block; }
@@ -517,4 +520,5 @@
     </script>
 </body>
 </html>
+
 
