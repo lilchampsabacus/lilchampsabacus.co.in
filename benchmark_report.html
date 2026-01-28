@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Rendering Benchmark</title>
+</head>
+<body>
+    <div id="result"></div>
+    <table>
+        <tbody id="reportBody"></tbody>
+    </table>
+
+    <script>
+        const ROW_COUNT = 5000;
+        const dummyData = [];
+
+        // Generate dummy data
+        for (let i = 0; i < ROW_COUNT; i++) {
+            dummyData.push({
+                indian_time: "2023-10-27T10:00:00",
+                challenge_type: "Test Challenge",
+                score_text: "10/10",
+                time_taken: "01:00",
+                score_val: 10,
+                total_val: 10
+            });
+        }
+
+        function runBenchmark() {
+            const tbody = document.getElementById('reportBody');
+            tbody.innerHTML = ""; // Clear existing
+
+            const startTime = performance.now();
+
+            const fragment = document.createDocumentFragment();
+            dummyData.forEach(row => {
+                const tr = document.createElement('tr');
+
+                let accuracyVal = 1;
+                const accuracyPercentage = "100%";
+                let accuracyColor = "text-green-600";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-6 font-medium text-gray-700">${row.indian_time}</td>
+                    <td class="py-3 px-6">${row.challenge_type}</td>
+                    <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
+                    <td class="py-3 px-6 text-center">${row.time_taken}</td>
+                    <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+            tbody.appendChild(fragment);
+
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+
+            document.getElementById('result').textContent = `Time taken: ${duration.toFixed(2)} ms`;
+            console.log(`Time taken: ${duration.toFixed(2)} ms`);
+        }
+
+        window.onload = runBenchmark;
+    </script>
+</body>
+</html>
