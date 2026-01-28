@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Addition/Subtraction (10 Rows)</title>
     
     <link rel="stylesheet" href="elegant-theme.css">
@@ -13,28 +13,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body {
+        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
+        html, body {
+            height: 100%;          /* Lock height to screen size */
+            width: 100%;
+            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
+            position: fixed;       /* Freeze the page in place */
+            touch-action: none;    /* Disable browser gestures */
+            margin: 0;
+            
+            /* Theme */
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
-            overscroll-behavior-y: contain;
-            touch-action: pan-x pan-y;
+
+            /* Flex layout to keep Header/Footer/Main organized */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        main {
+            flex-grow: 1;          /* Take up all available space */
+            overflow-y: auto;      /* Allow scrolling ONLY inside here */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            width: 100%;
+            padding: 1rem;         /* Default padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Focus Mode Update: Just hide elements, don't mess with scroll */
+        body.focus-mode header, 
+        body.focus-mode footer, 
+        body.focus-mode .back-link { 
+            display: none !important; 
         }
         
-        html { scroll-padding-top: 20px; }
+        body.focus-mode #test-area {
+            /* Ensure test area takes full height in focus mode */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- EXISTING STYLES BELOW --- */
+        
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
-        .number-cell { text-align: center; font-size: 1.5rem; font-weight: 800; padding: 0; border-bottom: none; color: #334155; line-height: 1.2; font-family: 'Nunito', sans-serif; }
+        .number-cell { text-align: center; font-size: 1.5rem; font-weight: 700; padding: 0; border-bottom: 1px solid #e5e7eb; color: #374151; line-height: 1.2; }
+        
         /* --- DESKTOP COMPACT MODE (10 Rows fit 100vh) --- */
         @media (min-width: 768px) {
-            /* Force remove padding from main layout elements */
             main { padding: 0 !important; }
-            body { padding-bottom: 0; }
-
+            
             /* Table Compact Styles */
             .number-cell { font-size: 1.25rem; padding: 0; line-height: 1.1; }
             .sum-table td { padding: 0px; }
@@ -42,12 +79,12 @@
 
             /* Dots Compact Styles */
             .hint-dot { width: 6px; height: 6px; margin-top: 1px; margin-bottom: 0; }
-            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } /* Dots container */
+            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; }
 
             /* Test Area & Carousel Compact Styles */
-            #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
+            #test-area > div > div:first-child { padding: 0 !important; } 
             #question-carousel { margin-top: 0; }
-            /* #question-carousel .text-center { display: none !important; }  REMOVED TO SHOW HEADER */
+            #question-carousel .text-center { display: none !important; } 
 
             /* Keypad Area Compact Styles */
             #custom-keypad {
@@ -66,7 +103,6 @@
                 font-size: 1.1rem;
             }
 
-            /* Tighten Right Column Spacing */
             .bg-blue-50.p-3 { padding: 4px; margin-bottom: 4px; }
 
             /* Compact Progress Bar */
@@ -77,13 +113,10 @@
 
             .progress-container { margin-bottom: 4px; padding: 4px; }
         }
-        .sum-table tr:nth-child(even) { background-color: #f8fafc; }
-        .sum-table tr:nth-child(odd) { background-color: #ffffff; }
-        @media (min-width: 768px) {
-            .sum-table tr:hover { background-color: #f1f5f9; transition: background-color 0.2s; }
-        }
+        
+        .sum-table tr:nth-child(even) { background-color: #f9fafb; }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
-        .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; display: none !important; }
+        .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
         .negative-number { color: #dc2626; } 
 
         /* Formula Hint Dots */
@@ -93,9 +126,6 @@
         .hint-red { background-color: #ef4444; border: 1px solid #991b1b; }
         .hint-purple { background-color: #a855f7; border: 1px solid #6b21a8; }
         
-        body.focus-mode { background-color: #f0f9ff !important; color: #333; height: 100vh; overflow-y: auto; }
-        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
-        body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
         .hidden { display: none !important; }
 
         /* --- MOBILE FIX FOR 10 ROWS --- */
@@ -106,25 +136,24 @@
             #question-carousel { margin-bottom: 0.5rem; }
             #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
 
-            /* Bottom padding only on mobile for fixed keypad */
-            body { padding-bottom: 350px; }
+            /* Ensure enough bottom padding so keypad doesn't cover content */
+            main { padding-bottom: 350px !important; }
         }
 
-        /* --- NEW STRICT LAYOUT CSS --- */
+        /* --- LAYOUT CSS --- */
         #game-layout {
             display: block; /* Mobile Default */
+            height: 100%;
         }
 
         @media (min-width: 768px) {
-             body { padding-bottom: 0; }
-
              #game-layout {
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
                 align-items: stretch;
                 gap: 40px;
-                height: 100vh;
+                height: 100%; /* Fill the main container */
                 overflow: visible;
                 width: 100%;
             }
@@ -136,40 +165,31 @@
                 justify-content: flex-start;
                 align-items: stretch;
                 padding: 1rem;
-                height: 100%;
-                padding-bottom: 0;
-                overflow: hidden;
+                height: auto;
+                min-height: 100%;
+                /* padding-bottom removed as main handles scroll */
 
-                /* Modern Data Card Styles */
                 background-color: white;
-                border-radius: 1.5rem;
+                border-radius: 0.75rem;
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                border: 1px solid #e2e8f0;
+                border: 2px solid #dbeafe;
             }
 
-            /* Full Height Distribution Fixes */
             .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
             #question-carousel { flex: 1; display: flex; flex-direction: column; }
 
             .slide-container { height: 100%; width: 100%; }
             .slide-container.active { display: flex !important; flex-direction: column; }
 
-            .sum-table { height: 100%; width: 100%; display: flex; flex-direction: column; }
-            .sum-table tr { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
-            .number-cell { font-size: clamp(1.5rem, 4vh, 3rem); height: auto; }
+            .sum-table { height: 100%; width: 100%; }
+            .number-cell { font-size: 2.5rem !important; height: auto; }
 
             .right-panel {
                 width: 40%;
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 1rem;
-
-                /* Modern Data Card Styles */
-                background-color: white;
-                border-radius: 1.5rem;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                border: 1px solid #e2e8f0;
+                padding-top: 20px;
             }
 
             /* Override existing keypad styles */
@@ -184,7 +204,6 @@
             }
         }
         
-        /* Review Section Styling */
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
 
         /* --- CUSTOM NUMERIC KEYPAD --- */
@@ -203,8 +222,6 @@
             gap: 6px;
             padding-bottom: max(8px, env(safe-area-inset-bottom));
         }
-
-        /* Desktop Keypad: Styles now handled in the unified media query above */
 
         .keypad-btn {
             background-color: white;
@@ -251,20 +268,17 @@
             color: #1e40af;
         }
     </style>
-    
 </head>
-<body class="min-h-screen flex flex-col font-sans">
-    
-    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
+<body> <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10 flex-none">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
         <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
-    <main class="flex-grow w-full p-2 sm:p-6 flex flex-col items-center">
-        <h2 class="text-2xl font-extrabold text-gray-800 mb-4 text-center back-link">Addition/Subtraction Mission (10 Rows)</h2>
+    <main>
+        <h2 class="text-2xl font-extrabold text-gray-800 mb-4 text-center back-link pt-4">Addition/Subtraction Mission (10 Rows)</h2>
 
-        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full">
+        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full mb-10">
             <h3 class="text-2xl font-bold mb-4 text-gray-800">Configure Your Mission</h3>            
             <div class="mb-6 hidden"> 
                 <input type="text" id="student-identifier-input" class="w-full" readonly>
@@ -315,7 +329,6 @@
                     <div class="w-full max-w-sm mx-auto">
                         <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
                             <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
-                            <!-- CHANGED: type="text" and inputmode="none" -->
                             <input type="text" inputmode="none" autocomplete="off" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
                         </div>
 
@@ -339,7 +352,6 @@
                             <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
                         </div>
 
-                        <!-- CUSTOM KEYPAD MOVED HERE -->
                         <div id="custom-keypad">
                              <div id="formula-legend" class="col-span-4 hidden flex flex-row justify-evenly items-center bg-gray-100 rounded mb-1 py-2 text-[1.1rem] font-bold text-gray-700 select-none">
                                  <div><span class="text-2xl align-middle" style='color:#22c55e'>●</span> Direct</div>
@@ -347,25 +359,21 @@
                                  <div><span class="text-2xl align-middle" style='color:#ef4444'>●</span> Big</div>
                                  <div><span class="text-2xl align-middle" style='color:#a855f7'>●</span> Mix</div>
                              </div>
-                             <!-- Row 1 -->
                              <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
                              <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
 
-                             <!-- Row 2 -->
                              <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
                              <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
 
-                             <!-- Row 3 -->
                              <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
                              <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
                              <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
 
-                             <!-- Row 4 -->
                              <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
                              <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
                          </div>
@@ -374,7 +382,7 @@
             </div>
         </section>
 
-        <section id="report-area" class="hidden flex justify-center mt-4">
+        <section id="report-area" class="hidden flex justify-center mt-4 mb-20">
             <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
                 <div class="text-center border-b border-gray-100 pb-2 mb-4">
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
@@ -406,7 +414,7 @@
             </div>
         </section>
 
-        <section id="wrong-answer-area" class="hidden w-full max-w-4xl mx-auto p-4">
+        <section id="wrong-answer-area" class="hidden w-full max-w-4xl mx-auto p-4 mb-20">
             <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
             <div id="wrong-sums-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             </div>
@@ -417,7 +425,7 @@
 
     </main>
 
-    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200">
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200 flex-none">
     <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
@@ -552,16 +560,9 @@
                 // Universal Keypad: Always ReadOnly to block native keyboard
                 input.readOnly = true;
 
-                // Note: We don't focus() because it might bring up keyboard on some devices even if readonly (rare but possible)
-                // But generally readonly prevents keyboard.
-                // However, we want the user to see where the input goes.
-                // input.focus(); // Optional.
-                
                 // Remove old event listeners by cloning
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
-
-                // Note: Global key listener in gamify.js handles physical keyboard input now.
 
                 startTime = Date.now();
                 startTimer();
@@ -638,8 +639,7 @@
                 slideDiv.id = `slide-${index}`;
                 
                 const tableHtml = createSumTableHtml(data.numbers);
-                const headerHtml = `<div class="text-center py-2 border-b border-gray-100 font-bold text-gray-400 text-xs uppercase tracking-widest">Question ${index + 1} / ${TOTAL_SUMS}</div>`;
-                slideDiv.innerHTML = headerHtml + tableHtml;
+                slideDiv.innerHTML = `<div class="text-center mb-1 font-bold text-gray-400 text-xs uppercase">Q ${index + 1} / ${TOTAL_SUMS}</div>${tableHtml}`;
                 carousel.appendChild(slideDiv);
             });
         }
@@ -689,9 +689,6 @@
             if (isSubmitting) return;
             isSubmitting = true;
 
-            // NOTE: Removed #submit-button logic since it is deleted from DOM.
-            // We can optionally update keypad 'Enter' button text if we had access, but it's fine.
-            
             clearInterval(timerInterval);
 
             // Calculate Time
@@ -726,11 +723,7 @@
             document.getElementById('report-correct').textContent = score;
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
-            
-            const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString();
-            
-            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
+
             // Save for Review
             sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
 
