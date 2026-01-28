@@ -497,10 +497,18 @@ function generateMathQuestion(code) {
     }
 }
 
+const POWERS_OF_10 = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
+
 function getRand(r, minOverride) {
-    var min = Math.pow(10, r[0]-1);
+    var pMin = r[0]-1;
+    var min = (Number.isInteger(pMin) && pMin >= 0 && pMin < POWERS_OF_10.length) ? POWERS_OF_10[pMin] : Math.pow(10, pMin);
+
     if (minOverride && minOverride > min) min = minOverride;
-    var max = Math.pow(10, r[1])-1;
+
+    var pMax = r[1];
+    var maxVal = (Number.isInteger(pMax) && pMax >= 0 && pMax < POWERS_OF_10.length) ? POWERS_OF_10[pMax] : Math.pow(10, pMax);
+    var max = maxVal - 1;
+
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
