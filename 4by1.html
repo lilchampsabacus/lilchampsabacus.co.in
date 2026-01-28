@@ -14,14 +14,37 @@
 	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-		body {
-    		font-family: 'Nunito', sans-serif; /* Add this line */
-    		background-color: #f0f9ff; 
-    		background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
-    		background-size: 24px 24px;
-		}
+		html, body {
+            height: 100%;          /* Lock height */
+            width: 100%;
+            overflow: hidden;      /* STOP BODY SCROLL */
+            position: fixed;       /* Freeze page */
+            touch-action: none;    /* Disable browser gestures */
+            margin: 0;
+            
+            /* Theme */
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff; 
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 24px 24px;
 
-        html { scroll-padding-top: 100px; }
+            /* Flex Layout */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- SCROLL CONTAINER --- */
+        /* This tag handles the scrolling now, but NOT the centering/width */
+        main {
+            flex-grow: 1;  
+			width: 100%;
+            overflow-y: auto;      /* Internal scroll */
+            -webkit-overflow-scrolling: touch;
+        }
+		/* --- HIDE SCROLLBAR (Professional Look) --- */
+        main::-webkit-scrollbar { display: none; }
+        main { -ms-overflow-style: none; scrollbar-width: none; }
+		
         .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -490,6 +513,7 @@
     </script>
 </body>
 </html>
+
 
 
 
