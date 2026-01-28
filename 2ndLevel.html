@@ -14,15 +14,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Base Settings */
-        html { scroll-padding-top: 20px; }
-
-		body {
+        /* --- APP MODE LAYOUT (Refresh Lock) --- */
+        html, body {
+            height: 100%;          
+            width: 100%;
+            overflow: hidden;      /* STOP BODY SCROLL */
+            position: fixed;       
+            touch-action: none;    
+            margin: 0;
+            
+            /* Theme */
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
+
+            /* Flex Layout */
+            display: flex;
+            flex-direction: column;
         }
+
+        /* --- SCROLL CONTAINER --- */
+        main {
+            flex-grow: 1;          
+            width: 100%;           
+            overflow-y: auto;      /* Internal scroll */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* --- HIDE SCROLLBAR (Professional Look) --- */
+        main::-webkit-scrollbar { display: none; }
+        main { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Animations */
         .slide-container {
