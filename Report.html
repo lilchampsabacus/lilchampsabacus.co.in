@@ -193,6 +193,7 @@
                 tableContainer.classList.remove('hidden');
 
                 // Render
+                const fragment = document.createDocumentFragment();
                 filteredData.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-gray-200 hover:bg-gray-50";
@@ -229,8 +230,9 @@
                         <td class="py-3 px-6 text-center">${row.time_taken}</td>
                         <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
                     `;
-                    tbody.appendChild(tr);
+                    fragment.appendChild(tr);
                 });
+                tbody.appendChild(fragment);
 
             } catch (err) {
                 loader.style.display = 'none';
