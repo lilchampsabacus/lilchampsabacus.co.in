@@ -12,11 +12,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
+        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
         html, body {
-            height: 100%;          /* Lock height */
+            height: 100%;          /* Lock height to screen size */
             width: 100%;
-            overflow: hidden;      /* STOP BODY SCROLL */
-            position: fixed;       /* Freeze page */
+            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
+            position: fixed;       /* Freeze the page in place */
             touch-action: none;    /* Disable browser gestures */
             margin: 0;
             
@@ -26,22 +27,35 @@
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex Layout */
+            /* Flex layout to keep Header/Footer/Main organized */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLL CONTAINER --- */
-        /* This tag handles the scrolling now, but NOT the centering/width */
+        /* --- SCROLLABLE CONTENT AREA --- */
         main {
-            flex-grow: 1;  
-			width: 100%;
-            overflow-y: auto;      /* Internal scroll */
-            -webkit-overflow-scrolling: touch;
+            flex-grow: 1;          /* Take up all available space */
+            overflow-y: auto;      /* Allow scrolling ONLY inside here */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            width: 100%;
+            padding: 0.5rem;       /* Default padding (mobile) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-		/* --- HIDE SCROLLBAR (Professional Look) --- */
-        main::-webkit-scrollbar { display: none; }
-        main { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Focus Mode Update: Just hide elements, don't mess with body scroll */
+        body.focus-mode header, 
+        body.focus-mode footer, 
+        body.focus-mode .back-link { 
+            display: none !important; 
+        }
+        
+        body.focus-mode #test-area {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
         
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
