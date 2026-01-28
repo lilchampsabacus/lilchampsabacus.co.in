@@ -212,6 +212,12 @@
                 studentNameFormatted = namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
                 document.getElementById('report-student-name').textContent = studentNameFormatted;
             }
+            inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.code === 'Enter' || e.code === 'NumpadEnter') {
+            e.preventDefault(); // Prevents weird browser glitches
+            submitAnswer(e);    // Manually fires your existing submit logic
+            }
+            });
         });
 
         // --- STEP 1: FETCH 500 QUESTIONS ---
@@ -427,5 +433,6 @@
     </script>
 </body>
 </html>
+
 
 
