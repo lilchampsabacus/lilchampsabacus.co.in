@@ -76,81 +76,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Security & Welcome Script -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // --- 1. CONFIGURATION ---
-        const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- 2. SECURITY CHECK ---
-        const userRole = sessionStorage.getItem('userRole');
-        if (userRole !== 'teacher') {
-            window.location.href = 'index.html'; // Kick out students/strangers
-        }
-
-        // --- 3. LOGOUT FUNCTION ---
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
-
-        // --- 4. DATA FETCHING (ON LOAD) ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchClassData();
-        });
-
-        async function fetchClassData() {
-            console.log("Fetching Teacher Data...");
-            
-            // Fetch ALL reports (Teacher view)
-            const { data: reports, error } = await supabase
-                .from('reports')
-                .select('*')
-                .order('indian_time', { ascending: false });
-
-            if (error) {
-                console.error("Error:", error);
-                return;
-            }
-
-            // Calculate Metrics
-            processMissingPractice(reports);
-            processLeaderboard(reports);
-        }
-
-        // --- 5. LOGIC: FIND INACTIVE STUDENTS ---
-        function processMissingPractice(reports) {
-            const studentLastActive = {};
-            reports.forEach(row => {
-                const name = row.student_name;
-                const date = new Date(row.indian_time);
-                if (!studentLastActive[name] || date > studentLastActive[name]) {
-                    studentLastActive[name] = date;
-                }
-            });
-
-            const now = new Date();
-            let missingCount = 0;
-
-            for (const [name, lastDate] of Object.entries(studentLastActive)) {
-                const diffTime = Math.abs(now - lastDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if (diffDays > 3) missingCount++;
-            }
-
-            // Update the UI (find the specific card later)
-            console.log("Students Missing Practice:", missingCount);
-            // Example: document.getElementById('missing-count-display').innerText = missingCount;
-        }
-
-        // --- 6. LOGIC: LEADERBOARD ---
-        function processLeaderboard(reports) {
-            // Simplified logic for now
-            console.log("Total Reports Loaded:", reports.length);
-        }
-    </script>
     <!-- Header -->
     <header class="bg-indigo-600 text-white p-6 shadow-lg sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
@@ -301,6 +226,95 @@
         </div>
 
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- 1. CONFIGURATION ---
+        const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        
+        // Initialize Supabase only once
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 2. SECURITY CHECK ---
+        const userRole = sessionStorage.getItem('userRole');
+        if (userRole !== 'teacher') {
+            // If they are not a teacher, send them back to login
+            window.location.href = 'index.html'; 
+        }
+
+        // --- 3. LOGOUT FUNCTION ---
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // --- 4. DATA FETCHING (ON LOAD) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update the Welcome Name
+            document.getElementById('welcome-name').textContent = "Admin";
+            
+            // Fetch the real data
+            fetchClassData();
+        });
+
+        async function fetchClassData() {
+            console.log("Fetching Teacher Data...");
+            
+            const { data: reports, error } = await supabase
+                .from('reports')
+                .select('*')
+                .order('indian_time', { ascending: false });
+
+            if (error) {
+                console.error("Error:", error);
+                return;
+            }
+
+            // Run the logic to find missing students
+            processMissingPractice(reports);
+        }
+
+        // --- 5. LOGIC: FIND INACTIVE STUDENTS & UPDATE CARD ---
+        function processMissingPractice(reports) {
+            const studentLastActive = {};
+            reports.forEach(row => {
+                const name = row.student_name;
+                const date = new Date(row.indian_time);
+                if (!studentLastActive[name] || date > studentLastActive[name]) {
+                    studentLastActive[name] = date;
+                }
+            });
+
+            const now = new Date();
+            let missingCount = 0;
+
+            for (const [name, lastDate] of Object.entries(studentLastActive)) {
+                const diffTime = Math.abs(now - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                if (diffDays > 3) missingCount++;
+            }
+
+            console.log("Students Missing Practice:", missingCount);
+
+            // --- UNIQUE IDEA: UPDATE THE DASHBOARD VISUALS ---
+            // This code magically transforms your "Plus & Minus" card into an "Alert Card"
+            const alertCard = document.querySelector('.card-plus'); // The orange card
+            if(alertCard) {
+                // Change Icon
+                alertCard.querySelector('.card-icon').innerHTML = '⚠️';
+                // Change Title
+                alertCard.querySelector('h4').innerText = "Missing Practice";
+                // Change Text to show the count
+                alertCard.querySelector('p').innerHTML = `<strong style="font-size: 2em; color: #b45309;">${missingCount}</strong> Students inactive (>3 days)`;
+                // Change Button Text
+                alertCard.querySelector('span').innerText = "View List";
+                // Change Link
+                alertCard.href = "#"; 
+                alertCard.onclick = () => alert("Feature coming soon: List of missing students!");
+            }
+        }
+    </script>
 
     <!-- Footer -->
     <footer class="bg-white text-gray-500 p-6 text-center border-t border-gray-200">
