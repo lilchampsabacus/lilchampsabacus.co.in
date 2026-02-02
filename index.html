@@ -121,29 +121,40 @@
 
             if (error) throw error;
 
-            let rawName = data.user.email.split('@')[0];
-            let cleanName = rawName.replace('.', ' ');
-
-            cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase());
-
+           // --- NEW: THE INVISIBLE SWITCH LOGIC ---
+            const userEmail = data.user.email;
+            
+            // Save session data
             sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('studentIdentifier', cleanName);
+            sessionStorage.setItem('userId', data.user.id);
 
-            // Also save ID for the database saving later
-            sessionStorage.setItem('studentId', data.user.id);
+            // CHECK: IS THIS THE TEACHER?
+            if (userEmail === 'teacher.ambernath@gmail.com') {
+                
+                // 1. Teacher Logic
+                sessionStorage.setItem('userRole', 'teacher'); // Mark as teacher
+                messageElement.innerHTML = '<span class="text-indigo-600 font-bold">✅ Welcome, Admin! Loading Dashboard...</span>';
+                
+                setTimeout(function() {
+                    window.location.href = 'teacher-dashboard.html'; // <--- Goes to Teacher Page
+                }, 1000);
 
-            // Success Message
-            messageElement.textContent = ''; // Clear previous content
-            const successSpan = document.createElement('span');
-            successSpan.className = 'text-green-600';
-            successSpan.textContent = '✅ Welcome, ' + cleanName + '! Redirecting...';
-            messageElement.appendChild(successSpan);
+            } else {
 
-            // Redirect
-            setTimeout(function() {
-                window.location.href = 'practice_options.html';
-            }, 1000);
+                // 2. Student Logic (Your existing code)
+                let rawName = userEmail.split('@')[0];
+                let cleanName = rawName.replace('.', ' ');
+                cleanName = cleanName.replace(/\b\w/g, l => l.toUpperCase());
 
+                sessionStorage.setItem('studentIdentifier', cleanName);
+                sessionStorage.setItem('userRole', 'student');
+
+                messageElement.innerHTML = '<span class="text-green-600">✅ Welcome, ' + cleanName + '! Redirecting...</span>';
+                
+                setTimeout(function() {
+                    window.location.href = 'practice_options.html'; // <--- Goes to Student Page
+                }, 1000);
+            }
         } catch (error) {
             console.error('Login Error:', error);
             loginBtn.disabled = false;
