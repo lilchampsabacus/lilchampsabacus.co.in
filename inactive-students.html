@@ -8,7 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
+        /* Modal Animation */
+        .modal-enter { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
 </head>
 <body class="p-6 md:p-10">
 
@@ -20,7 +25,7 @@
         <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
     </div>
 
-    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden relative">
         
         <div id="loading" class="p-10 text-center text-gray-500 font-bold">
             Loading inactive list...
@@ -40,18 +45,74 @@
         </table>
     </div>
 
+    <div id="msgModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 modal-enter">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">Copy Reminder Message</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            
+            <textarea id="msgBox" class="w-full h-32 p-3 border border-gray-300 rounded-lg text-gray-700 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none" readonly></textarea>
+            
+            <div class="mt-4 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-bold transition">Cancel</button>
+                <button onclick="copyText()" id="copyBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow-md transition flex items-center gap-2">
+                    📋 Copy Text
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- NEW: POPUP WINDOW FUNCTION ---
-        function openWhatsApp(url) {
-            // This forces a new small window (Popup) instead of a tab.
-            // Browsers are much better at REUSING this window name.
-            window.open(url, 'whatsapp_popup', 'width=700,height=600,scrollbars=yes,resizable=yes');
+        // --- POPUP LOGIC ---
+        function openPopup(name, days) {
+            const msg = `Hello! We noticed ${name} hasn't practiced on the app for ${days} days. Please encourage them to practice today!`;
+            
+            const modal = document.getElementById('msgModal');
+            const box = document.getElementById('msgBox');
+            
+            box.value = msg; // Fill text area
+            modal.classList.remove('hidden'); // Show modal
+            
+            // Reset button text
+            document.getElementById('copyBtn').innerHTML = '📋 Copy Text';
+            document.getElementById('copyBtn').classList.remove('bg-gray-600');
+            document.getElementById('copyBtn').classList.add('bg-green-500');
         }
 
+        function closeModal() {
+            document.getElementById('msgModal').classList.add('hidden');
+        }
+
+        function copyText() {
+            const box = document.getElementById('msgBox');
+            box.select();
+            box.setSelectionRange(0, 99999); // Mobile support
+            navigator.clipboard.writeText(box.value);
+
+            // Visual Feedback
+            const btn = document.getElementById('copyBtn');
+            btn.innerHTML = '✅ Copied!';
+            btn.classList.remove('bg-green-500');
+            btn.classList.add('bg-gray-600');
+            
+            // Optional: Close after 1 second
+            setTimeout(() => { closeModal(); }, 1200);
+        }
+
+        // Close modal if clicking outside box
+        window.onclick = function(event) {
+            const modal = document.getElementById('msgModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // --- DATA LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
 
@@ -103,12 +164,7 @@
             list.forEach(student => {
                 const dateStr = student.lastDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                 
-                // Construct Message & Safe URL
-                const msg = `Hello! We noticed ${student.name} hasn't practiced on the app for ${student.diffDays} days. Please encourage them to practice today!`;
-                // Note: We replace single quotes to avoid breaking the HTML onClick
-                const waLink = "https://wa.me/?text=" + encodeURIComponent(msg).replace(/'/g, "%27");
-
-                // --- THE FIX: USE ONCLICK ---
+                // --- BUTTON TRIGGERS LOCAL POPUP NOW ---
                 const tr = `
                     <tr class="hover:bg-red-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">${student.name}</td>
@@ -119,8 +175,8 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="openWhatsApp('${waLink}')" class="text-green-600 hover:text-green-900 flex items-center gap-1 font-bold">
-                                💬 Remind
+                            <button onclick="openPopup('${student.name}', '${student.diffDays}')" class="bg-white border border-green-500 text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg flex items-center gap-1 font-bold text-xs transition shadow-sm">
+                                📝 Get Message
                             </button>
                         </td>
                     </tr>
