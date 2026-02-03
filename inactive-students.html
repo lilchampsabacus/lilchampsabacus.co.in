@@ -104,7 +104,7 @@
                 const dateStr = student.lastDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                 
                 // WhatsApp Link Generator
-                const msg = `Hello! We noticed ${student.name} hasn't practiced on the app for ${student.diffDays} days. Please encourage them to practice today!`;
+                const msg = `Hello! We noticed ${student.name} hasn't practiced on the website for ${student.diffDays} days. Please encourage your child to practice today!`;
                 const waLink = `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
                 const tr = `
