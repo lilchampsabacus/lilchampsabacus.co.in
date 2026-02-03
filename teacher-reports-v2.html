@@ -6,7 +6,10 @@
     <title>Teacher Reports V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
 </head>
 <body class="p-6 md:p-10">
@@ -35,6 +38,15 @@
             </div>
             <div class="flex items-end">
                 <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">Show Report</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="graphArea" class="max-w-6xl mx-auto mb-8 hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Practice Distribution</h3>
+            <div class="h-64 w-full">
+                <canvas id="practiceChart"></canvas>
             </div>
         </div>
     </div>
@@ -84,39 +96,29 @@
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let myChart = null; // Store chart instance to destroy/redraw
 
-        // --- NEW HELPERS: RAW STRING PARSING (No Timezone Math!) ---
-        
+        // --- HELPERS ---
         function getRawDate(isoString) {
             if (!isoString) return "-";
-            // Takes "2026-02-03T19:33:00+00" and returns "03 Feb 2026"
-            // We split by 'T' or ' ' to ignore time and offset completely
             const cleanDate = isoString.split('T')[0].split(' ')[0]; 
             const [year, month, day] = cleanDate.split('-');
-            
-            // Map month number to name
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             return `${day} ${months[parseInt(month)-1]} ${year}`;
         }
 
         function getRawTime(isoString) {
             if (!isoString) return "-";
-            // Takes "2026-02-03T19:33:00+00" and returns "07:33 PM"
-            // Split to find the time part
             let timePart = "";
             if(isoString.includes('T')) timePart = isoString.split('T')[1];
             else if(isoString.includes(' ')) timePart = isoString.split(' ')[1];
             else return "-";
 
-            // Remove any +00 or Z
             timePart = timePart.split('+')[0].split('Z')[0].split('.')[0];
-            
             let [hours, minutes] = timePart.split(':');
             let h = parseInt(hours);
             const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12; // the hour '0' should be '12'
-            
+            h = h % 12; h = h ? h : 12; 
             return `${h}:${minutes} ${ampm}`;
         }
 
@@ -131,6 +133,7 @@
             return `${secs}s`;
         }
 
+        // --- STARTUP ---
         document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('studentDropdown');
             dropdown.innerHTML = '<option>Loading...</option>';
@@ -163,14 +166,15 @@
             document.getElementById('monthPicker').value = `${yyyy}-${mm}`;
         });
 
+        // --- FETCH DATA ---
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
             if(!studentName) { alert("Please select a student first!"); return; }
 
             document.getElementById('resultsArea').classList.add('hidden');
             document.getElementById('calendarArea').classList.add('hidden');
+            document.getElementById('graphArea').classList.add('hidden');
             
-            // Note: We still order by Indian Time to keep list sorted correctly
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
@@ -182,23 +186,85 @@
             if(reports) {
                 renderTable(reports);
                 renderCalendar(reports);
+                renderGraph(reports); // DRAW THE GRAPH!
             }
         }
 
+        // --- NEW: RENDER GRAPH ---
+        function renderGraph(reports) {
+            document.getElementById('graphArea').classList.remove('hidden');
+            
+            let counts = {
+                plusMinus: 0,
+                multi: 0,
+                division: 0
+            };
+
+            // Calculate Counts based on Challenge Type keywords
+            reports.forEach(r => {
+                const type = (r.challenge_type || "").toLowerCase();
+                
+                if (type.includes('row') || type.includes('digit') || type.includes('plus')) {
+                    counts.plusMinus++;
+                } else if (type.includes('by') || type.includes('x') || type.includes('multi')) {
+                    counts.multi++;
+                } else if (type.includes('div') || type.includes('/')) {
+                    counts.division++;
+                } else {
+                    // Fallback: usually if it's just numbers, might be flash cards, ignore for now
+                }
+            });
+
+            // Destroy old chart if exists
+            if (myChart) myChart.destroy();
+
+            const ctx = document.getElementById('practiceChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Plus & Minus', 'Multiplication', 'Division'],
+                    datasets: [{
+                        label: 'Number of Practices',
+                        data: [counts.plusMinus, counts.multi, counts.division],
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.7)', // Orange for Plus Minus
+                            'rgba(59, 130, 246, 0.7)', // Blue for Multi
+                            'rgba(139, 92, 246, 0.7)'  // Purple for Division
+                        ],
+                        borderColor: [
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // --- RENDER TABLE ---
         function renderTable(reports) {
             document.getElementById('resultsArea').classList.remove('hidden');
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
             
             let count = 0;
-
             reports.forEach(row => {
-                // --- CHANGED: Use Raw String Parsers ---
                 const dateStr = getRawDate(row.indian_time);
                 const timeStr = getRawTime(row.indian_time);
-
                 count++;
-                
                 const timeTaken = row.time_taken || row.duration || row.timer || 0;
 
                 const tr = `
@@ -213,17 +279,15 @@
                     </tr>`;
                 tbody.innerHTML += tr;
             });
-
             document.getElementById('totalCount').innerText = count;
-            // Use Raw Date for Last Active too
             document.getElementById('lastActive').innerText = reports.length > 0 ? getRawDate(reports[0].indian_time) : 'N/A';
         }
 
+        // --- RENDER CALENDAR ---
         function renderCalendar(reports) {
             const calendarArea = document.getElementById('calendarArea');
             const grid = document.getElementById('calendarGrid');
             const monthInput = document.getElementById('monthPicker').value;
-            
             calendarArea.classList.remove('hidden');
             grid.innerHTML = '';
 
@@ -235,18 +299,12 @@
             const year = date.getFullYear();
             const month = date.getMonth(); 
 
-            // --- CHANGED: Use Raw String Parsing for Calendar too ---
             const practiceDates = new Set();
             reports.forEach(r => {
                 if(!r.indian_time) return;
-                
-                // Manually parse YYYY-MM-DD from string
                 const cleanDate = r.indian_time.split('T')[0].split(' ')[0];
                 const [rYear, rMonth, rDay] = cleanDate.split('-').map(Number);
-
-                // Check if this row belongs to selected month (Note: rMonth is 1-12, js month is 0-11)
                 if ((rMonth - 1) === month && rYear === year) {
-                     // Store "2026-02-03" exactly as found in DB
                      practiceDates.add(cleanDate);
                 }
             });
@@ -265,22 +323,13 @@
                 const currentMonth = (month + 1).toString().padStart(2, '0');
                 const currentDay = day.toString().padStart(2, '0');
                 const checkDate = `${year}-${currentMonth}-${currentDay}`;
-
                 const isPracticed = practiceDates.has(checkDate);
                 
                 let colorClass = "bg-white border-gray-100 text-gray-300"; 
-                if (isPracticed) {
-                    colorClass = "bg-green-100 border-green-300 text-green-700 shadow-sm";
-                } else if (checkDate < todayStr && checkDate >= `${year}-${currentMonth}-01`) {
-                    colorClass = "bg-red-50 border-red-100 text-red-400";
-                }
+                if (isPracticed) colorClass = "bg-green-100 border-green-300 text-green-700 shadow-sm";
+                else if (checkDate < todayStr && checkDate >= `${year}-${currentMonth}-01`) colorClass = "bg-red-50 border-red-100 text-red-400";
 
-                grid.innerHTML += `
-                    <div class="h-12 border-2 rounded-lg flex items-center justify-center font-bold text-sm ${colorClass}">
-                        ${day}
-                        ${isPracticed ? '<span class="ml-1 text-xs">✅</span>' : ''}
-                    </div>
-                `;
+                grid.innerHTML += `<div class="h-12 border-2 rounded-lg flex items-center justify-center font-bold text-sm ${colorClass}">${day}${isPracticed ? '<span class="ml-1 text-xs">✅</span>' : ''}</div>`;
             }
         }
     </script>
