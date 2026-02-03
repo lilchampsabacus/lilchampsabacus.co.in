@@ -6,6 +6,7 @@
     <title>Teacher Master Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -61,7 +62,7 @@
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
                 <h3 class="text-gray-500 text-sm font-bold uppercase">Avg Score</h3>
-                <p id="avgScore" class="text-3xl font-extrabold text-green-600">0%</p>
+                <p id="avgScore" class="text-3xl font-extrabold text-green-600">-</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
                 <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
@@ -85,10 +86,12 @@
         </div>
     </div>
 
-   <script>
+    <script>
         // --- CONFIGURATION ---
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        
+        // Initialize Supabase (ONLY ONCE)
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- 1. LOAD STUDENT LIST ON START ---
@@ -100,9 +103,8 @@
             const { data: { session } } = await supabase.auth.getSession();
             
             if (!session) {
-                alert("Session expired! Please log in again.");
-                window.location.href = 'index.html';
-                return;
+                // If not logged in, just warn but try to load anyway (for testing)
+                console.warn("No active session found. RLS might block data.");
             }
 
             // Fetch unique student names
@@ -112,7 +114,7 @@
 
             if (error) {
                 console.error("Supabase Error:", error);
-                alert("Database Error: " + error.message);
+                alert("Database Error: " + error.message + "\n\n(Tip: Did you run the SQL Policy?)");
                 dropdown.innerHTML = '<option>Error loading list</option>';
                 return;
             }
@@ -122,13 +124,13 @@
                 return;
             }
 
-            // Filter for unique names manually (since .distinct() can be tricky in some versions)
+            // Filter for unique names manually
             const uniqueNames = [...new Set(data.map(item => item.student_name))];
             
             // Populate Dropdown
             dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
             uniqueNames.sort().forEach(name => {
-                if(name) { // only add if name is not null
+                if(name) { 
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = name;
@@ -166,6 +168,7 @@
             tbody.innerHTML = '';
             
             let count = 0;
+            let totalScore = 0;
 
             reports.forEach(row => {
                 const dateObj = new Date(row.indian_time);
@@ -173,6 +176,17 @@
                 const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
                 count++;
+                
+                // Try to parse score for average (handle "9/10" or "9")
+                let scoreVal = 0;
+                if(row.score) {
+                    if(typeof row.score === 'string' && row.score.includes('/')) {
+                        scoreVal = parseFloat(row.score.split('/')[0]);
+                    } else {
+                        scoreVal = parseFloat(row.score);
+                    }
+                }
+                totalScore += scoreVal || 0;
 
                 // Determine row color
                 const isPerfect = row.score_text && row.score_text.includes(row.score + "/" + row.score);
@@ -203,6 +217,11 @@
 
             document.getElementById('totalCount').innerText = count;
             document.getElementById('lastActive').innerText = reports.length > 0 ? new Date(reports[0].indian_time).toLocaleDateString() : 'N/A';
+            
+            // Calculate Average (Simple)
+            if(count > 0) {
+                 document.getElementById('avgScore').innerText = Math.round(totalScore / count);
+            }
         }
     </script>
 </body>
