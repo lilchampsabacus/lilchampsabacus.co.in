@@ -95,7 +95,7 @@
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         
-        // Initialize Supabase (Use 'const' because this is a clean file)
+        // Initialize Supabase
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- LOAD STUDENT LIST ---
@@ -166,7 +166,7 @@
             
             if(reports) {
                 renderTable(reports);
-                renderCalendar(reports); // Run the visual calendar!
+                renderCalendar(reports);
             }
         }
 
@@ -185,7 +185,6 @@
                 const statusColor = isPerfect ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
 
                 count++;
-                 // Simple Score Logic
                 let scoreVal = 0;
                 if(row.score) scoreVal = parseInt(row.score) || 0;
                 totalScore += scoreVal;
@@ -200,22 +199,20 @@
                 tbody.innerHTML += tr;
             });
 
-            // Update Cards
             document.getElementById('totalCount').innerText = count;
             document.getElementById('lastActive').innerText = reports.length > 0 ? new Date(reports[0].indian_time).toLocaleDateString() : 'N/A';
             if(count > 0) document.getElementById('avgScore').innerText = Math.round(totalScore / count);
         }
 
-        // --- RENDER CALENDAR (The Magic Part) ---
+        // --- RENDER CALENDAR (FIXED) ---
         function renderCalendar(reports) {
             const calendarArea = document.getElementById('calendarArea');
             const grid = document.getElementById('calendarGrid');
-            const monthInput = document.getElementById('monthPicker').value; // "2026-02"
+            const monthInput = document.getElementById('monthPicker').value;
             
             calendarArea.classList.remove('hidden');
             grid.innerHTML = '';
 
-            // 1. Determine Month & Year
             let date = new Date();
             if (monthInput) {
                 const [y, m] = monthInput.split('-');
@@ -224,28 +221,33 @@
             const year = date.getFullYear();
             const month = date.getMonth(); 
 
-            // 2. Identify Practice Dates
+            // --- THE FIX: USE LOCAL TIME STRING CONSTRUCTION ---
             const practiceDates = new Set();
             reports.forEach(r => {
                 const d = new Date(r.indian_time);
+                
                 // Only count if it matches the selected month/year
                 if(d.getMonth() === month && d.getFullYear() === year) {
-                     const dateStr = d.toISOString().split('T')[0];
+                     // Get Local YYYY-MM-DD (Fixes the "One Day Behind" bug)
+                     const localY = d.getFullYear();
+                     const localM = String(d.getMonth() + 1).padStart(2, '0');
+                     const localD = String(d.getDate()).padStart(2, '0');
+                     
+                     const dateStr = `${localY}-${localM}-${localD}`;
                      practiceDates.add(dateStr);
                 }
             });
 
-            // 3. Grid Logic
-            const firstDay = new Date(year, month, 1).getDay(); // Padding
+            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Render Padding
             for (let i = 0; i < firstDay; i++) {
                 grid.innerHTML += `<div class="h-12 bg-gray-50 rounded-lg"></div>`;
             }
 
-            // Render Days
-            const todayStr = new Date().toISOString().split('T')[0];
+            // Get Today in Local Time
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const currentMonth = (month + 1).toString().padStart(2, '0');
@@ -254,13 +256,11 @@
 
                 const isPracticed = practiceDates.has(checkDate);
                 
-                // Colors
-                let colorClass = "bg-white border-gray-100 text-gray-300"; // Future/Empty
+                let colorClass = "bg-white border-gray-100 text-gray-300"; 
                 
                 if (isPracticed) {
                     colorClass = "bg-green-100 border-green-300 text-green-700 shadow-sm";
                 } else if (checkDate < todayStr && checkDate >= `${year}-${currentMonth}-01`) {
-                     // Only show RED if it is a past date in this month
                     colorClass = "bg-red-50 border-red-100 text-red-400";
                 }
 
