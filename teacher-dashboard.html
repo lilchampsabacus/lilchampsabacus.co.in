@@ -69,8 +69,8 @@
             <a href="#" class="option-card card-speed bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">🏆</div>
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Today's Leaders</h4>
-                <p class="text-gray-500 mb-6 z-10">Who practiced the most today?</p>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Yesterday's Leaders</h4>
+                <p class="text-gray-500 mb-6 z-10">Who practiced the most yesterday?</p>
                 <div id="leaderboard-list" class="text-sm text-gray-600 font-bold z-10 mt-2">Calculating...</div>
             </a>
 
@@ -132,26 +132,34 @@
                     btn.classList.remove('bg-amber-100', 'text-amber-700');
                     btn.classList.add('bg-red-600', 'text-white');
                 }
-                // No more onclick alert; the <a> tag handles the navigation now.
             }
         }
 
+        // --- UPDATED LOGIC: YESTERDAY'S LEADERBOARD ---
         function processLeaderboard(reports) {
-            const todayStr = new Date().toISOString().split('T')[0];
+            // 1. Calculate Yesterday's Date String (YYYY-MM-DD)
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1); // Subtract 1 day
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
             const scores = {};
             reports.forEach(r => {
-                if(r.indian_time && r.indian_time.startsWith(todayStr)) {
+                // 2. Filter using yesterdayStr instead of todayStr
+                if(r.indian_time && r.indian_time.startsWith(yesterdayStr)) {
                     const name = r.student_name;
                     let val = parseInt(r.score) || 1; 
                     if(!scores[name]) scores[name] = 0;
                     scores[name] += val;
                 }
             });
+
             const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
             const top3 = sorted.slice(0, 3); 
             const listDiv = document.getElementById('leaderboard-list');
+
             if(top3.length === 0) {
-                listDiv.innerHTML = "<br>No practice yet today!";
+                listDiv.innerHTML = "<br>No practice yesterday!";
             } else {
                 let html = "<ul style='margin-top:10px; text-align:left;'>";
                 top3.forEach((item, index) => {
