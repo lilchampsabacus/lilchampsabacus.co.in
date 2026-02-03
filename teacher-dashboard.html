@@ -8,34 +8,15 @@
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: #f0f9ff; 
-            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
-            background-size: 24px 24px;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .option-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-bottom: 6px solid transparent;
-        }
-        .option-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .card-multi { border-color: #3b82f6; } 
-        .card-multi:hover { border-bottom-color: #1d4ed8; }
-        .card-plus { border-color: #f59e0b; } 
-        .card-plus:hover { border-bottom-color: #b45309; }
-        .card-speed { border-color: #10b981; } 
-        .card-speed:hover { border-bottom-color: #047857; }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; min-height: 100vh; display: flex; flex-direction: column; }
+        .option-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-bottom: 6px solid transparent; }
+        .option-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .card-multi { border-color: #3b82f6; } .card-multi:hover { border-bottom-color: #1d4ed8; }
+        .card-plus { border-color: #f59e0b; } .card-plus:hover { border-bottom-color: #b45309; }
+        .card-speed { border-color: #10b981; } .card-speed:hover { border-bottom-color: #047857; }
         @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .option-card:hover .card-icon { animation: wiggle 1s ease-in-out infinite; }
     </style>
@@ -62,9 +43,7 @@
                 <div class="text-4xl">📊</div>
                 <div>
                     <h3 class="text-xl font-bold text-blue-800">Class Overview</h3>
-                    <p class="text-blue-900 mt-1">
-                        Use the cards below to monitor student progress.
-                    </p>
+                    <p class="text-blue-900 mt-1">Use the cards below to monitor student progress.</p>
                 </div>
             </div>
         </div>
@@ -79,7 +58,7 @@
                 <span class="card-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-colors z-10">View Data</span>
             </a>
 
-            <a href="#" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
+            <a href="inactive-students.html" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">⌛</div> 
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading Data...</h4>
@@ -97,9 +76,7 @@
 
         </div>
 
-        <button onclick="logout()" class="mt-16 text-gray-500 hover:text-red-600 font-bold py-3 px-8 rounded-full border-2 border-gray-200 hover:border-red-200 hover:bg-red-50 transition-all">
-            Log Out
-        </button>
+        <button onclick="logout()" class="mt-16 text-gray-500 hover:text-red-600 font-bold py-3 px-8 rounded-full border-2 border-gray-200 hover:border-red-200 hover:bg-red-50 transition-all">Log Out</button>
 
     </main>
 
@@ -108,129 +85,71 @@
     </footer>
 
     <script>
-        // --- 1. CONFIGURATION ---
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
-        
-        // Initialize Supabase
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 2. AUTH CHECK ---
         const userRole = sessionStorage.getItem('userRole');
-        if (userRole !== 'teacher') {
-            window.location.href = 'index.html'; 
-        }
+        if (userRole !== 'teacher') window.location.href = 'index.html'; 
 
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-        // --- 3. FETCH DATA ---
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log("Teacher Dashboard Loading...");
-            
-            const { data: reports, error } = await supabase
-                .from('reports')
-                .select('*')
-                .order('indian_time', { ascending: false });
-
-            if (error) {
-                console.error("Error fetching data:", error);
-                return;
-            }
-
-            console.log("Reports loaded:", reports.length);
+            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
+            if (error) return;
             processMissingPractice(reports);
             processLeaderboard(reports);
         });
 
-        // --- 4. LOGIC: MISSING PRACTICE (UPDATED TO SHOW LIST) ---
         function processMissingPractice(reports) {
             const studentLastActive = {};
-            
             reports.forEach(row => {
                 const name = row.student_name;
                 const date = new Date(row.indian_time);
-                if (!studentLastActive[name] || date > studentLastActive[name]) {
-                    studentLastActive[name] = date;
-                }
+                if (!studentLastActive[name] || date > studentLastActive[name]) studentLastActive[name] = date;
             });
 
             const now = new Date();
             let missingCount = 0;
-            let missingList = []; // NEW: Array to store names
-            
             for (const [name, lastDate] of Object.entries(studentLastActive)) {
                 const diffTime = Math.abs(now - lastDate);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                
-                if (diffDays > 3) {
-                    missingCount++;
-                    // Add to list with days
-                    missingList.push(`${name} (${diffDays} days)`);
-                }
+                if (diffDays > 3) missingCount++;
             }
 
             const alertCard = document.querySelector('.card-plus'); 
-            
             if(alertCard) {
-                // Change Colors
                 alertCard.style.borderColor = "#ef4444"; 
                 alertCard.querySelector('.absolute').classList.remove('bg-amber-100');
                 alertCard.querySelector('.absolute').classList.add('bg-red-100');
-
-                // Change Content
                 alertCard.querySelector('.card-icon').innerHTML = '⚠️';
                 alertCard.querySelector('h4').innerText = "Missing Practice";
-                alertCard.querySelector('p').innerHTML = `
-                    <span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">
-                        ${missingCount}
-                    </span>
-                    <span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>
-                `;
+                alertCard.querySelector('p').innerHTML = `<span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">${missingCount}</span><span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>`;
                 
-                // Update Button
                 const btn = alertCard.querySelector('.card-btn');
                 if(btn) {
-                    btn.innerText = "View Inactive List"; // Updated Text
+                    btn.innerText = "View Inactive List";
                     btn.classList.remove('bg-amber-100', 'text-amber-700');
                     btn.classList.add('bg-red-600', 'text-white');
                 }
-                
-                // NEW: Click shows the list!
-                alertCard.onclick = (e) => {
-                    if(e.target.tagName !== 'A') e.preventDefault();
-                    
-                    if(missingList.length === 0) {
-                        alert("Great news! Everyone has practiced recently.");
-                    } else {
-                        alert("⚠️ INACTIVE STUDENTS:\n\n" + missingList.join("\n"));
-                    }
-                };
+                // No more onclick alert; the <a> tag handles the navigation now.
             }
         }
 
-        // --- 5. LOGIC: LEADERBOARD ---
         function processLeaderboard(reports) {
             const todayStr = new Date().toISOString().split('T')[0];
             const scores = {};
-
             reports.forEach(r => {
                 if(r.indian_time && r.indian_time.startsWith(todayStr)) {
                     const name = r.student_name;
-                    let val = 0;
-                    if(r.score) val = parseInt(r.score) || 1; 
+                    let val = parseInt(r.score) || 1; 
                     if(!scores[name]) scores[name] = 0;
                     scores[name] += val;
                 }
             });
-
             const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
             const top3 = sorted.slice(0, 3); 
-
             const listDiv = document.getElementById('leaderboard-list');
-
             if(top3.length === 0) {
                 listDiv.innerHTML = "<br>No practice yet today!";
             } else {
