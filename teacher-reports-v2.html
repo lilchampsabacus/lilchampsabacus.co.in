@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
     <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
 </head>
@@ -44,7 +46,10 @@
 
     <div id="graphArea" class="max-w-6xl mx-auto mb-8 hidden">
         <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Practice Distribution</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                📊 Practice Distribution 
+                <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+            </h3>
             <div class="h-64 w-full">
                 <canvas id="practiceChart"></canvas>
             </div>
@@ -53,11 +58,17 @@
 
     <div id="calendarArea" class="max-w-6xl mx-auto mb-8 hidden">
         <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                📅 Monthly Consistency
-                <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Green = Practiced</span>
-                <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
-            </h3>
+            <div class="flex flex-wrap justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    📅 Monthly Consistency 
+                    <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+                </h3>
+                <div class="flex gap-2">
+                    <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Green = Practiced</span>
+                    <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
+                </div>
+            </div>
+            
             <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-bold text-gray-400 uppercase">
                 <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
@@ -96,7 +107,10 @@
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let myChart = null; // Store chart instance to destroy/redraw
+        
+        // Register the DataLabels plugin for Chart.js
+        Chart.register(ChartDataLabels);
+        let myChart = null; 
 
         // --- HELPERS ---
         function getRawDate(isoString) {
@@ -113,7 +127,6 @@
             if(isoString.includes('T')) timePart = isoString.split('T')[1];
             else if(isoString.includes(' ')) timePart = isoString.split(' ')[1];
             else return "-";
-
             timePart = timePart.split('+')[0].split('Z')[0].split('.')[0];
             let [hours, minutes] = timePart.split(':');
             let h = parseInt(hours);
@@ -171,6 +184,10 @@
             const studentName = document.getElementById('studentDropdown').value;
             if(!studentName) { alert("Please select a student first!"); return; }
 
+            // UPDATE NAMES ON SCREEN
+            document.getElementById('graphStudentName').innerText = `for ${studentName}`;
+            document.getElementById('calendarStudentName').innerText = `for ${studentName}`;
+
             document.getElementById('resultsArea').classList.add('hidden');
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
@@ -186,36 +203,22 @@
             if(reports) {
                 renderTable(reports);
                 renderCalendar(reports);
-                renderGraph(reports); // DRAW THE GRAPH!
+                renderGraph(reports); 
             }
         }
 
-        // --- NEW: RENDER GRAPH ---
+        // --- RENDER GRAPH (Updated with Numbers) ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
-            let counts = {
-                plusMinus: 0,
-                multi: 0,
-                division: 0
-            };
-
-            // Calculate Counts based on Challenge Type keywords
+            let counts = { plusMinus: 0, multi: 0, division: 0 };
             reports.forEach(r => {
                 const type = (r.challenge_type || "").toLowerCase();
-                
-                if (type.includes('row') || type.includes('digit') || type.includes('plus')) {
-                    counts.plusMinus++;
-                } else if (type.includes('by') || type.includes('x') || type.includes('multi')) {
-                    counts.multi++;
-                } else if (type.includes('div') || type.includes('/')) {
-                    counts.division++;
-                } else {
-                    // Fallback: usually if it's just numbers, might be flash cards, ignore for now
-                }
+                if (type.includes('row') || type.includes('digit') || type.includes('plus')) counts.plusMinus++;
+                else if (type.includes('by') || type.includes('x') || type.includes('multi')) counts.multi++;
+                else if (type.includes('div') || type.includes('/')) counts.division++;
             });
 
-            // Destroy old chart if exists
             if (myChart) myChart.destroy();
 
             const ctx = document.getElementById('practiceChart').getContext('2d');
@@ -224,12 +227,12 @@
                 data: {
                     labels: ['Plus & Minus', 'Multiplication', 'Division'],
                     datasets: [{
-                        label: 'Number of Practices',
+                        label: 'Practice Count',
                         data: [counts.plusMinus, counts.multi, counts.division],
                         backgroundColor: [
-                            'rgba(245, 158, 11, 0.7)', // Orange for Plus Minus
-                            'rgba(59, 130, 246, 0.7)', // Blue for Multi
-                            'rgba(139, 92, 246, 0.7)'  // Purple for Division
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
                         ],
                         borderColor: [
                             'rgba(245, 158, 11, 1)',
@@ -248,7 +251,21 @@
                         x: { grid: { display: false } }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        // THIS CONFIG ADDS THE NUMBERS
+                        datalabels: {
+                            color: '#1f2937', // Dark Gray
+                            anchor: 'end',
+                            align: 'top',
+                            offset: -5,
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            formatter: function(value) {
+                                return value > 0 ? value : ''; // Hide 0s
+                            }
+                        }
                     }
                 }
             });
@@ -259,14 +276,12 @@
             document.getElementById('resultsArea').classList.remove('hidden');
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
-            
             let count = 0;
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
                 const timeStr = getRawTime(row.indian_time);
                 count++;
                 const timeTaken = row.time_taken || row.duration || row.timer || 0;
-
                 const tr = `
                     <tr class="hover:bg-gray-50 border-b">
                         <td class="px-5 py-4 text-sm">
@@ -304,9 +319,7 @@
                 if(!r.indian_time) return;
                 const cleanDate = r.indian_time.split('T')[0].split(' ')[0];
                 const [rYear, rMonth, rDay] = cleanDate.split('-').map(Number);
-                if ((rMonth - 1) === month && rYear === year) {
-                     practiceDates.add(cleanDate);
-                }
+                if ((rMonth - 1) === month && rYear === year) practiceDates.add(cleanDate);
             });
 
             const firstDay = new Date(year, month, 1).getDay();
