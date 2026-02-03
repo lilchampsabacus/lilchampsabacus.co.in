@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -91,7 +92,7 @@
                 <div class="card-icon text-6xl mb-6 z-10">🏆</div>
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Today's Leaders</h4>
                 <p class="text-gray-500 mb-6 z-10">Who practiced the most today?</p>
-                <div id="leaderboard-list" class="text-sm text-gray-600 font-bold z-10">Calculating...</div>
+                <div id="leaderboard-list" class="text-sm text-gray-600 font-bold z-10 mt-2">Calculating...</div>
             </a>
 
         </div>
@@ -144,7 +145,7 @@
             processLeaderboard(reports);
         });
 
-        // --- 4. LOGIC: MISSING PRACTICE ---
+        // --- 4. LOGIC: MISSING PRACTICE (UPDATED TO SHOW LIST) ---
         function processMissingPractice(reports) {
             const studentLastActive = {};
             
@@ -158,11 +159,17 @@
 
             const now = new Date();
             let missingCount = 0;
+            let missingList = []; // NEW: Array to store names
             
             for (const [name, lastDate] of Object.entries(studentLastActive)) {
                 const diffTime = Math.abs(now - lastDate);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if (diffDays > 3) missingCount++;
+                
+                if (diffDays > 3) {
+                    missingCount++;
+                    // Add to list with days
+                    missingList.push(`${name} (${diffDays} days)`);
+                }
             }
 
             const alertCard = document.querySelector('.card-plus'); 
@@ -173,7 +180,7 @@
                 alertCard.querySelector('.absolute').classList.remove('bg-amber-100');
                 alertCard.querySelector('.absolute').classList.add('bg-red-100');
 
-                // Change Content (The Number)
+                // Change Content
                 alertCard.querySelector('.card-icon').innerHTML = '⚠️';
                 alertCard.querySelector('h4').innerText = "Missing Practice";
                 alertCard.querySelector('p').innerHTML = `
@@ -183,18 +190,23 @@
                     <span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>
                 `;
                 
-                // Update Button (Fixed Selector!)
+                // Update Button
                 const btn = alertCard.querySelector('.card-btn');
                 if(btn) {
-                    btn.innerText = "Send Reminders";
+                    btn.innerText = "View Inactive List"; // Updated Text
                     btn.classList.remove('bg-amber-100', 'text-amber-700');
                     btn.classList.add('bg-red-600', 'text-white');
                 }
                 
+                // NEW: Click shows the list!
                 alertCard.onclick = (e) => {
                     if(e.target.tagName !== 'A') e.preventDefault();
-                    // Just alert for now
-                    alert("List of inactive students: (Coming Soon)");
+                    
+                    if(missingList.length === 0) {
+                        alert("Great news! Everyone has practiced recently.");
+                    } else {
+                        alert("⚠️ INACTIVE STUDENTS:\n\n" + missingList.join("\n"));
+                    }
                 };
             }
         }
