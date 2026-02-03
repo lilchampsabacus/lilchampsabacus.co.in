@@ -45,19 +45,21 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // --- NEW: POPUP WINDOW FUNCTION ---
+        function openWhatsApp(url) {
+            // This forces a new small window (Popup) instead of a tab.
+            // Browsers are much better at REUSING this window name.
+            window.open(url, 'whatsapp_popup', 'width=700,height=600,scrollbars=yes,resizable=yes');
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Fetch all reports
-            const { data: reports, error } = await supabase
-                .from('reports')
-                .select('*')
-                .order('indian_time', { ascending: false });
+            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
 
             if (error) {
                 document.getElementById('loading').innerText = "Error loading data.";
                 return;
             }
 
-            // 2. Process Data to find gaps
             const studentLastActive = {};
             reports.forEach(row => {
                 const name = row.student_name;
@@ -79,9 +81,7 @@
                 }
             }
 
-            // 3. Sort: Worst offenders (most days inactive) at the top
             inactiveList.sort((a, b) => b.diffDays - a.diffDays);
-
             renderTable(inactiveList);
         });
 
@@ -103,10 +103,12 @@
             list.forEach(student => {
                 const dateStr = student.lastDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                 
-                // WhatsApp Link Generator
-                const msg = `Hello! We noticed ${student.name} hasn't practiced on the website for ${student.diffDays} days. Please encourage your child to practice today!`;
-                const waLink = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+                // Construct Message & Safe URL
+                const msg = `Hello! We noticed ${student.name} hasn't practiced on the app for ${student.diffDays} days. Please encourage them to practice today!`;
+                // Note: We replace single quotes to avoid breaking the HTML onClick
+                const waLink = "https://wa.me/?text=" + encodeURIComponent(msg).replace(/'/g, "%27");
 
+                // --- THE FIX: USE ONCLICK ---
                 const tr = `
                     <tr class="hover:bg-red-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">${student.name}</td>
@@ -117,9 +119,9 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="${waLink}" target="wa_window" class="text-green-600 hover:text-green-900 flex items-center gap-1 font-bold">
+                            <button onclick="openWhatsApp('${waLink}')" class="text-green-600 hover:text-green-900 flex items-center gap-1 font-bold">
                                 💬 Remind
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 `;
