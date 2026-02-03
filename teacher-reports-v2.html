@@ -3,73 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Master Report</title>
+    <title>Teacher Reports V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
-        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
-    </style>
+    <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
 </head>
 <body class="p-6 md:p-10">
 
     <div class="max-w-6xl mx-auto flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-extrabold text-gray-800">Student Reports</h1>
+            <h1 class="text-3xl font-extrabold text-gray-800">Student Reports (V2)</h1>
             <p class="text-indigo-600 font-semibold">Select a student to view their progress</p>
         </div>
-        <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">
-            ← Back
-        </a>
+        <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
     </div>
 
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Select Student</label>
                 <div class="relative">
                     <select id="studentDropdown" class="block appearance-none w-full bg-indigo-50 border border-indigo-200 text-gray-700 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500">
-                        <option value="">Loading students...</option>
+                        <option value="">Status: Waiting for script...</option>
                     </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
                 </div>
             </div>
-
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Filter Month</label>
                 <input type="month" id="monthPicker" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
             </div>
-
             <div class="flex items-end">
-                <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">
-                    Show Report
-                </button>
+                <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">Show Report</button>
             </div>
         </div>
     </div>
 
     <div id="resultsArea" class="max-w-6xl mx-auto hidden">
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices</h3>
-                <p id="totalCount" class="text-3xl font-extrabold text-blue-600">0</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Avg Score</h3>
-                <p id="avgScore" class="text-3xl font-extrabold text-green-600">-</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
-                <p id="lastActive" class="text-xl font-bold text-purple-600">-</p>
-            </div>
-        </div>
-
         <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
             <table class="min-w-full leading-normal">
                 <thead>
@@ -80,8 +52,7 @@
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
-                <tbody id="reportTableBody">
-                    </tbody>
+                <tbody id="reportTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -91,43 +62,45 @@
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         
-        // Initialize Supabase (ONLY ONCE)
+        // Initialize Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 1. LOAD STUDENT LIST ON START ---
+        // --- LOAD STUDENT LIST ---
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log("Loading student list...");
             const dropdown = document.getElementById('studentDropdown');
+            dropdown.innerHTML = '<option>Step 1: Checking Session...</option>';
             
-            // Check if we are actually logged in
+            // Check Session
             const { data: { session } } = await supabase.auth.getSession();
             
             if (!session) {
-                // If not logged in, just warn but try to load anyway (for testing)
-                console.warn("No active session found. RLS might block data.");
+                dropdown.innerHTML = '<option>Error: No Session Found. Relogin.</option>';
+                alert("You are not logged in! Please go back to login page.");
+                return;
             }
 
-            // Fetch unique student names
+            dropdown.innerHTML = '<option>Step 2: Fetching Database...</option>';
+
+            // Fetch Data
             const { data, error } = await supabase
                 .from('reports')
                 .select('student_name');
 
             if (error) {
                 console.error("Supabase Error:", error);
-                alert("Database Error: " + error.message + "\n\n(Tip: Did you run the SQL Policy?)");
-                dropdown.innerHTML = '<option>Error loading list</option>';
+                dropdown.innerHTML = '<option>Error: ' + error.message + '</option>';
+                alert("Database Error: " + error.message);
                 return;
             }
 
             if (!data || data.length === 0) {
-                dropdown.innerHTML = '<option>No students found</option>';
+                dropdown.innerHTML = '<option>No students found in DB</option>';
                 return;
             }
 
-            // Filter for unique names manually
+            // Success! Process Data
             const uniqueNames = [...new Set(data.map(item => item.student_name))];
             
-            // Populate Dropdown
             dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
             uniqueNames.sort().forEach(name => {
                 if(name) { 
@@ -137,14 +110,15 @@
                     dropdown.appendChild(option);
                 }
             });
+            
+            // alert("Success! Loaded " + uniqueNames.length + " students.");
         });
 
-        // --- 2. FETCH REPORT FOR SELECTED STUDENT ---
+        // --- FETCH REPORT ---
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
             if(!studentName) { alert("Please select a student first!"); return; }
 
-            // Show loading state
             document.getElementById('resultsArea').classList.add('hidden');
             
             const { data: reports, error } = await supabase
@@ -153,75 +127,29 @@
                 .eq('student_name', studentName)
                 .order('indian_time', { ascending: false });
 
-            if(error) {
-                alert("Error fetching report: " + error.message);
-                return;
-            }
-
+            if(error) { alert("Error: " + error.message); return; }
             if(reports) renderTable(reports);
         }
 
-        // --- 3. DISPLAY DATA ---
         function renderTable(reports) {
             document.getElementById('resultsArea').classList.remove('hidden');
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
             
-            let count = 0;
-            let totalScore = 0;
-
             reports.forEach(row => {
-                const dateObj = new Date(row.indian_time);
-                const dateStr = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
-                count++;
-                
-                // Try to parse score for average (handle "9/10" or "9")
-                let scoreVal = 0;
-                if(row.score) {
-                    if(typeof row.score === 'string' && row.score.includes('/')) {
-                        scoreVal = parseFloat(row.score.split('/')[0]);
-                    } else {
-                        scoreVal = parseFloat(row.score);
-                    }
-                }
-                totalScore += scoreVal || 0;
-
-                // Determine row color
+                const dateStr = new Date(row.indian_time).toLocaleDateString('en-IN');
                 const isPerfect = row.score_text && row.score_text.includes(row.score + "/" + row.score);
                 const statusColor = isPerfect ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-                const statusText = isPerfect ? 'Perfect' : 'Completed';
 
                 const tr = `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap font-bold">${dateStr}</p>
-                            <p class="text-gray-500 text-xs">${timeStr}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap capitalize">${row.challenge_type || 'Practice'}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap font-bold">${row.score_text || row.score}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                            <span class="relative inline-block px-3 py-1 font-semibold leading-tight ${statusColor} rounded-full text-xs">
-                                ${statusText}
-                            </span>
-                        </td>
-                    </tr>
-                `;
+                    <tr class="hover:bg-gray-50 border-b">
+                        <td class="px-5 py-4 text-sm font-bold">${dateStr}</td>
+                        <td class="px-5 py-4 text-sm capitalize">${row.challenge_type || 'Practice'}</td>
+                        <td class="px-5 py-4 text-sm font-bold">${row.score_text || row.score}</td>
+                        <td class="px-5 py-4 text-sm"><span class="px-3 py-1 rounded-full text-xs ${statusColor}">${isPerfect ? 'Perfect' : 'Done'}</span></td>
+                    </tr>`;
                 tbody.innerHTML += tr;
             });
-
-            document.getElementById('totalCount').innerText = count;
-            document.getElementById('lastActive').innerText = reports.length > 0 ? new Date(reports[0].indian_time).toLocaleDateString() : 'N/A';
-            
-            // Calculate Average (Simple)
-            if(count > 0) {
-                 document.getElementById('avgScore').innerText = Math.round(totalScore / count);
-            }
         }
     </script>
 </body>
