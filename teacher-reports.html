@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // --- CONFIGURATION ---
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
@@ -93,27 +93,48 @@
 
         // --- 1. LOAD STUDENT LIST ON START ---
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log("Loading student list...");
             const dropdown = document.getElementById('studentDropdown');
             
-            // Fetch unique student names from reports table
-            // (Ideally you should have a 'students' table, but this works with just reports too)
+            // Check if we are actually logged in
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                alert("Session expired! Please log in again.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Fetch unique student names
             const { data, error } = await supabase
                 .from('reports')
-                .select('student_name')
-                .order('student_name', { ascending: true });
+                .select('student_name');
 
-            if (data) {
-                // Get unique names only
-                const uniqueNames = [...new Set(data.map(item => item.student_name))];
-                
-                dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
-                uniqueNames.forEach(name => {
+            if (error) {
+                console.error("Supabase Error:", error);
+                alert("Database Error: " + error.message);
+                dropdown.innerHTML = '<option>Error loading list</option>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                dropdown.innerHTML = '<option>No students found</option>';
+                return;
+            }
+
+            // Filter for unique names manually (since .distinct() can be tricky in some versions)
+            const uniqueNames = [...new Set(data.map(item => item.student_name))];
+            
+            // Populate Dropdown
+            dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
+            uniqueNames.sort().forEach(name => {
+                if(name) { // only add if name is not null
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = name;
                     dropdown.appendChild(option);
-                });
-            }
+                }
+            });
         });
 
         // --- 2. FETCH REPORT FOR SELECTED STUDENT ---
@@ -121,11 +142,19 @@
             const studentName = document.getElementById('studentDropdown').value;
             if(!studentName) { alert("Please select a student first!"); return; }
 
+            // Show loading state
+            document.getElementById('resultsArea').classList.add('hidden');
+            
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
                 .eq('student_name', studentName)
                 .order('indian_time', { ascending: false });
+
+            if(error) {
+                alert("Error fetching report: " + error.message);
+                return;
+            }
 
             if(reports) renderTable(reports);
         }
@@ -136,7 +165,6 @@
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
             
-            let totalScore = 0;
             let count = 0;
 
             reports.forEach(row => {
@@ -144,12 +172,9 @@
                 const dateStr = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
                 const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-                // Calculate stats
-                let scoreVal = parseInt(row.score) || 0; 
-                totalScore += scoreVal;
                 count++;
 
-                // Determine row color based on score (Unique visual aid)
+                // Determine row color
                 const isPerfect = row.score_text && row.score_text.includes(row.score + "/" + row.score);
                 const statusColor = isPerfect ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
                 const statusText = isPerfect ? 'Perfect' : 'Completed';
@@ -176,11 +201,8 @@
                 tbody.innerHTML += tr;
             });
 
-            // Update Summary Cards
             document.getElementById('totalCount').innerText = count;
             document.getElementById('lastActive').innerText = reports.length > 0 ? new Date(reports[0].indian_time).toLocaleDateString() : 'N/A';
-            // Simple avg calc (adjust logic as needed)
-            // document.getElementById('avgScore').innerText = ...
         }
     </script>
 </body>
