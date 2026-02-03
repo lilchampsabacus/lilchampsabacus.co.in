@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Master Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+
+    <div class="max-w-6xl mx-auto flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-800">Student Reports</h1>
+            <p class="text-indigo-600 font-semibold">Select a student to view their progress</p>
+        </div>
+        <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">
+            ← Back
+        </a>
+    </div>
+
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Select Student</label>
+                <div class="relative">
+                    <select id="studentDropdown" class="block appearance-none w-full bg-indigo-50 border border-indigo-200 text-gray-700 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500">
+                        <option value="">Loading students...</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Filter Month</label>
+                <input type="month" id="monthPicker" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <div class="flex items-end">
+                <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">
+                    Show Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultsArea" class="max-w-6xl mx-auto hidden">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
+                <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices</h3>
+                <p id="totalCount" class="text-3xl font-extrabold text-blue-600">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+                <h3 class="text-gray-500 text-sm font-bold uppercase">Avg Score</h3>
+                <p id="avgScore" class="text-3xl font-extrabold text-green-600">0%</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
+                <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
+                <p id="lastActive" class="text-xl font-bold text-purple-600">-</p>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Score</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 1. LOAD STUDENT LIST ON START ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const dropdown = document.getElementById('studentDropdown');
+            
+            // Fetch unique student names from reports table
+            // (Ideally you should have a 'students' table, but this works with just reports too)
+            const { data, error } = await supabase
+                .from('reports')
+                .select('student_name')
+                .order('student_name', { ascending: true });
+
+            if (data) {
+                // Get unique names only
+                const uniqueNames = [...new Set(data.map(item => item.student_name))];
+                
+                dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
+                uniqueNames.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    dropdown.appendChild(option);
+                });
+            }
+        });
+
+        // --- 2. FETCH REPORT FOR SELECTED STUDENT ---
+        async function getReport() {
+            const studentName = document.getElementById('studentDropdown').value;
+            if(!studentName) { alert("Please select a student first!"); return; }
+
+            const { data: reports, error } = await supabase
+                .from('reports')
+                .select('*')
+                .eq('student_name', studentName)
+                .order('indian_time', { ascending: false });
+
+            if(reports) renderTable(reports);
+        }
+
+        // --- 3. DISPLAY DATA ---
+        function renderTable(reports) {
+            document.getElementById('resultsArea').classList.remove('hidden');
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+            
+            let totalScore = 0;
+            let count = 0;
+
+            reports.forEach(row => {
+                const dateObj = new Date(row.indian_time);
+                const dateStr = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+                // Calculate stats
+                let scoreVal = parseInt(row.score) || 0; 
+                totalScore += scoreVal;
+                count++;
+
+                // Determine row color based on score (Unique visual aid)
+                const isPerfect = row.score_text && row.score_text.includes(row.score + "/" + row.score);
+                const statusColor = isPerfect ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+                const statusText = isPerfect ? 'Perfect' : 'Completed';
+
+                const tr = `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap font-bold">${dateStr}</p>
+                            <p class="text-gray-500 text-xs">${timeStr}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap capitalize">${row.challenge_type || 'Practice'}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap font-bold">${row.score_text || row.score}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                            <span class="relative inline-block px-3 py-1 font-semibold leading-tight ${statusColor} rounded-full text-xs">
+                                ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+
+            // Update Summary Cards
+            document.getElementById('totalCount').innerText = count;
+            document.getElementById('lastActive').innerText = reports.length > 0 ? new Date(reports[0].indian_time).toLocaleDateString() : 'N/A';
+            // Simple avg calc (adjust logic as needed)
+            // document.getElementById('avgScore').innerText = ...
+        }
+    </script>
+</body>
+</html>
