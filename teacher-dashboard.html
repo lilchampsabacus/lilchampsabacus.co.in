@@ -11,6 +11,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: 'Nunito', sans-serif;
@@ -33,18 +35,11 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        /* Card Colors */
         .card-multi { border-color: #3b82f6; } 
         .card-multi:hover { border-bottom-color: #1d4ed8; }
 
-        .card-div { border-color: #8b5cf6; } 
-        .card-div:hover { border-bottom-color: #6d28d9; }
-
         .card-plus { border-color: #f59e0b; } 
         .card-plus:hover { border-bottom-color: #b45309; }
-
-        .card-flash { border-color: #ef4444; } 
-        .card-flash:hover { border-bottom-color: #b91c1c; }
 
         .card-speed { border-color: #10b981; } 
         .card-speed:hover { border-bottom-color: #047857; }
@@ -82,7 +77,6 @@
                     <h3 class="text-xl font-bold text-blue-800">Class Overview</h3>
                     <p class="text-blue-900 mt-1">
                         Use the cards below to monitor student progress. 
-                        <span class="font-bold text-red-600">Red Cards</span> require immediate attention.
                     </p>
                 </div>
             </div>
@@ -94,39 +88,24 @@
                 <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">📑</div>
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Student Reports</h4>
-                <p class="text-gray-500 mb-6 z-10">View detailed progress for any student.</p>
+                <p class="text-gray-500 mb-6 z-10">View detailed progress & calendars.</p>
                 <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-colors z-10">View Data</span>
-            </a>
-
-            <a href="division.html" class="option-card card-div bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-                <div class="card-icon text-6xl mb-6 z-10">➗</div>
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Division Practice</h4>
-                <p class="text-gray-500 mb-6 z-10">Check division results.</p>
-                <span class="bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-purple-600 group-hover:text-white transition-colors z-10">View</span>
             </a>
 
             <a href="#" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-                <div class="card-icon text-6xl mb-6 z-10">⌛</div> <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading Data...</h4>
+                <div class="card-icon text-6xl mb-6 z-10">⌛</div> 
+                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading Data...</h4>
                 <p class="text-gray-500 mb-6 z-10">Checking student activity.</p>
                 <span class="bg-amber-100 text-amber-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-amber-600 group-hover:text-white transition-colors z-10">Please Wait</span>
             </a>
 
-            <a href="FlashCardsV1.html" class="option-card card-flash bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-red-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-                <div class="card-icon text-6xl mb-6 z-10">⚡</div>
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Flash Cards</h4>
-                <p class="text-gray-500 mb-6 z-10">Boost your visual memory speed.</p>
-                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-red-600 group-hover:text-white transition-colors z-10">View</span>
-            </a>
-            
             <a href="#" class="option-card card-speed bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">🏆</div>
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Leaderboard</h4>
-                <p class="text-gray-500 mb-6 z-10">Top performing students today.</p>
-                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-green-600 group-hover:text-white transition-colors z-10">View List</span>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Today's Leaders</h4>
+                <p class="text-gray-500 mb-6 z-10">Who practiced the most today?</p>
+                <div id="leaderboard-list" class="text-sm text-gray-600 font-bold z-10">Calculating...</div>
             </a>
 
         </div>
@@ -141,13 +120,12 @@
         <p class="text-sm">Li'l Champs Admin Panel</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // --- 1. CONFIGURATION ---
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         
-        // Initialize Supabase (ONLY ONCE)
+        // Initialize Supabase (Use 'const' assuming CLEAN FILE)
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- 2. AUTH CHECK ---
@@ -177,14 +155,16 @@
             }
 
             console.log("Reports loaded:", reports.length);
+            
+            // Run Calculations
             processMissingPractice(reports);
+            processLeaderboard(reports);
         });
 
-        // --- 4. THE MAGIC LOGIC: MISSING PRACTICE ---
+        // --- 4. LOGIC: MISSING PRACTICE ---
         function processMissingPractice(reports) {
             const studentLastActive = {};
             
-            // Find latest date for each student
             reports.forEach(row => {
                 const name = row.student_name;
                 const date = new Date(row.indian_time);
@@ -193,7 +173,6 @@
                 }
             });
 
-            // Count inactive students (>3 days)
             const now = new Date();
             let missingCount = 0;
             
@@ -203,14 +182,11 @@
                 if (diffDays > 3) missingCount++;
             }
 
-            // UPDATE THE UI CARD
             const alertCard = document.querySelector('.card-plus'); 
             
             if(alertCard) {
-                console.log("Updating Card...");
-                
                 // Change Colors to Red/Warning style
-                alertCard.style.borderColor = "#ef4444"; // Red border
+                alertCard.style.borderColor = "#ef4444"; 
                 alertCard.querySelector('.absolute').classList.remove('bg-amber-100');
                 alertCard.querySelector('.absolute').classList.add('bg-red-100');
 
@@ -230,11 +206,52 @@
                 btn.classList.remove('bg-amber-100', 'text-amber-700');
                 btn.classList.add('bg-red-600', 'text-white');
                 
-                // Click Action
                 alertCard.onclick = (e) => {
                     e.preventDefault();
-                    alert("This will open the list of inactive students soon!");
+                    // In future, link to a list. For now, alert.
+                    alert("These students have not practiced in 3 days.");
                 };
+            }
+        }
+
+        // --- 5. LOGIC: LEADERBOARD (New!) ---
+        function processLeaderboard(reports) {
+            const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const scores = {};
+
+            reports.forEach(r => {
+                // Check if date string matches today (simple check)
+                if(r.indian_time && r.indian_time.startsWith(todayStr)) {
+                    const name = r.student_name;
+                    // Extract score number (e.g. "20" from "20/20")
+                    let val = 0;
+                    if(r.score) val = parseInt(r.score) || 1; // 1 point per practice if score is weird
+                    
+                    if(!scores[name]) scores[name] = 0;
+                    scores[name] += val;
+                }
+            });
+
+            // Sort High to Low
+            const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+            const top3 = sorted.slice(0, 3); // Top 3
+
+            // Update UI
+            const listDiv = document.getElementById('leaderboard-list');
+            const btn = document.querySelector('.card-speed span');
+
+            if(top3.length === 0) {
+                listDiv.innerHTML = "No practice yet today!";
+                btn.innerText = "Check Later";
+            } else {
+                let html = "<ul style='margin-top:10px; text-align:left;'>";
+                top3.forEach((item, index) => {
+                    const medals = ["🥇", "🥈", "🥉"];
+                    html += `<li>${medals[index] || ""} ${item[0]}: <span class="text-green-600">${item[1]} pts</span></li>`;
+                });
+                html += "</ul>";
+                listDiv.innerHTML = html;
+                btn.innerText = "View Full List";
             }
         }
     </script>
