@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inactive Students Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
+</head>
+<body class="p-6 md:p-10">
+
+    <div class="max-w-5xl mx-auto flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-red-600">Inactive Students</h1>
+            <p class="text-gray-600 font-semibold">Students who haven't practiced in over 3 days.</p>
+        </div>
+        <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
+    </div>
+
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
+        
+        <div id="loading" class="p-10 text-center text-gray-500 font-bold">
+            Loading inactive list...
+        </div>
+
+        <table id="inactiveTable" class="min-w-full hidden">
+            <thead class="bg-red-50 border-b border-red-100">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">Student Name</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">Last Active</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">Days Inactive</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-100">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Fetch all reports
+            const { data: reports, error } = await supabase
+                .from('reports')
+                .select('*')
+                .order('indian_time', { ascending: false });
+
+            if (error) {
+                document.getElementById('loading').innerText = "Error loading data.";
+                return;
+            }
+
+            // 2. Process Data to find gaps
+            const studentLastActive = {};
+            reports.forEach(row => {
+                const name = row.student_name;
+                const date = new Date(row.indian_time);
+                if (!studentLastActive[name] || date > studentLastActive[name]) {
+                    studentLastActive[name] = date;
+                }
+            });
+
+            const now = new Date();
+            const inactiveList = [];
+
+            for (const [name, lastDate] of Object.entries(studentLastActive)) {
+                const diffTime = Math.abs(now - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                if (diffDays > 3) {
+                    inactiveList.push({ name, lastDate, diffDays });
+                }
+            }
+
+            // 3. Sort: Worst offenders (most days inactive) at the top
+            inactiveList.sort((a, b) => b.diffDays - a.diffDays);
+
+            renderTable(inactiveList);
+        });
+
+        function renderTable(list) {
+            const loading = document.getElementById('loading');
+            const table = document.getElementById('inactiveTable');
+            const tbody = document.getElementById('tableBody');
+
+            loading.classList.add('hidden');
+            table.classList.remove('hidden');
+
+            if (list.length === 0) {
+                loading.classList.remove('hidden');
+                loading.innerText = "🎉 Amazing! Everyone is practicing regularly.";
+                table.classList.add('hidden');
+                return;
+            }
+
+            list.forEach(student => {
+                const dateStr = student.lastDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                
+                // WhatsApp Link Generator
+                const msg = `Hello! We noticed ${student.name} hasn't practiced on the app for ${student.diffDays} days. Please encourage them to practice today!`;
+                const waLink = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+                const tr = `
+                    <tr class="hover:bg-red-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dateStr}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 py-1 text-xs font-bold text-red-700 bg-red-100 rounded-full">
+                                ${student.diffDays} Days
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="${waLink}" target="_blank" class="text-green-600 hover:text-green-900 flex items-center gap-1 font-bold">
+                                💬 Remind
+                            </a>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+        }
+    </script>
+</body>
+</html>
