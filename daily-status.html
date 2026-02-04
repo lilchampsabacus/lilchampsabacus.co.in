@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Status Report</title>
+    <title>Daily Practice Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,7 +11,7 @@
 </head>
 <body class="p-6 md:p-10">
 
-    <div class="max-w-5xl mx-auto flex justify-between items-center mb-8">
+    <div class="max-w-6xl mx-auto flex justify-between items-center mb-8">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Daily Practice Report</h1>
             <p id="dateHeader" class="text-indigo-600 font-semibold">Loading...</p>
@@ -19,24 +19,41 @@
         <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
     </div>
 
-    <div class="max-w-5xl mx-auto mb-8">
+    <div class="max-w-6xl mx-auto mb-10">
         <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
             ⚠️ Not Started Yet <span id="pendingCount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
-            <table class="min-w-full">
-                <tbody id="pendingList" class="divide-y divide-gray-100"></tbody>
-            </table>
+            <div class="max-h-64 overflow-y-auto"> <table class="min-w-full">
+                    <thead class="bg-red-50 sticky top-0">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
+                            <th class="px-6 py-3 text-right text-xs font-bold text-red-800 uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingList" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
             ✅ Completed Today <span id="doneCount" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
             <table class="min-w-full">
-                <tbody id="doneList" class="divide-y divide-gray-100"></tbody>
+                <thead class="bg-green-50 border-b border-green-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Student</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Score</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody id="doneList" class="divide-y divide-gray-100">
+                    </tbody>
             </table>
         </div>
     </div>
@@ -45,7 +62,7 @@
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-gray-800">Copy Reminder</h3>
-                <button onclick="closeModal()" class="text-gray-400 font-bold text-xl">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 font-bold text-xl hover:text-gray-600">&times;</button>
             </div>
             <textarea id="msgBox" class="w-full h-32 p-3 border border-gray-300 rounded-lg text-gray-700 font-medium focus:ring-2 focus:ring-indigo-500 resize-none" readonly></textarea>
             <div class="mt-4 flex justify-end gap-3">
@@ -60,10 +77,24 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // --- TIME FORMATTER ---
+        function formatTimeTaken(input) {
+            if (!input) return "-";
+            if (typeof input === 'string' && input.includes(':')) return input + " m";
+            const s = parseInt(input);
+            if (isNaN(s)) return input;
+            const mins = Math.floor(s / 60);
+            const secs = s % 60;
+            if (mins > 0) return `${mins}m ${secs}s`;
+            return `${secs}s`;
+        }
+
+        // --- POPUP LOGIC ---
         function openPopup(name) {
-            const msg = `Hello! Only a gentle reminder that ${name} has not completed today's practice on the Li'l Champs Website. Please ensure your child practice today!`;
+            const msg = `Hello! Only a gentle reminder that ${name} has not completed today's practice on the Li'l Champs App. Please ensure they practice today!`;
             document.getElementById('msgBox').value = msg;
             document.getElementById('msgModal').classList.remove('hidden');
+            
             const btn = document.getElementById('copyBtn');
             btn.innerHTML = '📋 Copy Text';
             btn.className = "px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
@@ -73,61 +104,97 @@
             const box = document.getElementById('msgBox');
             box.select(); box.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(box.value);
+            
             const btn = document.getElementById('copyBtn');
             btn.innerHTML = '✅ Copied!';
             btn.className = "px-4 py-2 bg-gray-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
-            setTimeout(closeModal, 1000);
+            setTimeout(closeModal, 1200);
         }
 
+        // --- MAIN LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             const now = new Date();
+            // Display friendly date
             document.getElementById('dateHeader').innerText = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
+            // Format YYYY-MM-DD for comparison
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
+            // Fetch ALL data sorted by time
+            const { data: reports, error } = await supabase
+                .from('reports')
+                .select('*')
+                .order('indian_time', { ascending: false });
+
             if (error) { alert("Error loading data"); return; }
 
-            // 1. Get All Unique Students
+            // 1. Identify all students (historical) & today's practitioners
             const allStudents = new Set();
-            reports.forEach(r => { if(r.student_name) allStudents.add(r.student_name); });
-            
-            // 2. Get Today's Practitioners
-            const practicedToday = new Set();
-            reports.forEach(r => {
-                if(r.indian_time && r.indian_time.startsWith(todayStr)) practicedToday.add(r.student_name);
+            const practicedTodaySet = new Set();
+            const todaysRecords = [];
+
+            reports.forEach(r => { 
+                if(r.student_name) allStudents.add(r.student_name); 
+                
+                // Check if this row is from TODAY
+                if(r.indian_time && r.indian_time.startsWith(todayStr)) {
+                    practicedTodaySet.add(r.student_name);
+                    todaysRecords.push(r);
+                }
             });
 
-            // 3. Render Lists
-            const pendingList = document.getElementById('pendingList');
+            // 2. Render "Completed Today" (Detailed Table)
             const doneList = document.getElementById('doneList');
-            let pendingCount = 0;
-            let doneCount = 0;
+            document.getElementById('doneCount').innerText = todaysRecords.length;
 
-            // Sort names alphabetically
+            if (todaysRecords.length === 0) {
+                doneList.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 font-bold">No practice records yet for today.</td></tr>`;
+            } else {
+                todaysRecords.forEach(row => {
+                    const time = row.time_taken || row.duration || row.timer || 0;
+                    
+                    // ACCURACY LOGIC: Use DB column, or calculate if missing
+                    let accuracy = row.accuracy;
+                    if (!accuracy && row.total_val > 0) {
+                        accuracy = Math.round((row.score_val / row.total_val) * 100) + "%";
+                    } else if (!accuracy) {
+                        accuracy = "-";
+                    }
+
+                    // Color code accuracy
+                    let accColor = "text-gray-600";
+                    if (accuracy.includes("100")) accColor = "text-green-600 font-extrabold";
+                    else if (parseInt(accuracy) >= 80) accColor = "text-blue-600 font-bold";
+                    else if (parseInt(accuracy) < 50) accColor = "text-red-500 font-bold";
+
+                    doneList.innerHTML += `
+                        <tr class="hover:bg-green-50 border-b border-green-50 last:border-0">
+                            <td class="px-6 py-4 font-bold text-gray-800">${row.student_name}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600 capitalize">${row.challenge_type || 'Practice'}</td>
+                            <td class="px-6 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">⏱️ ${formatTimeTaken(time)}</td>
+                            <td class="px-6 py-4 text-sm ${accColor}">${accuracy}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 3. Render "Not Started" (Simple List)
+            const pendingList = document.getElementById('pendingList');
+            let pendingCount = 0;
             const sortedStudents = Array.from(allStudents).sort();
 
             sortedStudents.forEach(name => {
-                if (practicedToday.has(name)) {
-                    // COMPLETED ROW
-                    doneCount++;
-                    doneList.innerHTML += `
-                        <tr class="hover:bg-green-50">
-                            <td class="px-6 py-4 font-bold text-gray-800">${name}</td>
-                            <td class="px-6 py-4 text-right text-green-600 font-bold text-sm">Done ✅</td>
-                        </tr>
-                    `;
-                } else {
-                    // PENDING ROW
+                if (!practicedTodaySet.has(name)) {
                     pendingCount++;
                     pendingList.innerHTML += `
-                        <tr class="hover:bg-red-50">
-                            <td class="px-6 py-4 font-bold text-gray-800">${name}</td>
-                            <td class="px-6 py-4 text-right">
-                                <button onclick="openPopup('${name}')" class="bg-white border border-green-500 text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg font-bold text-xs shadow-sm">
+                        <tr class="hover:bg-red-50 border-b border-red-50 last:border-0">
+                            <td class="px-6 py-3 font-bold text-gray-700">${name}</td>
+                            <td class="px-6 py-3 text-right">
+                                <button onclick="openPopup('${name}')" class="bg-white border border-green-500 text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg font-bold text-xs shadow-sm transition">
                                     💬 Remind
                                 </button>
                             </td>
@@ -135,9 +202,7 @@
                     `;
                 }
             });
-
             document.getElementById('pendingCount').innerText = pendingCount;
-            document.getElementById('doneCount').innerText = doneCount;
         });
     </script>
 </body>
