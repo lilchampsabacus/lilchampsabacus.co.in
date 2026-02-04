@@ -424,6 +424,7 @@
                 return;
             }
 
+            let htmlContent = '';
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
                 count++;
@@ -435,8 +436,9 @@
                         <td class="px-5 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
                         <td class="px-5 py-4 text-sm font-bold text-gray-700">⏱️ ${formatTimeTaken(timeTaken)}</td>
                     </tr>`;
-                tbody.innerHTML += tr;
+                htmlContent += tr;
             });
+            tbody.innerHTML = htmlContent;
             document.getElementById('totalCount').innerText = count;
             document.getElementById('lastActive').innerText = globalReports.length > 0 ? getRawDate(globalReports[0].indian_time) : 'N/A';
         }
