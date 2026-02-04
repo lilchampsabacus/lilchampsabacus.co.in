@@ -342,17 +342,7 @@
         function generateQuestionSet(formulaObj) {
             const MAX_ALLOWED = 99;
             let rows = [], total = 0;
-            const NUM_ROWS = 5; // Reduced to 5 for formula specific practice? Or user wants 10? 
-            // Note: User prompt implied 10 rows visibility, but logic here says 5 in loop?
-            // Keeping existing logic of 5 rows from previous file unless requested otherwise.
-            // Wait, previous file had loop `for (let i = 1; i < triggerIdx; i++)`.
-            
-            // To ensure 10 rows fit (as per visibility request), I will assume the logic 
-            // from previous file which generated 5 rows. 
-            // If user wants 10 rows, I'll update NUM_ROWS to 10 below.
-            // Let's stick to the previous file logic (5-6 rows approx) to be safe on logic, 
-            // but the UI supports 10.
-            
+            const NUM_ROWS = 5;
             const triggerIdx = Math.floor(Math.random() * (NUM_ROWS - 1)) + 1; 
             const cat = document.getElementById('category-select').value;
             let startNum;
@@ -587,5 +577,6 @@
     </script>
 </body>
 </html>
+
 
 
