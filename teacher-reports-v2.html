@@ -15,64 +15,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        /* WEB FONTS */
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
         
-        /* --- PDF SPECIFIC STYLES --- */
+        /* --- PDF SPECIFIC STYLES (CORPORATE LOOK) --- */
         .pdf-mode {
-            /* 1. Restore Website Background Color */
-            background-color: #f0f9ff !important; 
-            
-            /* 2. Fixed Width for Landscape A4 */
+            background-color: white !important;
             width: 1100px !important; 
             max-width: 1100px !important;
             margin: 0 auto !important;
-            padding: 40px !important; /* Add padding so content isn't stuck to edge */
+            padding: 30px !important;
+            font-family: Arial, Helvetica, sans-serif !important; /* Professional Font */
+            color: #333 !important;
         }
-        
-        /* Improve Visibility in PDF */
+
+        /* Hide specific elements in PDF */
+        .pdf-mode .no-print { display: none !important; }
+
+        /* Professional Borders */
         .pdf-mode .shadow-lg {
             box-shadow: none !important;
-            /* Add a visible border since shadows are gone */
-            border: 2px solid #cbd5e1 !important; 
+            border: 1px solid #d1d5db !important; /* Light Grey crisp border */
+            border-radius: 8px !important;
+        }
+
+        /* PDF LAYOUT GRID (Side by Side) */
+        .pdf-mode .pdf-row {
+            display: flex !important;
+            gap: 20px !important;
+            margin-bottom: 20px !important;
+            align-items: stretch !important;
         }
         
-        /* Force Graph Canvas to Fit */
-        .pdf-mode canvas {
-            width: 100% !important;
-            height: auto !important;
+        .pdf-mode .pdf-col-calendar { width: 55% !important; }
+        .pdf-mode .pdf-col-graph { width: 45% !important; }
+
+        /* Compact Header for PDF */
+        .pdf-mode header {
+            border-bottom: 2px solid #2563eb !important; /* Corporate Blue */
+            margin-bottom: 20px !important;
+            padding-bottom: 10px !important;
         }
 
-        /* --- CRITICAL: PREVENT PAGE CUTS --- */
+        /* Table Styling for PDF */
+        .pdf-mode table { font-size: 12px !important; }
+        .pdf-mode th { background-color: #f3f4f6 !important; color: #111 !important; border-bottom: 2px solid #000 !important; }
+        .pdf-mode td { border-bottom: 1px solid #ddd !important; }
+
+        /* Avoid Cutting */
+        .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+        tr { page-break-inside: avoid; break-inside: avoid; }
         
-        /* Don't cut the Calendar or Graph in half */
-        .bg-white.rounded-2xl {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        /* Don't cut Table Rows in half */
-        tr {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        /* Repeat Table Header on new pages */
-        thead {
-            display: table-header-group;
-        }
+        /* Force Graph Height in PDF */
+        .pdf-mode .chart-container { height: 250px !important; }
     </style>
 </head>
 <body class="p-6 md:p-10">
 
-    <div class="max-w-7xl mx-auto flex justify-between items-center mb-8">
+    <div class="max-w-7xl mx-auto flex justify-between items-center mb-8" id="webHeader">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Student Reports</h1>
-            <p class="text-indigo-600 font-semibold">Select a student and date range to analyze.</p>
+            <p class="text-indigo-600 font-semibold">Select a student and date range.</p>
         </div>
         <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
     </div>
 
-    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100" id="controlsBox">
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Select Student</label>
@@ -83,12 +91,12 @@
                 </div>
             </div>
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional)</label>
-                <input type="date" id="startDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
+                <input type="date" id="startDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg">
             </div>
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2">End Date (Optional)</label>
-                <input type="date" id="endDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
+                <label class="block text-gray-700 text-sm font-bold mb-2">End Date</label>
+                <input type="date" id="endDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg">
             </div>
             <div>
                 <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">Show Report</button>
@@ -103,63 +111,76 @@
 
     <div id="printableArea" class="max-w-7xl mx-auto">
 
-        <div id="pdfHeader" class="hidden mb-8 text-center border-b-2 border-indigo-200 pb-6">
-            <h1 class="text-3xl font-extrabold text-indigo-800">Li'l Champs Abacus Academy</h1>
-            <h2 class="text-xl font-bold text-gray-600 mt-2">Student Progress Report</h2>
-            <p class="text-gray-500 text-sm mt-1">Generated on: <span id="pdfGenDate"></span></p>
-        </div>
-
-        <div id="resultsArea" class="hidden mb-8">
-            <div class="grid grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-blue-500">
-                    <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices</h3>
-                    <p id="totalCount" class="text-4xl font-extrabold text-blue-600 mt-2">0</p>
+        <header id="pdfHeader" class="hidden text-left mb-6">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 leading-tight">Li'l Champs Abacus Academy</h1>
+                    <h2 class="text-lg text-gray-600 font-medium tracking-wide mt-1">Student Performance Report</h2>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-purple-500">
-                    <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
-                    <p id="lastActive" class="text-2xl font-bold text-purple-600 mt-2">-</p>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Generated: <span id="pdfGenDate" class="font-bold text-gray-800"></span></p>
+                    <p class="text-sm text-gray-500">Student: <span id="pdfStudentName" class="font-bold text-blue-800 text-lg"></span></p>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <div id="calendarArea" class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-8 hidden">
-            <div class="flex flex-wrap justify-between items-center mb-6">
-                <div class="flex items-center gap-4">
-                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        📅 Monthly Consistency 
-                        <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-                    </h3>
-                    <input type="month" id="monthPicker" onchange="updateCalendarOnly()" class="bg-gray-50 border border-gray-200 text-gray-700 py-1 px-3 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-bold">
+        <div id="resultsArea" class="hidden mb-6 avoid-break">
+            <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 flex justify-between items-center">
+                <div class="text-center w-1/3 border-r border-gray-300">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Practices</p>
+                    <p id="totalCount" class="text-3xl font-extrabold text-blue-700">0</p>
                 </div>
-                <div class="flex gap-2 text-sm font-bold">
-                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200">Green = Practiced</span>
-                    <span class="bg-red-50 text-red-500 px-3 py-1 rounded-full border border-red-100">Red = Missed</span>
+                <div class="text-center w-1/3 border-r border-gray-300">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</p>
+                    <p id="pdfDateRange" class="text-lg font-bold text-gray-700">All Time</p>
                 </div>
-            </div>
-            <div class="grid grid-cols-7 gap-2 mb-2 text-center text-sm font-bold text-gray-400 uppercase">
-                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-            </div>
-            <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
-        </div>
-
-        <div id="graphArea" class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-8 hidden">
-            <h3 class="text-xl font-bold text-gray-800 mb-6">
-                📊 Practice Distribution 
-                <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-                <span id="graphDateRange" class="text-gray-400 text-sm font-normal ml-2"></span>
-            </h3>
-            <div class="h-80 w-full"> <canvas id="practiceChart"></canvas>
+                <div class="text-center w-1/3">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Last Active</p>
+                    <p id="lastActive" class="text-lg font-bold text-purple-700">-</p>
+                </div>
             </div>
         </div>
 
-        <div id="tableContainer" class="bg-white shadow-lg rounded-2xl overflow-hidden hidden">
+        <div class="pdf-row-container hidden md:block">
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                
+                <div id="calendarArea" class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 flex-1 md:w-[60%] avoid-break">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-bold text-gray-800">📅 Consistency</h3>
+                            <input type="month" id="monthPicker" onchange="updateCalendarOnly()" class="no-print bg-gray-50 border border-gray-200 text-gray-700 py-1 px-2 rounded text-xs font-bold">
+                            <span id="pdfMonthLabel" class="hidden font-bold text-gray-600 text-sm"></span>
+                        </div>
+                        <div class="flex gap-2 text-[10px] font-bold">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded">✔ Practiced</span>
+                            <span class="bg-red-50 text-red-600 px-2 py-1 rounded">✖ Missed</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 mb-1 text-center text-xs font-bold text-gray-400 uppercase">
+                        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+                </div>
+
+                <div id="graphArea" class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 flex-1 md:w-[40%] avoid-break">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">📊 Distribution</h3>
+                    <div class="chart-container w-full h-64">
+                        <canvas id="practiceChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="tableContainer" class="bg-white shadow-lg rounded-2xl overflow-hidden hidden mt-4">
+            <h3 class="text-lg font-bold text-gray-800 p-5 pb-2 border-b border-gray-100">Detailed History</h3>
             <table class="min-w-full leading-normal">
                 <thead>
-                    <tr class="bg-gray-50">
-                        <th class="px-5 py-4 border-b-2 border-gray-200 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">Date</th>
-                        <th class="px-5 py-4 border-b-2 border-gray-200 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">Type</th>
-                        <th class="px-5 py-4 border-b-2 border-gray-200 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">Score</th>
-                        <th class="px-5 py-4 border-b-2 border-gray-200 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">Time</th>
+                    <tr class="bg-gray-100">
+                        <th class="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Date</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Type</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Score</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Time</th>
                     </tr>
                 </thead>
                 <tbody id="reportTableBody"></tbody>
@@ -177,7 +198,7 @@
         let myChart = null; 
         let globalReports = []; 
 
-        // --- PDF GENERATOR (LANDSCAPE + BACKGROUND FIX) ---
+        // --- PDF GENERATOR (CORPORATE LAYOUT) ---
         function downloadPDF() {
             if(document.getElementById('resultsArea').classList.contains('hidden')) {
                 alert("Please select a student and click 'Show Report' first.");
@@ -187,29 +208,52 @@
             const element = document.getElementById('printableArea');
             const studentName = document.getElementById('studentDropdown').value || "Student";
             const header = document.getElementById('pdfHeader');
+            const monthPicker = document.getElementById('monthPicker');
+            const monthLabel = document.getElementById('pdfMonthLabel');
             
-            // 1. Prepare for Print
+            // 1. Setup PDF Mode
             header.classList.remove('hidden');
-            document.getElementById('pdfGenDate').innerText = new Date().toLocaleString();
-            element.classList.add('pdf-mode'); // Applies the width & color fixes
+            document.getElementById('pdfGenDate').innerText = new Date().toLocaleDateString('en-IN');
+            document.getElementById('pdfStudentName').innerText = studentName;
+            
+            // Show static month label instead of input
+            monthPicker.classList.add('hidden');
+            monthLabel.innerText = monthPicker.value; 
+            monthLabel.classList.remove('hidden');
+
+            // Add CSS Class for Grid Layout
+            element.classList.add('pdf-mode'); 
+            
+            // Add grid classes to row container
+            const row = document.querySelector('.pdf-row-container .flex');
+            row.classList.add('pdf-row'); // Triggers side-by-side CSS
+            document.getElementById('calendarArea').classList.add('pdf-col-calendar');
+            document.getElementById('graphArea').classList.add('pdf-col-graph');
 
             if(myChart) myChart.resize();
 
-            // 2. Configuration for A4 LANDSCAPE
+            // 2. A4 Landscape Config
             const opt = {
-                margin:       0.2, // Small margins to maximize space
-                filename:     `${studentName}_Report.pdf`,
+                margin:       0.3, 
+                filename:     `${studentName}_Progress_Report.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
-                // Use 'avoid-all' to prevent cutting div containers
                 pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } 
             };
 
-            // 3. Generate and Reset
+            // 3. Generate & Cleanup
             html2pdf().set(opt).from(element).save().then(() => {
                 header.classList.add('hidden');
                 element.classList.remove('pdf-mode');
+                
+                // Restore Web View
+                monthPicker.classList.remove('hidden');
+                monthLabel.classList.add('hidden');
+                row.classList.remove('pdf-row');
+                document.getElementById('calendarArea').classList.remove('pdf-col-calendar');
+                document.getElementById('graphArea').classList.remove('pdf-col-graph');
+                
                 if(myChart) myChart.resize(); 
             });
         }
@@ -221,20 +265,6 @@
             const [year, month, day] = cleanDate.split('-');
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             return `${day} ${months[parseInt(month)-1]} ${year}`;
-        }
-
-        function getRawTime(isoString) {
-            if (!isoString) return "-";
-            let timePart = "";
-            if(isoString.includes('T')) timePart = isoString.split('T')[1];
-            else if(isoString.includes(' ')) timePart = isoString.split(' ')[1];
-            else return "-";
-            timePart = timePart.split('+')[0].split('Z')[0].split('.')[0];
-            let [hours, minutes] = timePart.split(':');
-            let h = parseInt(hours);
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12; h = h ? h : 12; 
-            return `${h}:${minutes} ${ampm}`;
         }
 
         function formatTimeTaken(input) {
@@ -256,7 +286,7 @@
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 dropdown.innerHTML = '<option>Error: No Session</option>';
-                alert("You are not logged in! Please go back to login page.");
+                alert("You are not logged in!");
                 return;
             }
 
@@ -289,13 +319,11 @@
             
             if(!studentName) { alert("Please select a student first!"); return; }
 
-            document.getElementById('graphStudentName').innerText = `for ${studentName}`;
-            document.getElementById('calendarStudentName').innerText = `for ${studentName}`;
-            
+            // Set Date Range Text
             if(startDate && endDate) {
-                document.getElementById('graphDateRange').innerText = `(${startDate} to ${endDate})`;
+                document.getElementById('pdfDateRange').innerText = `${startDate} to ${endDate}`;
             } else {
-                document.getElementById('graphDateRange').innerText = "(All Time)";
+                document.getElementById('pdfDateRange').innerText = "All Time";
             }
 
             document.getElementById('resultsArea').classList.add('hidden');
@@ -337,7 +365,7 @@
             if (globalReports.length > 0) renderCalendar(globalReports);
         }
 
-        // --- RENDER GRAPH (FIXED) ---
+        // --- RENDER GRAPH (PDF OPTIMIZED) ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
@@ -346,10 +374,7 @@
                 const type = (r.challenge_type || "").toLowerCase();
                 if (type.includes('div') || type.includes('by') || type.includes('/')) counts.division++;
                 else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) counts.multi++;
-                else {
-                    if (type.includes('digit') || type.includes('row') || type.includes('format') || type.includes('addition') || type.includes('plus')) counts.plusMinus++;
-                    else counts.plusMinus++;
-                }
+                else counts.plusMinus++;
             });
 
             const maxVal = Math.max(counts.plusMinus, counts.multi, counts.division);
@@ -361,27 +386,25 @@
                 data: {
                     labels: ['Plus & Minus', 'Multiplication', 'Division'],
                     datasets: [{
-                        label: 'Practice Count',
+                        label: 'Practices',
                         data: [counts.plusMinus, counts.multi, counts.division],
-                        backgroundColor: ['rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)'],
-                        borderColor: ['rgba(245, 158, 11, 1)', 'rgba(59, 130, 246, 1)', 'rgba(139, 92, 246, 1)'],
-                        borderWidth: 2,
-                        borderRadius: 8
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6'], // Flat corporate colors
+                        borderWidth: 0, // Cleaner look
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: { padding: { top: 20 } },
                     scales: {
-                        y: { beginAtZero: true, grid: { display: false }, suggestedMax: maxVal + 5 },
+                        y: { beginAtZero: true, grid: { display: true, color: '#f3f4f6' }, suggestedMax: maxVal + 5 },
                         x: { grid: { display: false } }
                     },
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            color: '#1f2937', anchor: 'end', align: 'top', offset: -5,
-                            font: { weight: 'bold', size: 14 },
+                            color: '#333', anchor: 'end', align: 'top', offset: 0,
+                            font: { weight: 'bold', size: 12 },
                             formatter: function(value) { return value > 0 ? value : ''; }
                         }
                     }
@@ -398,14 +421,13 @@
             let count = 0;
             
             if (reports.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No records found for this date range.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No records found.</td></tr>`;
                 document.getElementById('totalCount').innerText = "0";
                 return;
             }
 
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
-                const timeStr = getRawTime(row.indian_time);
                 count++;
                 const timeTaken = row.time_taken || row.duration || row.timer || 0;
                 const tr = `
@@ -449,7 +471,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             for (let i = 0; i < firstDay; i++) {
-                grid.innerHTML += `<div class="h-12 bg-gray-50 rounded-lg"></div>`;
+                grid.innerHTML += `<div class="h-10 bg-gray-50 rounded"></div>`;
             }
 
             const now = new Date();
@@ -465,7 +487,7 @@
                 if (isPracticed) colorClass = "bg-green-100 border-green-300 text-green-700 shadow-sm";
                 else if (checkDate < todayStr && checkDate >= `${year}-${currentMonth}-01`) colorClass = "bg-red-50 border-red-100 text-red-400";
 
-                grid.innerHTML += `<div class="h-12 border-2 rounded-lg flex items-center justify-center font-bold text-sm ${colorClass}">${day}${isPracticed ? '<span class="ml-1 text-xs">✅</span>' : ''}</div>`;
+                grid.innerHTML += `<div class="h-10 border rounded flex items-center justify-center font-bold text-xs ${colorClass}">${day}${isPracticed ? '<span class="ml-1">✓</span>' : ''}</div>`;
             }
         }
     </script>
