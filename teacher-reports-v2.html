@@ -68,7 +68,6 @@
                     <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
                 </div>
             </div>
-            
             <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-bold text-gray-400 uppercase">
                 <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
@@ -108,7 +107,6 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Register the DataLabels plugin for Chart.js
         Chart.register(ChartDataLabels);
         let myChart = null; 
 
@@ -184,7 +182,6 @@
             const studentName = document.getElementById('studentDropdown').value;
             if(!studentName) { alert("Please select a student first!"); return; }
 
-            // UPDATE NAMES ON SCREEN
             document.getElementById('graphStudentName').innerText = `for ${studentName}`;
             document.getElementById('calendarStudentName').innerText = `for ${studentName}`;
 
@@ -207,16 +204,33 @@
             }
         }
 
-        // --- RENDER GRAPH (Updated with Numbers) ---
+        // --- RENDER GRAPH (EXACT MATCH LOGIC) ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
             let counts = { plusMinus: 0, multi: 0, division: 0 };
+
             reports.forEach(r => {
                 const type = (r.challenge_type || "").toLowerCase();
-                if (type.includes('row') || type.includes('digit') || type.includes('plus')) counts.plusMinus++;
-                else if (type.includes('by') || type.includes('x') || type.includes('multi')) counts.multi++;
-                else if (type.includes('div') || type.includes('/')) counts.division++;
+                
+                // 1. DIVISION: "div" (special-div) or "by" (3by1)
+                if (type.includes('div') || type.includes('by') || type.includes('/')) {
+                    counts.division++;
+                } 
+                // 2. MULTIPLICATION: "x" (2x2) or "marathon" (500 sum marathon) or "multi"
+                else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) {
+                    counts.multi++;
+                } 
+                // 3. PLUS & MINUS: "digit", "row", "format", "addition"
+                else {
+                    // Default bucket, but we can check specific keywords to be safe
+                    if (type.includes('digit') || type.includes('row') || type.includes('format') || type.includes('addition') || type.includes('plus')) {
+                        counts.plusMinus++;
+                    } else {
+                        // Fallback: If it matches none, assume Plus/Minus as it's the base practice
+                        counts.plusMinus++;
+                    }
+                }
             });
 
             if (myChart) myChart.destroy();
@@ -230,9 +244,9 @@
                         label: 'Practice Count',
                         data: [counts.plusMinus, counts.multi, counts.division],
                         backgroundColor: [
-                            'rgba(245, 158, 11, 0.7)',
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(139, 92, 246, 0.7)'
+                            'rgba(245, 158, 11, 0.7)', // Orange
+                            'rgba(59, 130, 246, 0.7)', // Blue
+                            'rgba(139, 92, 246, 0.7)'  // Purple
                         ],
                         borderColor: [
                             'rgba(245, 158, 11, 1)',
@@ -252,19 +266,13 @@
                     },
                     plugins: {
                         legend: { display: false },
-                        // THIS CONFIG ADDS THE NUMBERS
                         datalabels: {
-                            color: '#1f2937', // Dark Gray
+                            color: '#1f2937', 
                             anchor: 'end',
                             align: 'top',
                             offset: -5,
-                            font: {
-                                weight: 'bold',
-                                size: 14
-                            },
-                            formatter: function(value) {
-                                return value > 0 ? value : ''; // Hide 0s
-                            }
+                            font: { weight: 'bold', size: 14 },
+                            formatter: function(value) { return value > 0 ? value : ''; }
                         }
                     }
                 }
