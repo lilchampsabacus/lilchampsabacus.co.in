@@ -204,7 +204,7 @@
             }
         }
 
-        // --- RENDER GRAPH (EXACT MATCH LOGIC) ---
+        // --- RENDER GRAPH (FIXED TOP CUT-OFF) ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
@@ -213,25 +213,23 @@
             reports.forEach(r => {
                 const type = (r.challenge_type || "").toLowerCase();
                 
-                // 1. DIVISION: "div" (special-div) or "by" (3by1)
                 if (type.includes('div') || type.includes('by') || type.includes('/')) {
                     counts.division++;
                 } 
-                // 2. MULTIPLICATION: "x" (2x2) or "marathon" (500 sum marathon) or "multi"
                 else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) {
                     counts.multi++;
                 } 
-                // 3. PLUS & MINUS: "digit", "row", "format", "addition"
                 else {
-                    // Default bucket, but we can check specific keywords to be safe
                     if (type.includes('digit') || type.includes('row') || type.includes('format') || type.includes('addition') || type.includes('plus')) {
                         counts.plusMinus++;
                     } else {
-                        // Fallback: If it matches none, assume Plus/Minus as it's the base practice
                         counts.plusMinus++;
                     }
                 }
             });
+
+            // FIX: Find the highest value to set the chart ceiling higher
+            const maxVal = Math.max(counts.plusMinus, counts.multi, counts.division);
 
             if (myChart) myChart.destroy();
 
@@ -244,9 +242,9 @@
                         label: 'Practice Count',
                         data: [counts.plusMinus, counts.multi, counts.division],
                         backgroundColor: [
-                            'rgba(245, 158, 11, 0.7)', // Orange
-                            'rgba(59, 130, 246, 0.7)', // Blue
-                            'rgba(139, 92, 246, 0.7)'  // Purple
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
                         ],
                         borderColor: [
                             'rgba(245, 158, 11, 1)',
@@ -260,8 +258,18 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20 // Extra padding specifically for the label
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { display: false },
+                            // FIX: Ensure the graph is taller than the highest bar
+                            suggestedMax: maxVal + 5 
+                        },
                         x: { grid: { display: false } }
                     },
                     plugins: {
