@@ -16,7 +16,7 @@
         .option-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .card-multi { border-color: #3b82f6; } .card-multi:hover { border-bottom-color: #1d4ed8; }
         .card-plus { border-color: #f59e0b; } .card-plus:hover { border-bottom-color: #b45309; }
-        .card-speed { border-color: #10b981; } .card-speed:hover { border-bottom-color: #047857; }
+        .card-daily { border-color: #10b981; } .card-daily:hover { border-bottom-color: #047857; }
         @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .option-card:hover .card-icon { animation: wiggle 1s ease-in-out infinite; }
     </style>
@@ -54,24 +54,27 @@
                 <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">📑</div>
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Student Reports</h4>
-                <p class="text-gray-500 mb-6 z-10">View detailed progress & calendars.</p>
+                <p class="text-gray-500 mb-6 z-10">View detailed progress & graphs.</p>
                 <span class="card-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-colors z-10">View Data</span>
             </a>
 
             <a href="inactive-students.html" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-                <div class="card-icon text-6xl mb-6 z-10">⌛</div> 
+                <div class="card-icon text-6xl mb-6 z-10">⚠️</div> 
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading Data...</h4>
-                <p class="text-gray-500 mb-6 z-10">Checking student activity.</p>
+                <p class="text-gray-500 mb-6 z-10">Checking inactivity.</p>
                 <span class="card-btn bg-amber-100 text-amber-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-amber-600 group-hover:text-white transition-colors z-10">Please Wait</span>
             </a>
 
-            <a href="#" class="option-card card-speed bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
+            <a href="daily-status.html" class="option-card card-daily bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-                <div class="card-icon text-6xl mb-6 z-10">🏆</div>
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Yesterday's Leaders</h4>
-                <p class="text-gray-500 mb-6 z-10">Who practiced the most yesterday?</p>
-                <div id="leaderboard-list" class="text-sm text-gray-600 font-bold z-10 mt-2">Calculating...</div>
+                <div class="card-icon text-6xl mb-6 z-10">📅</div>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Daily Status</h4>
+                <p class="text-gray-500 mb-6 z-10">Who practiced today?</p>
+                <div id="daily-stats" class="text-3xl font-extrabold text-green-600 mb-2 z-10 relative">
+                    ...
+                </div>
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-green-600 group-hover:text-white transition-colors z-10">View Today's List</span>
             </a>
 
         </div>
@@ -91,14 +94,13 @@
 
         const userRole = sessionStorage.getItem('userRole');
         if (userRole !== 'teacher') window.location.href = 'index.html'; 
-
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
             if (error) return;
             processMissingPractice(reports);
-            processLeaderboard(reports);
+            processDailyStatus(reports);
         });
 
         function processMissingPractice(reports) {
@@ -108,7 +110,6 @@
                 const date = new Date(row.indian_time);
                 if (!studentLastActive[name] || date > studentLastActive[name]) studentLastActive[name] = date;
             });
-
             const now = new Date();
             let missingCount = 0;
             for (const [name, lastDate] of Object.entries(studentLastActive)) {
@@ -116,58 +117,47 @@
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                 if (diffDays > 3) missingCount++;
             }
-
             const alertCard = document.querySelector('.card-plus'); 
             if(alertCard) {
                 alertCard.style.borderColor = "#ef4444"; 
                 alertCard.querySelector('.absolute').classList.remove('bg-amber-100');
                 alertCard.querySelector('.absolute').classList.add('bg-red-100');
-                alertCard.querySelector('.card-icon').innerHTML = '⚠️';
                 alertCard.querySelector('h4').innerText = "Missing Practice";
                 alertCard.querySelector('p').innerHTML = `<span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">${missingCount}</span><span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>`;
-                
                 const btn = alertCard.querySelector('.card-btn');
-                if(btn) {
-                    btn.innerText = "View Inactive List";
-                    btn.classList.remove('bg-amber-100', 'text-amber-700');
-                    btn.classList.add('bg-red-600', 'text-white');
-                }
+                if(btn) { btn.innerText = "View Inactive List"; btn.classList.remove('bg-amber-100', 'text-amber-700'); btn.classList.add('bg-red-600', 'text-white'); }
             }
         }
 
-        // --- UPDATED LOGIC: YESTERDAY'S LEADERBOARD ---
-        function processLeaderboard(reports) {
-            // 1. Calculate Yesterday's Date String (YYYY-MM-DD)
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1); // Subtract 1 day
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
+        // --- NEW: DAILY STATUS LOGIC ---
+        function processDailyStatus(reports) {
+            // 1. Get Today's Date String (YYYY-MM-DD in Local Time)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
 
-            const scores = {};
+            // 2. Find Total Unique Students (Ever)
+            const allStudents = new Set();
+            reports.forEach(r => { if(r.student_name) allStudents.add(r.student_name); });
+
+            // 3. Find Who Practiced Today
+            const practicedToday = new Set();
             reports.forEach(r => {
-                // 2. Filter using yesterdayStr instead of todayStr
-                if(r.indian_time && r.indian_time.startsWith(yesterdayStr)) {
-                    const name = r.student_name;
-                    let val = parseInt(r.score) || 1; 
-                    if(!scores[name]) scores[name] = 0;
-                    scores[name] += val;
+                // Check if the timestamp string starts with "2026-02-04"
+                if(r.indian_time && r.indian_time.startsWith(todayStr)) {
+                    practicedToday.add(r.student_name);
                 }
             });
 
-            const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
-            const top3 = sorted.slice(0, 3); 
-            const listDiv = document.getElementById('leaderboard-list');
+            const count = practicedToday.size;
+            const total = allStudents.size;
 
-            if(top3.length === 0) {
-                listDiv.innerHTML = "<br>No practice yesterday!";
-            } else {
-                let html = "<ul style='margin-top:10px; text-align:left;'>";
-                top3.forEach((item, index) => {
-                    const medals = ["🥇", "🥈", "🥉"];
-                    html += `<li>${medals[index] || ""} ${item[0]}: <span class="text-green-600">${item[1]} pts</span></li>`;
-                });
-                html += "</ul>";
-                listDiv.innerHTML = html;
+            // 4. Update UI
+            const statsDiv = document.getElementById('daily-stats');
+            if(statsDiv) {
+                statsDiv.innerHTML = `${count} <span class="text-sm text-gray-400 font-normal">/ ${total}</span>`;
             }
         }
     </script>
