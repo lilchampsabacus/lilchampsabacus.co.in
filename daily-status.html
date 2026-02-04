@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Status Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
+</head>
+<body class="p-6 md:p-10">
+
+    <div class="max-w-5xl mx-auto flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-800">Daily Practice Report</h1>
+            <p id="dateHeader" class="text-indigo-600 font-semibold">Loading...</p>
+        </div>
+        <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
+    </div>
+
+    <div class="max-w-5xl mx-auto mb-8">
+        <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+            ⚠️ Not Started Yet <span id="pendingCount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
+        </h2>
+        <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
+            <table class="min-w-full">
+                <tbody id="pendingList" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
+            ✅ Completed Today <span id="doneCount" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
+        </h2>
+        <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
+            <table class="min-w-full">
+                <tbody id="doneList" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="msgModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">Copy Reminder</h3>
+                <button onclick="closeModal()" class="text-gray-400 font-bold text-xl">&times;</button>
+            </div>
+            <textarea id="msgBox" class="w-full h-32 p-3 border border-gray-300 rounded-lg text-gray-700 font-medium focus:ring-2 focus:ring-indigo-500 resize-none" readonly></textarea>
+            <div class="mt-4 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
+                <button onclick="copyText()" id="copyBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2">📋 Copy Text</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function openPopup(name) {
+            const msg = `Hello! Only a gentle reminder that ${name} has not completed today's practice on the Li'l Champs App. Please ensure they practice today!`;
+            document.getElementById('msgBox').value = msg;
+            document.getElementById('msgModal').classList.remove('hidden');
+            const btn = document.getElementById('copyBtn');
+            btn.innerHTML = '📋 Copy Text';
+            btn.className = "px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
+        }
+        function closeModal() { document.getElementById('msgModal').classList.add('hidden'); }
+        function copyText() {
+            const box = document.getElementById('msgBox');
+            box.select(); box.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(box.value);
+            const btn = document.getElementById('copyBtn');
+            btn.innerHTML = '✅ Copied!';
+            btn.className = "px-4 py-2 bg-gray-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
+            setTimeout(closeModal, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const now = new Date();
+            document.getElementById('dateHeader').innerText = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+
+            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
+            if (error) { alert("Error loading data"); return; }
+
+            // 1. Get All Unique Students
+            const allStudents = new Set();
+            reports.forEach(r => { if(r.student_name) allStudents.add(r.student_name); });
+            
+            // 2. Get Today's Practitioners
+            const practicedToday = new Set();
+            reports.forEach(r => {
+                if(r.indian_time && r.indian_time.startsWith(todayStr)) practicedToday.add(r.student_name);
+            });
+
+            // 3. Render Lists
+            const pendingList = document.getElementById('pendingList');
+            const doneList = document.getElementById('doneList');
+            let pendingCount = 0;
+            let doneCount = 0;
+
+            // Sort names alphabetically
+            const sortedStudents = Array.from(allStudents).sort();
+
+            sortedStudents.forEach(name => {
+                if (practicedToday.has(name)) {
+                    // COMPLETED ROW
+                    doneCount++;
+                    doneList.innerHTML += `
+                        <tr class="hover:bg-green-50">
+                            <td class="px-6 py-4 font-bold text-gray-800">${name}</td>
+                            <td class="px-6 py-4 text-right text-green-600 font-bold text-sm">Done ✅</td>
+                        </tr>
+                    `;
+                } else {
+                    // PENDING ROW
+                    pendingCount++;
+                    pendingList.innerHTML += `
+                        <tr class="hover:bg-red-50">
+                            <td class="px-6 py-4 font-bold text-gray-800">${name}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button onclick="openPopup('${name}')" class="bg-white border border-green-500 text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg font-bold text-xs shadow-sm">
+                                    💬 Remind
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            document.getElementById('pendingCount').innerText = pendingCount;
+            document.getElementById('doneCount').innerText = doneCount;
+        });
+    </script>
+</body>
+</html>
