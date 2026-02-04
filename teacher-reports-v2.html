@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }</style>
 </head>
 <body class="p-6 md:p-10">
@@ -25,7 +27,7 @@
     </div>
 
     <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Select Student</label>
                 <div class="relative">
@@ -45,70 +47,81 @@
             <div>
                 <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">Show Report</button>
             </div>
+            <div>
+                <button onclick="downloadPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all flex justify-center items-center gap-2">
+                    <span>⬇️</span> PDF
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="calendarArea" class="max-w-7xl mx-auto mb-8 hidden">
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <div class="flex flex-wrap justify-between items-center mb-4">
-                <div class="flex items-center gap-4">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        📅 Monthly Consistency 
-                        <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-                    </h3>
-                    <input type="month" id="monthPicker" onchange="updateCalendarOnly()" class="bg-gray-50 border border-gray-200 text-gray-700 py-1 px-3 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-bold">
+    <div id="printableArea">
+
+        <div id="calendarArea" class="max-w-7xl mx-auto mb-8 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-4">
+                    <div class="flex items-center gap-4">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            📅 Monthly Consistency 
+                            <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+                        </h3>
+                        <input type="month" id="monthPicker" onchange="updateCalendarOnly()" class="bg-gray-50 border border-gray-200 text-gray-700 py-1 px-3 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-bold">
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Green = Practiced</span>
+                        <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
+                    </div>
                 </div>
-                
-                <div class="flex gap-2">
-                    <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Green = Practiced</span>
-                    <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
+                <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-bold text-gray-400 uppercase">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+            </div>
+        </div>
+
+        <div id="graphArea" class="max-w-7xl mx-auto mb-8 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                    📊 Practice Distribution 
+                    <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+                    <span id="graphDateRange" class="text-gray-400 text-sm font-normal ml-2"></span>
+                </h3>
+                <div class="h-64 w-full">
+                    <canvas id="practiceChart"></canvas>
                 </div>
             </div>
-            <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-bold text-gray-400 uppercase">
-                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-            </div>
-            <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
-        </div>
-    </div>
-
-    <div id="graphArea" class="max-w-7xl mx-auto mb-8 hidden">
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">
-                📊 Practice Distribution 
-                <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-                <span id="graphDateRange" class="text-gray-400 text-sm font-normal ml-2"></span>
-            </h3>
-            <div class="h-64 w-full">
-                <canvas id="practiceChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div id="resultsArea" class="max-w-7xl mx-auto hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices (In Range)</h3>
-                <p id="totalCount" class="text-3xl font-extrabold text-blue-600">0</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
-                <p id="lastActive" class="text-xl font-bold text-purple-600">-</p>
-            </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Score</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time Taken</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody"></tbody>
-            </table>
+        <div id="resultsArea" class="max-w-7xl mx-auto hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
+                    <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices (In Range)</h3>
+                    <p id="totalCount" class="text-3xl font-extrabold text-blue-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
+                    <h3 class="text-gray-500 text-sm font-bold uppercase">Last Active</h3>
+                    <p id="lastActive" class="text-xl font-bold text-purple-600">-</p>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Score</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time Taken</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
         </div>
+        
+        <div class="h-10"></div>
+
     </div>
 
     <script>
@@ -118,7 +131,30 @@
         
         Chart.register(ChartDataLabels);
         let myChart = null; 
-        let globalReports = []; // Store fetched data so Calendar can use it independently
+        let globalReports = []; 
+
+        // --- PDF GENERATOR ---
+        function downloadPDF() {
+            // Check if report is visible
+            if(document.getElementById('resultsArea').classList.contains('hidden')) {
+                alert("Please select a student and click 'Show Report' first.");
+                return;
+            }
+
+            const element = document.getElementById('printableArea');
+            const studentName = document.getElementById('studentDropdown').value || "Student";
+            
+            const opt = {
+                margin:       0.3,
+                filename:     `${studentName}_Report.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Generate
+            html2pdf().set(opt).from(element).save();
+        }
 
         // --- HELPERS ---
         function getRawDate(isoString) {
@@ -195,23 +231,19 @@
             
             if(!studentName) { alert("Please select a student first!"); return; }
 
-            // Set UI Names
             document.getElementById('graphStudentName').innerText = `for ${studentName}`;
             document.getElementById('calendarStudentName').innerText = `for ${studentName}`;
             
-            // Set UI Date Label
             if(startDate && endDate) {
                 document.getElementById('graphDateRange').innerText = `(${startDate} to ${endDate})`;
             } else {
                 document.getElementById('graphDateRange').innerText = "(All Time)";
             }
 
-            // Hide Areas while loading
             document.getElementById('resultsArea').classList.add('hidden');
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
             
-            // FETCH ALL DATA (We filter on client side to keep Calendar working)
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
@@ -221,28 +253,20 @@
             if(error) { alert("Error: " + error.message); return; }
             
             if(reports) {
-                // Store global copy for Calendar
                 globalReports = reports;
-
-                // 1. Filter Data for Table/Graph
                 const filteredReports = filterByDate(reports, startDate, endDate);
-
-                // 2. Render Components
+                
                 renderTable(filteredReports);
                 renderGraph(filteredReports); 
-                renderCalendar(globalReports); // Calendar always gets ALL data to scroll months
+                renderCalendar(globalReports); 
             }
         }
 
-        // --- DATE FILTER LOGIC ---
         function filterByDate(reports, start, end) {
-            if (!start && !end) return reports; // No filter, return all
-
+            if (!start && !end) return reports;
             return reports.filter(r => {
                 if (!r.indian_time) return false;
-                // indian_time format example: "2026-02-04 18:30:00" or ISO
-                const rowDate = r.indian_time.split('T')[0].split(' ')[0]; // Extract YYYY-MM-DD
-                
+                const rowDate = r.indian_time.split('T')[0].split(' ')[0];
                 let valid = true;
                 if (start && rowDate < start) valid = false;
                 if (end && rowDate > end) valid = false;
@@ -250,12 +274,8 @@
             });
         }
 
-        // --- CALENDAR UPDATER ---
         function updateCalendarOnly() {
-            // Called when user changes the month picker in Calendar card
-            if (globalReports.length > 0) {
-                renderCalendar(globalReports);
-            }
+            if (globalReports.length > 0) renderCalendar(globalReports);
         }
 
         // --- RENDER GRAPH ---
@@ -341,11 +361,6 @@
                 tbody.innerHTML += tr;
             });
             document.getElementById('totalCount').innerText = count;
-            
-            // Last active shouldn't change based on filter, it should be their actual last active
-            // But let's show the last active *in this range* or keep global? 
-            // Usually "Last Active" means "Last time seen ever".
-            // Since we stored globalReports, let's use that for Last Active.
             document.getElementById('lastActive').innerText = globalReports.length > 0 ? getRawDate(globalReports[0].indian_time) : 'N/A';
         }
 
