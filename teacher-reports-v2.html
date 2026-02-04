@@ -16,16 +16,16 @@
 </head>
 <body class="p-6 md:p-10">
 
-    <div class="max-w-6xl mx-auto flex justify-between items-center mb-8">
+    <div class="max-w-7xl mx-auto flex justify-between items-center mb-8">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Student Reports</h1>
-            <p class="text-indigo-600 font-semibold">Select a student to view their progress</p>
+            <p class="text-indigo-600 font-semibold">Select a student and date range to analyze.</p>
         </div>
         <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
     </div>
 
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-8 border border-indigo-100">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Select Student</label>
                 <div class="relative">
@@ -35,34 +35,30 @@
                 </div>
             </div>
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2">Filter Month</label>
-                <input type="month" id="monthPicker" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional)</label>
+                <input type="date" id="startDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
             </div>
-            <div class="flex items-end">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">End Date (Optional)</label>
+                <input type="date" id="endDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-lg focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
                 <button onclick="getReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all">Show Report</button>
             </div>
         </div>
     </div>
 
-    <div id="graphArea" class="max-w-6xl mx-auto mb-8 hidden">
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">
-                📊 Practice Distribution 
-                <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-            </h3>
-            <div class="h-64 w-full">
-                <canvas id="practiceChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div id="calendarArea" class="max-w-6xl mx-auto mb-8 hidden">
+    <div id="calendarArea" class="max-w-7xl mx-auto mb-8 hidden">
         <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div class="flex flex-wrap justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    📅 Monthly Consistency 
-                    <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
-                </h3>
+                <div class="flex items-center gap-4">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        📅 Monthly Consistency 
+                        <span id="calendarStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+                    </h3>
+                    <input type="month" id="monthPicker" onchange="updateCalendarOnly()" class="bg-gray-50 border border-gray-200 text-gray-700 py-1 px-3 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-bold">
+                </div>
+                
                 <div class="flex gap-2">
                     <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Green = Practiced</span>
                     <span class="text-xs font-normal text-red-500 bg-red-50 px-2 py-1 rounded">Red = Missed</span>
@@ -75,10 +71,23 @@
         </div>
     </div>
 
-    <div id="resultsArea" class="max-w-6xl mx-auto hidden">
+    <div id="graphArea" class="max-w-7xl mx-auto mb-8 hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                📊 Practice Distribution 
+                <span id="graphStudentName" class="text-indigo-600 ml-1 font-extrabold"></span>
+                <span id="graphDateRange" class="text-gray-400 text-sm font-normal ml-2"></span>
+            </h3>
+            <div class="h-64 w-full">
+                <canvas id="practiceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultsArea" class="max-w-7xl mx-auto hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
-                <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices</h3>
+                <h3 class="text-gray-500 text-sm font-bold uppercase">Total Practices (In Range)</h3>
                 <p id="totalCount" class="text-3xl font-extrabold text-blue-600">0</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
@@ -109,6 +118,7 @@
         
         Chart.register(ChartDataLabels);
         let myChart = null; 
+        let globalReports = []; // Store fetched data so Calendar can use it independently
 
         // --- HELPERS ---
         function getRawDate(isoString) {
@@ -180,15 +190,28 @@
         // --- FETCH DATA ---
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
             if(!studentName) { alert("Please select a student first!"); return; }
 
+            // Set UI Names
             document.getElementById('graphStudentName').innerText = `for ${studentName}`;
             document.getElementById('calendarStudentName').innerText = `for ${studentName}`;
+            
+            // Set UI Date Label
+            if(startDate && endDate) {
+                document.getElementById('graphDateRange').innerText = `(${startDate} to ${endDate})`;
+            } else {
+                document.getElementById('graphDateRange').innerText = "(All Time)";
+            }
 
+            // Hide Areas while loading
             document.getElementById('resultsArea').classList.add('hidden');
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
             
+            // FETCH ALL DATA (We filter on client side to keep Calendar working)
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
@@ -198,39 +221,59 @@
             if(error) { alert("Error: " + error.message); return; }
             
             if(reports) {
-                renderTable(reports);
-                renderCalendar(reports);
-                renderGraph(reports); 
+                // Store global copy for Calendar
+                globalReports = reports;
+
+                // 1. Filter Data for Table/Graph
+                const filteredReports = filterByDate(reports, startDate, endDate);
+
+                // 2. Render Components
+                renderTable(filteredReports);
+                renderGraph(filteredReports); 
+                renderCalendar(globalReports); // Calendar always gets ALL data to scroll months
             }
         }
 
-        // --- RENDER GRAPH (FIXED TOP CUT-OFF) ---
+        // --- DATE FILTER LOGIC ---
+        function filterByDate(reports, start, end) {
+            if (!start && !end) return reports; // No filter, return all
+
+            return reports.filter(r => {
+                if (!r.indian_time) return false;
+                // indian_time format example: "2026-02-04 18:30:00" or ISO
+                const rowDate = r.indian_time.split('T')[0].split(' ')[0]; // Extract YYYY-MM-DD
+                
+                let valid = true;
+                if (start && rowDate < start) valid = false;
+                if (end && rowDate > end) valid = false;
+                return valid;
+            });
+        }
+
+        // --- CALENDAR UPDATER ---
+        function updateCalendarOnly() {
+            // Called when user changes the month picker in Calendar card
+            if (globalReports.length > 0) {
+                renderCalendar(globalReports);
+            }
+        }
+
+        // --- RENDER GRAPH ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
             let counts = { plusMinus: 0, multi: 0, division: 0 };
-
             reports.forEach(r => {
                 const type = (r.challenge_type || "").toLowerCase();
-                
-                if (type.includes('div') || type.includes('by') || type.includes('/')) {
-                    counts.division++;
-                } 
-                else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) {
-                    counts.multi++;
-                } 
+                if (type.includes('div') || type.includes('by') || type.includes('/')) counts.division++;
+                else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) counts.multi++;
                 else {
-                    if (type.includes('digit') || type.includes('row') || type.includes('format') || type.includes('addition') || type.includes('plus')) {
-                        counts.plusMinus++;
-                    } else {
-                        counts.plusMinus++;
-                    }
+                    if (type.includes('digit') || type.includes('row') || type.includes('format') || type.includes('addition') || type.includes('plus')) counts.plusMinus++;
+                    else counts.plusMinus++;
                 }
             });
 
-            // FIX: Find the highest value to set the chart ceiling higher
             const maxVal = Math.max(counts.plusMinus, counts.multi, counts.division);
-
             if (myChart) myChart.destroy();
 
             const ctx = document.getElementById('practiceChart').getContext('2d');
@@ -241,16 +284,8 @@
                     datasets: [{
                         label: 'Practice Count',
                         data: [counts.plusMinus, counts.multi, counts.division],
-                        backgroundColor: [
-                            'rgba(245, 158, 11, 0.7)',
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(139, 92, 246, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(245, 158, 11, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(139, 92, 246, 1)'
-                        ],
+                        backgroundColor: ['rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)'],
+                        borderColor: ['rgba(245, 158, 11, 1)', 'rgba(59, 130, 246, 1)', 'rgba(139, 92, 246, 1)'],
                         borderWidth: 2,
                         borderRadius: 8
                     }]
@@ -258,27 +293,15 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 20 // Extra padding specifically for the label
-                        }
-                    },
+                    layout: { padding: { top: 20 } },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { display: false },
-                            // FIX: Ensure the graph is taller than the highest bar
-                            suggestedMax: maxVal + 5 
-                        },
+                        y: { beginAtZero: true, grid: { display: false }, suggestedMax: maxVal + 5 },
                         x: { grid: { display: false } }
                     },
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            color: '#1f2937', 
-                            anchor: 'end',
-                            align: 'top',
-                            offset: -5,
+                            color: '#1f2937', anchor: 'end', align: 'top', offset: -5,
                             font: { weight: 'bold', size: 14 },
                             formatter: function(value) { return value > 0 ? value : ''; }
                         }
@@ -293,6 +316,13 @@
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
             let count = 0;
+            
+            if (reports.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No records found for this date range.</td></tr>`;
+                document.getElementById('totalCount').innerText = "0";
+                return;
+            }
+
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
                 const timeStr = getRawTime(row.indian_time);
@@ -311,7 +341,12 @@
                 tbody.innerHTML += tr;
             });
             document.getElementById('totalCount').innerText = count;
-            document.getElementById('lastActive').innerText = reports.length > 0 ? getRawDate(reports[0].indian_time) : 'N/A';
+            
+            // Last active shouldn't change based on filter, it should be their actual last active
+            // But let's show the last active *in this range* or keep global? 
+            // Usually "Last Active" means "Last time seen ever".
+            // Since we stored globalReports, let's use that for Last Active.
+            document.getElementById('lastActive').innerText = globalReports.length > 0 ? getRawDate(globalReports[0].indian_time) : 'N/A';
         }
 
         // --- RENDER CALENDAR ---
