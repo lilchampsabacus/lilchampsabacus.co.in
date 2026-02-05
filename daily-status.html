@@ -45,7 +45,7 @@
 
     <div class="max-w-6xl mx-auto mb-10">
         <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
-            ⚠️ ALERT LIST: Not Started Yet <span id="pendingBadge" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
+            ALERT LIST: Not Started Yet <span id="pendingBadge" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
             <div class="table-container"> 
@@ -64,7 +64,7 @@
 
     <div class="max-w-6xl mx-auto">
         <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
-            ✅ COMPLETED TODAY <span id="doneBadge" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
+            COMPLETION REPORT: Practice Finished <span id="doneBadge" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
             <table class="min-w-full">
@@ -154,97 +154,84 @@
         }
 
         function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const dateLabel = document.getElementById('dateHeader').innerText;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const dateLabel = document.getElementById('dateHeader').innerText;
 
-    const addHeader = (doc) => {
-        doc.setFontSize(20);
-        doc.setTextColor(40, 44, 52); 
-        doc.text("Li'l Champs Abacus Academy", 105, 15, { align: 'center' });
-        doc.setFontSize(11);
-        doc.setTextColor(100);
-        doc.text("Daily Practice Progress Report", 105, 21, { align: 'center' });
-        doc.text(dateLabel, 105, 27, { align: 'center' });
-        doc.setLineWidth(0.5);
-        doc.setDrawColor(79, 70, 229); 
-        doc.line(15, 31, 195, 31);
-    };
+            const addHeader = (doc) => {
+                doc.setFontSize(20);
+                doc.setTextColor(40, 44, 52); 
+                doc.text("Li'l Champs Abacus Academy", 105, 15, { align: 'center' });
+                doc.setFontSize(11);
+                doc.setTextColor(100);
+                doc.text("Daily Practice Progress Report", 105, 21, { align: 'center' });
+                doc.text(dateLabel, 105, 27, { align: 'center' });
+                doc.setLineWidth(0.5);
+                doc.setDrawColor(79, 70, 229); 
+                doc.line(15, 31, 195, 31);
+            };
 
-    addHeader(doc);
+            addHeader(doc);
 
-    // Summary Dashboard (No emojis, just clean labels)
-    doc.setFillColor(243, 244, 246);
-    doc.roundedRect(15, 36, 180, 18, 2, 2, 'F');
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.text("COMPLETED TODAY", 60, 42, { align: 'center' });
-    doc.text("PENDING ALERT", 150, 42, { align: 'center' });
-    doc.setFontSize(12);
-    doc.setTextColor(22, 163, 74);
-    doc.text(`${globalTodaysRecords.length}`, 60, 48, { align: 'center' });
-    doc.setTextColor(220, 38, 38);
-    doc.text(`${globalPendingStudents.length}`, 150, 48, { align: 'center' });
+            // Dashboard removed from PDF to prevent showing total numbers
+            
+            // Start of Alert List (Pending)
+            doc.setFontSize(12);
+            doc.setTextColor(220, 38, 38);
+            doc.setFont(undefined, 'bold');
+            doc.text("ALERT LIST: Students Not Started Yet", 15, 42); // Moved up since summary box is gone
+            doc.setFont(undefined, 'normal');
 
-    // Section 1 Header (Using text instead of ⚠️)
-    doc.setFontSize(12);
-    doc.setTextColor(220, 38, 38);
-    doc.setFont(undefined, 'bold');
-    doc.text("ALERT LIST: Students Not Started Yet", 15, 62);
-    doc.setFont(undefined, 'normal');
+            const pendingData = globalPendingStudents.map(name => [name, "Pending"]);
+            doc.autoTable({
+                startY: 45,
+                head: [['Student Name', 'Status']],
+                body: pendingData,
+                theme: 'striped',
+                headStyles: { fillColor: [220, 38, 38], fontSize: 10 },
+                alternateRowStyles: { fillColor: [255, 245, 245] },
+                margin: { top: 35, bottom: 20 },
+                didDrawPage: (data) => { if (data.pageNumber > 1) addHeader(doc); }
+            });
 
-    const pendingData = globalPendingStudents.map(name => [name, "Pending"]);
-    doc.autoTable({
-        startY: 65,
-        head: [['Student Name', 'Status']],
-        body: pendingData,
-        theme: 'striped',
-        headStyles: { fillColor: [220, 38, 38], fontSize: 10 },
-        alternateRowStyles: { fillColor: [255, 245, 245] },
-        margin: { top: 35, bottom: 20 },
-        didDrawPage: (data) => { if (data.pageNumber > 1) addHeader(doc); }
-    });
+            // Start of Completed List
+            let nextY = doc.lastAutoTable.finalY + 15;
+            if (nextY > 260) { doc.addPage(); addHeader(doc); nextY = 40; }
 
-    let nextY = doc.lastAutoTable.finalY + 15;
-    if (nextY > 260) { doc.addPage(); addHeader(doc); nextY = 40; }
+            doc.setFontSize(12);
+            doc.setTextColor(22, 163, 74);
+            doc.setFont(undefined, 'bold');
+            doc.text("COMPLETION REPORT: Practice Finished", 15, nextY);
+            doc.setFont(undefined, 'normal');
 
-    // Section 2 Header (Using text instead of ✅)
-    doc.setFontSize(12);
-    doc.setTextColor(22, 163, 74);
-    doc.setFont(undefined, 'bold');
-    doc.text("COMPLETION REPORT: Practice Finished", 15, nextY);
-    doc.setFont(undefined, 'normal');
+            const completedData = globalTodaysRecords.map(r => [
+                r.student_name, r.challenge_type || 'Practice', r.score_text || r.score,
+                r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / r.total_val) * 100) + "%" : "-")
+            ]);
 
-    const completedData = globalTodaysRecords.map(r => [
-        r.student_name, 
-        r.challenge_type || 'Practice', 
-        r.score_text || r.score,
-        r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / r.total_val) * 100) + "%" : "-")
-    ]);
+            doc.autoTable({
+                startY: nextY + 4,
+                head: [['Student', 'Type', 'Score', 'Acc %']],
+                body: completedData,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 163, 74], fontSize: 10 },
+                margin: { top: 35, bottom: 20 },
+                didDrawPage: (data) => { if (data.pageNumber > 1 && data.cursor.y < 40) addHeader(doc); }
+            });
 
-    doc.autoTable({
-        startY: nextY + 4,
-        head: [['Student', 'Type', 'Score', 'Acc %']],
-        body: completedData,
-        theme: 'grid',
-        headStyles: { fillColor: [22, 163, 74], fontSize: 10 },
-        margin: { top: 35, bottom: 20 },
-        didDrawPage: (data) => { if (data.pageNumber > 1 && data.cursor.y < 40) addHeader(doc); }
-    });
+            // Pagination and Footer
+            const pages = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(`Page ${i} of ${pages}`, 195, 288, { align: 'right' });
+                doc.text("Li'l Champs Abacus Academy • www.lilchampsabacus.co.in", 105, 288, { align: 'center' });
+            }
 
-    // Pagination and Footer
-    const pages = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(`Page ${i} of ${pages}`, 195, 288, { align: 'right' });
-        doc.text("Li'l Champs Abacus Academy • www.lilchampsabacus.co.in", 105, 288, { align: 'center' });
-    }
+            doc.save(`Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
 
-    doc.save(`Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-}
-        
         function openPopup(name) {
             const msg = `Hello! Only a gentle reminder that ${name} has not completed today's practice on the Li'l Champs App. Please ensure they practice today!`;
             document.getElementById('msgBox').value = msg;
