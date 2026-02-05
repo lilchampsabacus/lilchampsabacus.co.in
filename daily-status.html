@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Status Report</title>
+    <title>Daily Practice Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -34,7 +34,13 @@
             padding-bottom: 10px;
         }
 
-        /* Ensure tables don't get cut awkwardly */
+        /* FIX: Prevent List Cutting */
+        .pdf-mode .overflow-y-auto {
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
+        }
+
         .pdf-mode tr { page-break-inside: avoid; }
     </style>
 </head>
@@ -43,7 +49,7 @@
     <div id="controls" class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Daily Dashboard</h1>
-            <p class="text-indigo-600 font-semibold">Track today's activity.</p>
+            <p id="dateHeader" class="text-indigo-600 font-semibold">Loading...</p>
         </div>
         <div class="flex gap-3">
             <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
@@ -70,7 +76,8 @@
             </div>
             
             <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
-                <div class="max-h-96 overflow-y-auto" id="pendingScroll"> <table class="min-w-full">
+                <div class="max-h-96 overflow-y-auto" id="pendingScroll"> 
+                    <table class="min-w-full">
                         <thead class="bg-red-50 border-b border-red-100">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
@@ -99,8 +106,7 @@
                             <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Acc %</th>
                         </tr>
                     </thead>
-                    <tbody id="doneList" class="divide-y divide-green-50">
-                        </tbody>
+                    <tbody id="doneList" class="divide-y divide-green-50"></tbody>
                 </table>
             </div>
         </div>
@@ -166,7 +172,6 @@
             });
         }
 
-        // --- HELPERS ---
         function formatTimeTaken(input) {
             if (!input) return "-";
             if (typeof input === 'string' && input.includes(':')) return input + " m";
@@ -200,31 +205,26 @@
         // --- MAIN LOGIC (WITH SMART FETCH 10k+) ---
         document.addEventListener('DOMContentLoaded', async () => {
             
-            // 1. Calculate Today's Date String
             const now = new Date();
+            document.getElementById('dateHeader').innerText = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            // 2. Fetch ALL Students (Smart Loop for >1000 records)
-            // We need 2 lists: 
-            // A. All unique students ever (to find who is missing)
-            // B. Today's records (to show who is done)
-            
+            // --- SMART LOOP TO FETCH ALL RECORDS ---
             let allStudents = new Set();
             let todaysRecords = [];
             let from = 0;
             let step = 1000;
             let keepFetching = true;
 
-            // Fetch loop
             while(keepFetching) {
-                // We fetch specific columns to be faster
                 const { data, error } = await supabase
                     .from('reports')
                     .select('student_name, indian_time, challenge_type, score_text, score, score_val, total_val, time_taken, duration, timer, accuracy')
-                    .order('indian_time', { ascending: false }) // Get newest first
+                    .order('indian_time', { ascending: false })
                     .range(from, from + step - 1);
 
                 if (error) { console.error(error); break; }
@@ -232,18 +232,15 @@
 
                 data.forEach(r => {
                     if(r.student_name) allStudents.add(r.student_name);
-                    
-                    // Check if this row is from TODAY
                     if(r.indian_time && r.indian_time.startsWith(todayStr)) {
                         todaysRecords.push(r);
                     }
                 });
 
                 from += step;
-                if(from > 15000) keepFetching = false; // Safety limit
+                if(from > 20000) keepFetching = false; // Safety limit
             }
 
-            // 3. Process Lists
             const practicedTodaySet = new Set();
             todaysRecords.forEach(r => practicedTodaySet.add(r.student_name));
 
@@ -257,7 +254,6 @@
                 todaysRecords.forEach(row => {
                     const time = row.time_taken || row.duration || row.timer || 0;
                     
-                    // Accuracy Logic
                     let accuracy = row.accuracy;
                     if (!accuracy && row.total_val > 0) {
                         accuracy = Math.round((row.score_val / row.total_val) * 100) + "%";
