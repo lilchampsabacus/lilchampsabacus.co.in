@@ -21,7 +21,7 @@
         /* --- PDF SPECIFIC STYLES --- */
         .pdf-mode {
             background-color: #f0f9ff !important; 
-            width: 1024px !important; /* Scaled down width */
+            width: 1024px !important; 
             max-width: 1024px !important;
             margin: 0 auto !important;
             padding: 30px !important;
@@ -59,10 +59,11 @@
         .pdf-mode th { background-color: #e5e7eb !important; color: #111 !important; border-bottom: 2px solid #9ca3af !important; }
         .pdf-mode td { border-bottom: 1px solid #e5e7eb !important; }
 
-        /* --- THE FIX: FORCE TABLE TO PAGE 2 --- */
+        /* FORCE TABLE TO PAGE 2 */
         .pdf-mode #tableContainer {
-            page-break-before: always !important; /* Forces new page */
+            page-break-before: always !important; 
             margin-top: 0 !important;
+            /* CRITICAL FIX: Allow content to flow freely */
             overflow: visible !important; 
             height: auto !important;
             display: block !important;
@@ -281,7 +282,6 @@
             return `${secs}s`;
         }
 
-        // --- STARTUP ---
         document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('studentDropdown');
             dropdown.innerHTML = '<option>Loading...</option>';
@@ -293,7 +293,12 @@
                 return;
             }
 
-            const { data, error } = await supabase.from('reports').select('student_name');
+            // --- FIX: INCREASED LIMIT TO 10,000 ROWS ---
+            const { data, error } = await supabase
+                .from('reports')
+                .select('student_name')
+                .range(0, 9999); // Fetch first 10,000 rows
+
             if (error) { dropdown.innerHTML = '<option>Error</option>'; return; }
             if (!data || data.length === 0) { dropdown.innerHTML = '<option>No students</option>'; return; }
 
@@ -324,6 +329,13 @@
 
             if(startDate && endDate) {
                 document.getElementById('pdfDateRange').innerText = `${startDate} to ${endDate}`;
+                
+                // Auto Sync Calendar
+                const start = new Date(startDate);
+                const startY = start.getFullYear();
+                const startM = String(start.getMonth() + 1).padStart(2, '0');
+                document.getElementById('monthPicker').value = `${startY}-${startM}`;
+                
             } else {
                 document.getElementById('pdfDateRange').innerText = "All Time";
             }
@@ -333,11 +345,13 @@
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
             
+            // --- FIX: INCREASED LIMIT TO 10,000 ROWS HERE TOO ---
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
                 .eq('student_name', studentName)
-                .order('indian_time', { ascending: false });
+                .order('indian_time', { ascending: false })
+                .range(0, 9999);
 
             if(error) { alert("Error: " + error.message); return; }
             
@@ -367,7 +381,6 @@
             if (globalReports.length > 0) renderCalendar(globalReports);
         }
 
-        // --- RENDER GRAPH ---
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
             
@@ -413,7 +426,6 @@
             });
         }
 
-        // --- RENDER TABLE ---
         function renderTable(reports) {
             document.getElementById('resultsArea').classList.remove('hidden');
             document.getElementById('tableContainer').classList.remove('hidden');
@@ -427,7 +439,6 @@
                 return;
             }
 
-            let htmlContent = '';
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
                 count++;
@@ -439,14 +450,12 @@
                         <td class="px-5 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
                         <td class="px-5 py-4 text-sm font-bold text-gray-700">⏱️ ${formatTimeTaken(timeTaken)}</td>
                     </tr>`;
-                htmlContent += tr;
+                tbody.innerHTML += tr;
             });
-            tbody.innerHTML = htmlContent;
             document.getElementById('totalCount').innerText = count;
             document.getElementById('lastActive').innerText = globalReports.length > 0 ? getRawDate(globalReports[0].indian_time) : 'N/A';
         }
 
-        // --- RENDER CALENDAR ---
         function renderCalendar(reports) {
             const calendarArea = document.getElementById('calendarArea');
             const grid = document.getElementById('calendarGrid');
