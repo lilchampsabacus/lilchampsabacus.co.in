@@ -32,11 +32,7 @@
         </div>
     </div>
 
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500">
-            <p class="text-gray-500 text-sm font-bold uppercase">Total Students</p>
-            <h3 id="totalCount" class="text-3xl font-black text-gray-800">0</h3>
-        </div>
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-red-500">
             <p class="text-gray-500 text-sm font-bold uppercase">Pending Alert</p>
             <h3 id="pendingCountHeader" class="text-3xl font-black text-red-600">0</h3>
@@ -107,20 +103,14 @@
         let globalTodaysRecords = [];
         let globalPendingStudents = [];
 
-        // --- FETCH & RENDER DATA ---
         async function loadData() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('dateHeader').innerText = dateStr;
-            
             const todayISO = now.toISOString().split('T')[0];
 
-            const { data: reports, error } = await supabase
-                .from('reports')
-                .select('*')
-                .order('indian_time', { ascending: false });
-
-            if (error) { alert("Error loading data"); return; }
+            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
+            if (error) return;
 
             const allStudents = new Set();
             const practicedTodaySet = new Set();
@@ -134,18 +124,13 @@
                 }
             });
 
-            globalPendingStudents = Array.from(allStudents)
-                .filter(name => !practicedTodaySet.has(name))
-                .sort();
+            globalPendingStudents = Array.from(allStudents).filter(name => !practicedTodaySet.has(name)).sort();
 
-            // Update UI Counters
-            document.getElementById('totalCount').innerText = allStudents.size;
             document.getElementById('pendingCountHeader').innerText = globalPendingStudents.length;
             document.getElementById('pendingBadge').innerText = globalPendingStudents.length;
             document.getElementById('doneCountHeader').innerText = globalTodaysRecords.length;
             document.getElementById('doneBadge').innerText = globalTodaysRecords.length;
 
-            // Render Lists
             document.getElementById('pendingList').innerHTML = globalPendingStudents.map(name => `
                 <tr class="hover:bg-red-50 border-b border-red-50">
                     <td class="px-6 py-3 font-bold text-gray-700">${name}</td>
@@ -168,14 +153,11 @@
                 }).join('');
         }
 
-        // --- PDF GENERATION LOGIC ---
         function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const dateLabel = document.getElementById('dateHeader').innerText;
-            const totalStudents = globalPendingStudents.length + globalTodaysRecords.length;
 
-            // Reusable Header function for repeating on pages
             const addHeader = (doc) => {
                 doc.setFontSize(20);
                 doc.setTextColor(40, 44, 52); 
@@ -191,23 +173,19 @@
 
             addHeader(doc);
 
-            // 1. Summary Dashboard (Page 1 Only)
+            // Updated Summary Dashboard in PDF: Only shows Pending and Completed
             doc.setFillColor(243, 244, 246);
             doc.roundedRect(15, 36, 180, 18, 2, 2, 'F');
             doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text("TOTAL STUDENTS", 35, 42);
-            doc.text("COMPLETED", 105, 42, { align: 'center' });
-            doc.text("PENDING ALERT", 175, 42, { align: 'right' });
+            doc.text("COMPLETED TODAY", 60, 42, { align: 'center' });
+            doc.text("PENDING ALERT", 150, 42, { align: 'center' });
             doc.setFontSize(12);
-            doc.setTextColor(40);
-            doc.text(`${totalStudents}`, 35, 48);
             doc.setTextColor(22, 163, 74);
-            doc.text(`${globalTodaysRecords.length}`, 105, 48, { align: 'center' });
+            doc.text(`${globalTodaysRecords.length}`, 60, 48, { align: 'center' });
             doc.setTextColor(220, 38, 38);
-            doc.text(`${globalPendingStudents.length}`, 175, 48, { align: 'right' });
+            doc.text(`${globalPendingStudents.length}`, 150, 48, { align: 'center' });
 
-            // 2. Alert List Table
             doc.setFontSize(12);
             doc.setTextColor(220, 38, 38);
             doc.text("⚠️ ALERT LIST: Students Not Started Yet", 15, 62);
@@ -224,7 +202,6 @@
                 didDrawPage: (data) => { if (data.pageNumber > 1) addHeader(doc); }
             });
 
-            // 3. Completed List Table
             let nextY = doc.lastAutoTable.finalY + 15;
             if (nextY > 260) { doc.addPage(); addHeader(doc); nextY = 40; }
 
@@ -233,9 +210,7 @@
             doc.text("✅ COMPLETED TODAY", 15, nextY);
 
             const completedData = globalTodaysRecords.map(r => [
-                r.student_name, 
-                r.challenge_type || 'Practice', 
-                r.score_text || r.score,
+                r.student_name, r.challenge_type || 'Practice', r.score_text || r.score,
                 r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / r.total_val) * 100) + "%" : "-")
             ]);
 
@@ -249,7 +224,6 @@
                 didDrawPage: (data) => { if (data.pageNumber > 1 && data.cursor.y < 40) addHeader(doc); }
             });
 
-            // Footer for all pages
             const pages = doc.internal.getNumberOfPages();
             for(let i = 1; i <= pages; i++) {
                 doc.setPage(i);
