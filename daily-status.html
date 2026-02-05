@@ -3,125 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Status Report</title>
+    <title>Daily Practice Report | Li'l Champs Abacus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
-
-        /* --- PDF SPECIFIC STYLES --- */
-        .pdf-mode {
-            background-color: white !important;
-            padding: 40px !important;
-            width: 800px !important; /* Fixed A4 Portrait Width */
-            margin: 0 auto !important;
-        }
-
-        .pdf-mode .no-print { display: none !important; }
-
-        .pdf-mode .shadow-lg {
-            box-shadow: none !important;
-            border: 1px solid #e5e7eb !important;
-        }
-
-        .pdf-mode header {
-            border-bottom: 4px solid #4f46e5;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-        }
-
-        /* Prevent List Cutting in PDF */
-        .pdf-mode .overflow-y-auto {
-            overflow: visible !important;
-            max-height: none !important;
-            height: auto !important;
-        }
-
-        .pdf-mode tr { page-break-inside: avoid; }
+        .pdf-btn { transition: all 0.3s ease; }
+        .pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
     </style>
 </head>
-<body class="p-6 md:p-10">
+<body class="p-4 md:p-10">
 
-    <div id="controls" class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-gray-800">Daily Dashboard</h1>
-            <p id="dateHeader" class="text-indigo-600 font-semibold">Loading date...</p>
+            <h1 class="text-3xl font-extrabold text-gray-800">Daily Practice Report</h1>
+            <p id="dateHeader" class="text-indigo-600 font-semibold italic">Loading...</p>
         </div>
-        <div class="flex gap-3">
-            <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
-            <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md flex items-center gap-2">
-                <span>📄</span> Download Daily Report
+        <div class="flex gap-3 w-full md:w-auto">
+            <button onclick="generatePDF()" class="pdf-btn flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+                📥 Download PDF Report
             </button>
+            <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl">← Back</a>
         </div>
     </div>
 
-    <div id="printableArea" class="max-w-6xl mx-auto">
-
-        <header id="pdfHeader" class="hidden text-center mb-6">
-            <h1 class="text-3xl font-extrabold text-indigo-900">Li'l Champs Abacus Academy</h1>
-            <h2 class="text-xl font-bold text-gray-600 mt-1">Daily Practice Summary</h2>
-            <p class="text-md text-gray-500 mt-2 font-bold" id="pdfDate"></p>
-        </header>
-
-        <div class="mb-10">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-red-600 flex items-center gap-2">
-                    ⚠️ Not Started Yet 
-                    <span id="pendingCount" class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm border border-red-200">0</span>
-                </h2>
-            </div>
-            
-            <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
-                <div class="max-h-96 overflow-y-auto" id="pendingScroll"> 
-                    <table class="min-w-full">
-                        <thead class="bg-red-50 border-b border-red-100 sticky top-0">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
-                                <th class="px-6 py-3 text-right text-xs font-bold text-red-800 uppercase no-print">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pendingList" class="divide-y divide-red-50"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
-                ✅ Completed Today 
-                <span id="doneCount" class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm border border-green-200">0</span>
-            </h2>
-            <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
-                <table class="min-w-full">
-                    <thead class="bg-green-50 border-b border-green-100">
+    <div class="max-w-6xl mx-auto mb-10">
+        <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+            ⚠️ Not Started Yet (Alert List) <span id="pendingCount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
+        </h2>
+        <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
+            <div class="max-h-80 overflow-y-auto"> 
+                <table class="min-w-full" id="pendingTable">
+                    <thead class="bg-red-50 sticky top-0">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Student</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Score</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Acc %</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
+                            <th class="px-6 py-3 text-right text-xs font-bold text-red-800 uppercase">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="doneList" class="divide-y divide-green-50"></tbody>
+                    <tbody id="pendingList" class="divide-y divide-gray-100"></tbody>
                 </table>
             </div>
         </div>
-
-        <div class="mt-8 text-center text-gray-400 text-xs hidden" id="pdfFooter">
-            <p>Generated by Li'l Champs Admin System</p>
-        </div>
-
     </div>
 
-    <div id="msgModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm no-print">
+    <div class="max-w-6xl mx-auto">
+        <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
+            ✅ Completed Today <span id="doneCount" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
+        </h2>
+        <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
+            <table class="min-w-full" id="completedTable">
+                <thead class="bg-green-50 border-b border-green-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Student</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Score</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody id="doneList" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="msgModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800">Copy Reminder</h3>
+                <h3 class="text-lg font-bold text-gray-800">WhatsApp Reminder</h3>
                 <button onclick="closeModal()" class="text-gray-400 font-bold text-xl hover:text-gray-600">&times;</button>
             </div>
             <textarea id="msgBox" class="w-full h-32 p-3 border border-gray-300 rounded-lg text-gray-700 font-medium focus:ring-2 focus:ring-indigo-500 resize-none" readonly></textarea>
@@ -135,18 +86,149 @@
     <script>
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
-        let supabase; // Declare variable but don't init yet
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- HELPERS ---
+        let globalTodaysRecords = [];
+        let globalPendingStudents = [];
+
         function formatTimeTaken(input) {
             if (!input) return "-";
-            if (typeof input === 'string' && input.includes(':')) return input + " m";
             const s = parseInt(input);
             if (isNaN(s)) return input;
             const mins = Math.floor(s / 60);
             const secs = s % 60;
-            if (mins > 0) return `${mins}m ${secs}s`;
-            return `${secs}s`;
+            return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        }
+
+        async function loadData() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('dateHeader').innerText = dateStr;
+            
+            const todayISO = now.toISOString().split('T')[0];
+
+            const { data: reports, error } = await supabase
+                .from('reports')
+                .select('*')
+                .order('indian_time', { ascending: false });
+
+            if (error) { console.error(error); return; }
+
+            const allStudents = new Set();
+            const practicedTodaySet = new Set();
+            globalTodaysRecords = [];
+
+            reports.forEach(r => { 
+                if(r.student_name) allStudents.add(r.student_name); 
+                if(r.indian_time && r.indian_time.startsWith(todayISO)) {
+                    practicedTodaySet.add(r.student_name);
+                    globalTodaysRecords.push(r);
+                }
+            });
+
+            // Handle "Not Started"
+            globalPendingStudents = Array.from(allStudents)
+                .filter(name => !practicedTodaySet.has(name))
+                .sort();
+
+            const pendingList = document.getElementById('pendingList');
+            document.getElementById('pendingCount').innerText = globalPendingStudents.length;
+            pendingList.innerHTML = globalPendingStudents.map(name => `
+                <tr class="hover:bg-red-50 border-b border-red-50">
+                    <td class="px-6 py-3 font-bold text-gray-700">${name}</td>
+                    <td class="px-6 py-3 text-right">
+                        <button onclick="openPopup('${name}')" class="text-green-600 font-bold text-xs border border-green-500 px-3 py-1 rounded-lg hover:bg-green-50 transition">💬 Remind</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Handle "Completed"
+            const doneList = document.getElementById('doneList');
+            document.getElementById('doneCount').innerText = globalTodaysRecords.length;
+            if (globalTodaysRecords.length === 0) {
+                doneList.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 font-bold">No practice records yet.</td></tr>`;
+            } else {
+                doneList.innerHTML = globalTodaysRecords.map(row => {
+                    let acc = row.accuracy || (row.total_val > 0 ? Math.round((row.score_val / row.total_val) * 100) + "%" : "-");
+                    return `
+                        <tr class="hover:bg-green-50 border-b border-green-50">
+                            <td class="px-6 py-4 font-bold text-gray-800">${row.student_name}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600 capitalize">${row.challenge_type || 'Practice'}</td>
+                            <td class="px-6 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
+                            <td class="px-6 py-4 text-sm font-bold text-green-600">${acc}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // PDF Generation Logic
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const dateLabel = document.getElementById('dateHeader').innerText;
+
+            // Header - Academy Name
+            doc.setFontSize(22);
+            doc.setTextColor(79, 70, 229); // Indigo
+            doc.text("Li'l Champs Abacus Academy", 105, 15, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.setTextColor(100);
+            doc.text("Daily Practice Progress Report", 105, 22, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(dateLabel, 105, 28, { align: 'center' });
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(200);
+            doc.line(15, 32, 195, 32);
+
+            // Section 1: Alert List (Not Started)
+            doc.setFontSize(12);
+            doc.setTextColor(220, 38, 38); // Red
+            doc.text(`⚠️ ALERT LIST: Not Started Yet (${globalPendingStudents.length})`, 15, 42);
+
+            const pendingData = globalPendingStudents.map(name => [name, "Pending"]);
+            doc.autoTable({
+                startY: 45,
+                head: [['Student Name', 'Status']],
+                body: pendingData,
+                headStyles: { fillColor: [220, 38, 38] },
+                theme: 'striped',
+                margin: { left: 15, right: 15 }
+            });
+
+            // Section 2: Completed Today
+            const nextY = doc.lastAutoTable.finalY + 15;
+            doc.setTextColor(22, 163, 74); // Green
+            doc.text(`✅ COMPLETED TODAY (${globalTodaysRecords.length})`, 15, nextY);
+
+            const completedData = globalTodaysRecords.map(r => [
+                r.student_name, 
+                r.challenge_type || 'Practice', 
+                r.score_text || r.score,
+                r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / row.total_val) * 100) + "%" : "-")
+            ]);
+
+            doc.autoTable({
+                startY: nextY + 3,
+                head: [['Student', 'Type', 'Score', 'Acc %']],
+                body: completedData,
+                headStyles: { fillColor: [22, 163, 74] },
+                theme: 'grid',
+                margin: { left: 15, right: 15 }
+            });
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setTextColor(150);
+                doc.text("Generated by Li'l Champs App - www.lilchampsabacus.co.in", 105, 285, { align: 'center' });
+            }
+
+            doc.save(`Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         function openPopup(name) {
@@ -155,165 +237,18 @@
             document.getElementById('msgModal').classList.remove('hidden');
             const btn = document.getElementById('copyBtn');
             btn.innerHTML = '📋 Copy Text';
-            btn.className = "px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
+            btn.className = "px-4 py-2 bg-green-500 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
         }
         function closeModal() { document.getElementById('msgModal').classList.add('hidden'); }
         function copyText() {
             const box = document.getElementById('msgBox');
-            box.select(); box.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(box.value);
+            box.select(); navigator.clipboard.writeText(box.value);
             const btn = document.getElementById('copyBtn');
             btn.innerHTML = '✅ Copied!';
-            btn.className = "px-4 py-2 bg-gray-600 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
             setTimeout(closeModal, 1000);
         }
 
-        // --- PDF DOWNLOADER ---
-        function downloadPDF() {
-            const element = document.getElementById('printableArea');
-            const header = document.getElementById('pdfHeader');
-            const footer = document.getElementById('pdfFooter');
-            const pendingScroll = document.getElementById('pendingScroll');
-            
-            // 1. Prepare UI for Print
-            header.classList.remove('hidden');
-            footer.classList.remove('hidden');
-            document.getElementById('pdfDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
-            // Expand list fully
-            pendingScroll.classList.remove('max-h-96', 'overflow-y-auto');
-            
-            element.classList.add('pdf-mode');
-
-            // 2. Configure A4 Portrait
-            const opt = {
-                margin:       0.4,
-                filename:     `Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            // 3. Generate & Restore
-            html2pdf().set(opt).from(element).save().then(() => {
-                header.classList.add('hidden');
-                footer.classList.add('hidden');
-                element.classList.remove('pdf-mode');
-                pendingScroll.classList.add('max-h-96', 'overflow-y-auto');
-            });
-        }
-
-        // --- MAIN LOGIC ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            
-            // 1. Set Date IMMEDIATELY (so user sees UI working)
-            const now = new Date();
-            document.getElementById('dateHeader').innerText = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-
-            try {
-                // 2. Init Supabase safely
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } catch (err) {
-                console.error(err);
-                alert("Error: Could not connect to database. Please refresh.");
-                return;
-            }
-
-            // 3. Smart Fetch Loop (Get ALL 1500+ records)
-            let allStudents = new Set();
-            let todaysRecords = [];
-            let from = 0;
-            let step = 1000;
-            let keepFetching = true;
-
-            while(keepFetching) {
-                const { data, error } = await supabase
-                    .from('reports')
-                    .select('student_name, indian_time, challenge_type, score_text, score, score_val, total_val, time_taken, duration, timer, accuracy')
-                    .order('indian_time', { ascending: false })
-                    .range(from, from + step - 1);
-
-                if (error) { console.error(error); break; }
-                if (!data || data.length === 0) { keepFetching = false; break; }
-
-                data.forEach(r => {
-                    if(r.student_name) allStudents.add(r.student_name);
-                    
-                    // Check if TODAY
-                    if(r.indian_time && r.indian_time.startsWith(todayStr)) {
-                        todaysRecords.push(r);
-                    }
-                });
-
-                from += step;
-                if(from > 20000) keepFetching = false; // Safety stop
-            }
-
-            // 4. Sort and Filter
-            const practicedTodaySet = new Set();
-            todaysRecords.forEach(r => practicedTodaySet.add(r.student_name));
-
-            // A. Render Completed List
-            const doneList = document.getElementById('doneList');
-            document.getElementById('doneCount').innerText = todaysRecords.length;
-
-            if (todaysRecords.length === 0) {
-                doneList.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 font-bold">No practice records yet for today.</td></tr>`;
-            } else {
-                todaysRecords.forEach(row => {
-                    const time = row.time_taken || row.duration || row.timer || 0;
-                    
-                    let accuracy = row.accuracy;
-                    if (!accuracy && row.total_val > 0) {
-                        accuracy = Math.round((row.score_val / row.total_val) * 100) + "%";
-                    } else if (!accuracy) {
-                        accuracy = "-";
-                    }
-
-                    let accColor = "text-gray-600";
-                    if (accuracy.includes("100")) accColor = "text-green-600 font-extrabold";
-                    else if (parseInt(accuracy) < 50) accColor = "text-red-500 font-bold";
-
-                    doneList.innerHTML += `
-                        <tr class="hover:bg-green-50 border-b border-green-50 last:border-0">
-                            <td class="px-6 py-3 font-bold text-gray-800 text-sm">${row.student_name}</td>
-                            <td class="px-6 py-3 text-sm text-gray-600 capitalize">${row.challenge_type || 'Practice'}</td>
-                            <td class="px-6 py-3 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
-                            <td class="px-6 py-3 text-sm text-gray-600">⏱️ ${formatTimeTaken(time)}</td>
-                            <td class="px-6 py-3 text-sm ${accColor}">${accuracy}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            // B. Render Not Started List
-            const pendingList = document.getElementById('pendingList');
-            let pendingCount = 0;
-            const sortedStudents = Array.from(allStudents).sort();
-
-            sortedStudents.forEach(name => {
-                if (!practicedTodaySet.has(name)) {
-                    pendingCount++;
-                    pendingList.innerHTML += `
-                        <tr class="hover:bg-red-50 border-b border-red-50 last:border-0">
-                            <td class="px-6 py-3 font-bold text-gray-700 text-sm">${name}</td>
-                            <td class="px-6 py-3 text-right no-print">
-                                <button onclick="openPopup('${name}')" class="bg-white border border-green-500 text-green-600 hover:bg-green-50 px-3 py-1 rounded-lg font-bold text-xs shadow-sm transition">
-                                    💬 Remind
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }
-            });
-            document.getElementById('pendingCount').innerText = pendingCount;
-        });
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
