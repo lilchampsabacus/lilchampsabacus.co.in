@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Practice Report</title>
+    <title>Daily Status Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -34,7 +35,7 @@
             padding-bottom: 10px;
         }
 
-        /* FIX: Prevent List Cutting */
+        /* Prevent List Cutting in PDF */
         .pdf-mode .overflow-y-auto {
             overflow: visible !important;
             max-height: none !important;
@@ -46,10 +47,10 @@
 </head>
 <body class="p-6 md:p-10">
 
-    <div id="controls" class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div id="controls" class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Daily Dashboard</h1>
-            <p id="dateHeader" class="text-indigo-600 font-semibold">Loading...</p>
+            <p id="dateHeader" class="text-indigo-600 font-semibold">Loading date...</p>
         </div>
         <div class="flex gap-3">
             <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">← Back</a>
@@ -59,7 +60,7 @@
         </div>
     </div>
 
-    <div id="printableArea" class="max-w-5xl mx-auto">
+    <div id="printableArea" class="max-w-6xl mx-auto">
 
         <header id="pdfHeader" class="hidden text-center mb-6">
             <h1 class="text-3xl font-extrabold text-indigo-900">Li'l Champs Abacus Academy</h1>
@@ -78,7 +79,7 @@
             <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
                 <div class="max-h-96 overflow-y-auto" id="pendingScroll"> 
                     <table class="min-w-full">
-                        <thead class="bg-red-50 border-b border-red-100">
+                        <thead class="bg-red-50 border-b border-red-100 sticky top-0">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
                                 <th class="px-6 py-3 text-right text-xs font-bold text-red-800 uppercase no-print">Action</th>
@@ -134,44 +135,9 @@
     <script>
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase; // Declare variable but don't init yet
 
-        // --- PDF GENERATOR ---
-        function downloadPDF() {
-            const element = document.getElementById('printableArea');
-            const header = document.getElementById('pdfHeader');
-            const footer = document.getElementById('pdfFooter');
-            const pendingScroll = document.getElementById('pendingScroll');
-            
-            // 1. Prepare UI for Print
-            header.classList.remove('hidden');
-            footer.classList.remove('hidden');
-            document.getElementById('pdfDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
-            // Remove scroll restriction so full list prints
-            pendingScroll.classList.remove('max-h-96', 'overflow-y-auto');
-            
-            element.classList.add('pdf-mode');
-
-            // 2. Configure A4 Portrait
-            const opt = {
-                margin:       0.4,
-                filename:     `Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            // 3. Generate & Restore
-            html2pdf().set(opt).from(element).save().then(() => {
-                header.classList.add('hidden');
-                footer.classList.add('hidden');
-                element.classList.remove('pdf-mode');
-                pendingScroll.classList.add('max-h-96', 'overflow-y-auto');
-            });
-        }
-
+        // --- HELPERS ---
         function formatTimeTaken(input) {
             if (!input) return "-";
             if (typeof input === 'string' && input.includes(':')) return input + " m";
@@ -202,9 +168,46 @@
             setTimeout(closeModal, 1000);
         }
 
-        // --- MAIN LOGIC (WITH SMART FETCH 10k+) ---
+        // --- PDF DOWNLOADER ---
+        function downloadPDF() {
+            const element = document.getElementById('printableArea');
+            const header = document.getElementById('pdfHeader');
+            const footer = document.getElementById('pdfFooter');
+            const pendingScroll = document.getElementById('pendingScroll');
+            
+            // 1. Prepare UI for Print
+            header.classList.remove('hidden');
+            footer.classList.remove('hidden');
+            document.getElementById('pdfDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // Expand list fully
+            pendingScroll.classList.remove('max-h-96', 'overflow-y-auto');
+            
+            element.classList.add('pdf-mode');
+
+            // 2. Configure A4 Portrait
+            const opt = {
+                margin:       0.4,
+                filename:     `Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // 3. Generate & Restore
+            html2pdf().set(opt).from(element).save().then(() => {
+                header.classList.add('hidden');
+                footer.classList.add('hidden');
+                element.classList.remove('pdf-mode');
+                pendingScroll.classList.add('max-h-96', 'overflow-y-auto');
+            });
+        }
+
+        // --- MAIN LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             
+            // 1. Set Date IMMEDIATELY (so user sees UI working)
             const now = new Date();
             document.getElementById('dateHeader').innerText = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
@@ -213,7 +216,16 @@
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            // --- SMART LOOP TO FETCH ALL RECORDS ---
+            try {
+                // 2. Init Supabase safely
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (err) {
+                console.error(err);
+                alert("Error: Could not connect to database. Please refresh.");
+                return;
+            }
+
+            // 3. Smart Fetch Loop (Get ALL 1500+ records)
             let allStudents = new Set();
             let todaysRecords = [];
             let from = 0;
@@ -232,19 +244,22 @@
 
                 data.forEach(r => {
                     if(r.student_name) allStudents.add(r.student_name);
+                    
+                    // Check if TODAY
                     if(r.indian_time && r.indian_time.startsWith(todayStr)) {
                         todaysRecords.push(r);
                     }
                 });
 
                 from += step;
-                if(from > 20000) keepFetching = false; // Safety limit
+                if(from > 20000) keepFetching = false; // Safety stop
             }
 
+            // 4. Sort and Filter
             const practicedTodaySet = new Set();
             todaysRecords.forEach(r => practicedTodaySet.add(r.student_name));
 
-            // Render Completed
+            // A. Render Completed List
             const doneList = document.getElementById('doneList');
             document.getElementById('doneCount').innerText = todaysRecords.length;
 
@@ -277,7 +292,7 @@
                 });
             }
 
-            // Render Not Started
+            // B. Render Not Started List
             const pendingList = document.getElementById('pendingList');
             let pendingCount = 0;
             const sortedStudents = Array.from(allStudents).sort();
