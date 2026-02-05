@@ -14,6 +14,7 @@
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
         .pdf-btn { transition: all 0.3s ease; }
         .pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+        .table-container { max-height: 400px; overflow-y: auto; }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -21,23 +22,38 @@
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-800">Daily Practice Report</h1>
-            <p id="dateHeader" class="text-indigo-600 font-semibold italic">Loading...</p>
+            <p id="dateHeader" class="text-indigo-600 font-semibold italic">Loading date...</p>
         </div>
         <div class="flex gap-3 w-full md:w-auto">
             <button onclick="generatePDF()" class="pdf-btn flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg">
-                📥 Download PDF Report
+                📥 Download Professional PDF
             </button>
             <a href="teacher-dashboard.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl">← Back</a>
         </div>
     </div>
 
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500">
+            <p class="text-gray-500 text-sm font-bold uppercase">Total Students</p>
+            <h3 id="totalCount" class="text-3xl font-black text-gray-800">0</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-red-500">
+            <p class="text-gray-500 text-sm font-bold uppercase">Pending Alert</p>
+            <h3 id="pendingCountHeader" class="text-3xl font-black text-red-600">0</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+            <p class="text-gray-500 text-sm font-bold uppercase">Completed Today</p>
+            <h3 id="doneCountHeader" class="text-3xl font-black text-green-600">0</h3>
+        </div>
+    </div>
+
     <div class="max-w-6xl mx-auto mb-10">
         <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
-            ⚠️ Not Started Yet (Alert List) <span id="pendingCount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
+            ⚠️ ALERT LIST: Not Started Yet <span id="pendingBadge" class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-red-100 overflow-hidden">
-            <div class="max-h-80 overflow-y-auto"> 
-                <table class="min-w-full" id="pendingTable">
+            <div class="table-container"> 
+                <table class="min-w-full">
                     <thead class="bg-red-50 sticky top-0">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase">Student Name</th>
@@ -52,10 +68,10 @@
 
     <div class="max-w-6xl mx-auto">
         <h2 class="text-xl font-bold text-green-600 mb-4 flex items-center gap-2">
-            ✅ Completed Today <span id="doneCount" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
+            ✅ COMPLETED TODAY <span id="doneBadge" class="bg-green-100 text-green-600 px-2 py-1 rounded text-sm">0</span>
         </h2>
         <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
-            <table class="min-w-full" id="completedTable">
+            <table class="min-w-full">
                 <thead class="bg-green-50 border-b border-green-100">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase">Student</th>
@@ -91,15 +107,7 @@
         let globalTodaysRecords = [];
         let globalPendingStudents = [];
 
-        function formatTimeTaken(input) {
-            if (!input) return "-";
-            const s = parseInt(input);
-            if (isNaN(s)) return input;
-            const mins = Math.floor(s / 60);
-            const secs = s % 60;
-            return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-        }
-
+        // --- FETCH & RENDER DATA ---
         async function loadData() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -112,7 +120,7 @@
                 .select('*')
                 .order('indian_time', { ascending: false });
 
-            if (error) { console.error(error); return; }
+            if (error) { alert("Error loading data"); return; }
 
             const allStudents = new Set();
             const practicedTodaySet = new Set();
@@ -126,14 +134,19 @@
                 }
             });
 
-            // Handle "Not Started"
             globalPendingStudents = Array.from(allStudents)
                 .filter(name => !practicedTodaySet.has(name))
                 .sort();
 
-            const pendingList = document.getElementById('pendingList');
-            document.getElementById('pendingCount').innerText = globalPendingStudents.length;
-            pendingList.innerHTML = globalPendingStudents.map(name => `
+            // Update UI Counters
+            document.getElementById('totalCount').innerText = allStudents.size;
+            document.getElementById('pendingCountHeader').innerText = globalPendingStudents.length;
+            document.getElementById('pendingBadge').innerText = globalPendingStudents.length;
+            document.getElementById('doneCountHeader').innerText = globalTodaysRecords.length;
+            document.getElementById('doneBadge').innerText = globalTodaysRecords.length;
+
+            // Render Lists
+            document.getElementById('pendingList').innerHTML = globalPendingStudents.map(name => `
                 <tr class="hover:bg-red-50 border-b border-red-50">
                     <td class="px-6 py-3 font-bold text-gray-700">${name}</td>
                     <td class="px-6 py-3 text-right">
@@ -142,90 +155,108 @@
                 </tr>
             `).join('');
 
-            // Handle "Completed"
-            const doneList = document.getElementById('doneList');
-            document.getElementById('doneCount').innerText = globalTodaysRecords.length;
-            if (globalTodaysRecords.length === 0) {
-                doneList.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 font-bold">No practice records yet.</td></tr>`;
-            } else {
-                doneList.innerHTML = globalTodaysRecords.map(row => {
+            document.getElementById('doneList').innerHTML = globalTodaysRecords.length === 0 
+                ? `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 font-bold">No records found.</td></tr>`
+                : globalTodaysRecords.map(row => {
                     let acc = row.accuracy || (row.total_val > 0 ? Math.round((row.score_val / row.total_val) * 100) + "%" : "-");
-                    return `
-                        <tr class="hover:bg-green-50 border-b border-green-50">
-                            <td class="px-6 py-4 font-bold text-gray-800">${row.student_name}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600 capitalize">${row.challenge_type || 'Practice'}</td>
-                            <td class="px-6 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
-                            <td class="px-6 py-4 text-sm font-bold text-green-600">${acc}</td>
-                        </tr>
-                    `;
+                    return `<tr class="hover:bg-green-50 border-b border-green-50">
+                        <td class="px-6 py-4 font-bold text-gray-800">${row.student_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600 capitalize">${row.challenge_type || 'Practice'}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-indigo-600">${row.score_text || row.score}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-green-600">${acc}</td>
+                    </tr>`;
                 }).join('');
-            }
         }
 
-        // PDF Generation Logic
+        // --- PDF GENERATION LOGIC ---
         function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const dateLabel = document.getElementById('dateHeader').innerText;
+            const totalStudents = globalPendingStudents.length + globalTodaysRecords.length;
 
-            // Header - Academy Name
-            doc.setFontSize(22);
-            doc.setTextColor(79, 70, 229); // Indigo
-            doc.text("Li'l Champs Abacus Academy", 105, 15, { align: 'center' });
-            
-            doc.setFontSize(14);
+            // Reusable Header function for repeating on pages
+            const addHeader = (doc) => {
+                doc.setFontSize(20);
+                doc.setTextColor(40, 44, 52); 
+                doc.text("Li'l Champs Abacus Academy", 105, 15, { align: 'center' });
+                doc.setFontSize(11);
+                doc.setTextColor(100);
+                doc.text("Daily Practice Progress Report", 105, 21, { align: 'center' });
+                doc.text(dateLabel, 105, 27, { align: 'center' });
+                doc.setLineWidth(0.5);
+                doc.setDrawColor(79, 70, 229); 
+                doc.line(15, 31, 195, 31);
+            };
+
+            addHeader(doc);
+
+            // 1. Summary Dashboard (Page 1 Only)
+            doc.setFillColor(243, 244, 246);
+            doc.roundedRect(15, 36, 180, 18, 2, 2, 'F');
+            doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text("Daily Practice Progress Report", 105, 22, { align: 'center' });
-            
-            doc.setFontSize(10);
-            doc.text(dateLabel, 105, 28, { align: 'center' });
-            doc.setLineWidth(0.5);
-            doc.setDrawColor(200);
-            doc.line(15, 32, 195, 32);
-
-            // Section 1: Alert List (Not Started)
+            doc.text("TOTAL STUDENTS", 35, 42);
+            doc.text("COMPLETED", 105, 42, { align: 'center' });
+            doc.text("PENDING ALERT", 175, 42, { align: 'right' });
             doc.setFontSize(12);
-            doc.setTextColor(220, 38, 38); // Red
-            doc.text(`⚠️ ALERT LIST: Not Started Yet (${globalPendingStudents.length})`, 15, 42);
+            doc.setTextColor(40);
+            doc.text(`${totalStudents}`, 35, 48);
+            doc.setTextColor(22, 163, 74);
+            doc.text(`${globalTodaysRecords.length}`, 105, 48, { align: 'center' });
+            doc.setTextColor(220, 38, 38);
+            doc.text(`${globalPendingStudents.length}`, 175, 48, { align: 'right' });
+
+            // 2. Alert List Table
+            doc.setFontSize(12);
+            doc.setTextColor(220, 38, 38);
+            doc.text("⚠️ ALERT LIST: Students Not Started Yet", 15, 62);
 
             const pendingData = globalPendingStudents.map(name => [name, "Pending"]);
             doc.autoTable({
-                startY: 45,
+                startY: 65,
                 head: [['Student Name', 'Status']],
                 body: pendingData,
-                headStyles: { fillColor: [220, 38, 38] },
                 theme: 'striped',
-                margin: { left: 15, right: 15 }
+                headStyles: { fillColor: [220, 38, 38], fontSize: 10 },
+                alternateRowStyles: { fillColor: [255, 245, 245] },
+                margin: { top: 35, bottom: 20 },
+                didDrawPage: (data) => { if (data.pageNumber > 1) addHeader(doc); }
             });
 
-            // Section 2: Completed Today
-            const nextY = doc.lastAutoTable.finalY + 15;
-            doc.setTextColor(22, 163, 74); // Green
-            doc.text(`✅ COMPLETED TODAY (${globalTodaysRecords.length})`, 15, nextY);
+            // 3. Completed List Table
+            let nextY = doc.lastAutoTable.finalY + 15;
+            if (nextY > 260) { doc.addPage(); addHeader(doc); nextY = 40; }
+
+            doc.setFontSize(12);
+            doc.setTextColor(22, 163, 74);
+            doc.text("✅ COMPLETED TODAY", 15, nextY);
 
             const completedData = globalTodaysRecords.map(r => [
                 r.student_name, 
                 r.challenge_type || 'Practice', 
                 r.score_text || r.score,
-                r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / row.total_val) * 100) + "%" : "-")
+                r.accuracy || (r.total_val > 0 ? Math.round((r.score_val / r.total_val) * 100) + "%" : "-")
             ]);
 
             doc.autoTable({
-                startY: nextY + 3,
+                startY: nextY + 4,
                 head: [['Student', 'Type', 'Score', 'Acc %']],
                 body: completedData,
-                headStyles: { fillColor: [22, 163, 74] },
                 theme: 'grid',
-                margin: { left: 15, right: 15 }
+                headStyles: { fillColor: [22, 163, 74], fontSize: 10 },
+                margin: { top: 35, bottom: 20 },
+                didDrawPage: (data) => { if (data.pageNumber > 1 && data.cursor.y < 40) addHeader(doc); }
             });
 
-            // Footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for(let i = 1; i <= pageCount; i++) {
+            // Footer for all pages
+            const pages = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pages; i++) {
                 doc.setPage(i);
-                doc.setFontSize(9);
+                doc.setFontSize(8);
                 doc.setTextColor(150);
-                doc.text("Generated by Li'l Champs App - www.lilchampsabacus.co.in", 105, 285, { align: 'center' });
+                doc.text(`Page ${i} of ${pages}`, 195, 288, { align: 'right' });
+                doc.text("Li'l Champs Abacus Academy • www.lilchampsabacus.co.in", 105, 288, { align: 'center' });
             }
 
             doc.save(`Daily_Report_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -235,16 +266,12 @@
             const msg = `Hello! Only a gentle reminder that ${name} has not completed today's practice on the Li'l Champs App. Please ensure they practice today!`;
             document.getElementById('msgBox').value = msg;
             document.getElementById('msgModal').classList.remove('hidden');
-            const btn = document.getElementById('copyBtn');
-            btn.innerHTML = '📋 Copy Text';
-            btn.className = "px-4 py-2 bg-green-500 text-white rounded-lg font-bold shadow-md flex items-center gap-2";
         }
         function closeModal() { document.getElementById('msgModal').classList.add('hidden'); }
         function copyText() {
             const box = document.getElementById('msgBox');
             box.select(); navigator.clipboard.writeText(box.value);
-            const btn = document.getElementById('copyBtn');
-            btn.innerHTML = '✅ Copied!';
+            document.getElementById('copyBtn').innerHTML = '✅ Copied!';
             setTimeout(closeModal, 1000);
         }
 
