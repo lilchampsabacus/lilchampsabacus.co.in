@@ -59,11 +59,10 @@
         .pdf-mode th { background-color: #e5e7eb !important; color: #111 !important; border-bottom: 2px solid #9ca3af !important; }
         .pdf-mode td { border-bottom: 1px solid #e5e7eb !important; }
 
-        /* FORCE TABLE TO PAGE 2 */
+        /* --- THE FIX: PREVENT CLIPPING --- */
         .pdf-mode #tableContainer {
             page-break-before: always !important; 
             margin-top: 0 !important;
-            /* CRITICAL FIX: Allow content to flow freely */
             overflow: visible !important; 
             height: auto !important;
             display: block !important;
@@ -219,7 +218,6 @@
             const monthPicker = document.getElementById('monthPicker');
             const monthLabel = document.getElementById('pdfMonthLabel');
             
-            // Setup PDF Mode
             header.classList.remove('hidden');
             document.getElementById('pdfGenDate').innerText = new Date().toLocaleDateString('en-IN');
             document.getElementById('pdfStudentName').innerText = studentName;
@@ -237,7 +235,6 @@
 
             if(myChart) myChart.resize();
 
-            // A4 Landscape Config
             const opt = {
                 margin:       0.4, 
                 filename:     `${studentName}_Report.pdf`,
@@ -247,9 +244,7 @@
                 pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } 
             };
 
-            // Generate
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore Web View
                 header.classList.add('hidden');
                 element.classList.remove('pdf-mode');
                 monthPicker.classList.remove('hidden');
@@ -257,7 +252,6 @@
                 row.classList.remove('pdf-row');
                 document.getElementById('calendarArea').classList.remove('pdf-col-calendar');
                 document.getElementById('graphArea').classList.remove('pdf-col-graph');
-                
                 if(myChart) myChart.resize(); 
             });
         }
@@ -282,6 +276,8 @@
             return `${secs}s`;
         }
 
+        // --- STARTUP: PAGINATION FIX ---
+        // This function loops until it gets ALL records from database
         document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('studentDropdown');
             dropdown.innerHTML = '<option>Loading...</option>';
@@ -293,24 +289,45 @@
                 return;
             }
 
-            // --- FIX: INCREASED LIMIT TO 10,000 ROWS ---
-            const { data, error } = await supabase
-                .from('reports')
-                .select('student_name')
-                .range(0, 9999); // Fetch first 10,000 rows
+            // --- SMART FETCHER: GET ALL RECORDS ---
+            let allStudents = new Set();
+            let from = 0;
+            let step = 1000;
+            let keepFetching = true;
 
-            if (error) { dropdown.innerHTML = '<option>Error</option>'; return; }
-            if (!data || data.length === 0) { dropdown.innerHTML = '<option>No students</option>'; return; }
+            while(keepFetching) {
+                const { data, error } = await supabase
+                    .from('reports')
+                    .select('student_name')
+                    .range(from, from + step - 1);
 
-            const uniqueNames = [...new Set(data.map(item => item.student_name))];
-            dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
-            uniqueNames.sort().forEach(name => {
-                if(name) { 
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    dropdown.appendChild(option);
+                if (error) { 
+                    console.error(error); 
+                    dropdown.innerHTML = '<option>Error loading</option>'; 
+                    return; 
                 }
+
+                if (data.length === 0) {
+                    keepFetching = false;
+                } else {
+                    data.forEach(item => {
+                        if(item.student_name) allStudents.add(item.student_name);
+                    });
+                    from += step;
+                    // Safety break
+                    if (from > 20000) keepFetching = false; 
+                }
+            }
+
+            if (allStudents.size === 0) { dropdown.innerHTML = '<option>No students</option>'; return; }
+
+            const uniqueNames = Array.from(allStudents).sort();
+            dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
+            uniqueNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                dropdown.appendChild(option);
             });
             
             const today = new Date();
@@ -329,13 +346,10 @@
 
             if(startDate && endDate) {
                 document.getElementById('pdfDateRange').innerText = `${startDate} to ${endDate}`;
-                
-                // Auto Sync Calendar
                 const start = new Date(startDate);
                 const startY = start.getFullYear();
                 const startM = String(start.getMonth() + 1).padStart(2, '0');
                 document.getElementById('monthPicker').value = `${startY}-${startM}`;
-                
             } else {
                 document.getElementById('pdfDateRange').innerText = "All Time";
             }
@@ -345,20 +359,18 @@
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
             
-            // --- FIX: INCREASED LIMIT TO 10,000 ROWS HERE TOO ---
+            // Fetch student specific data (usually small enough, but safer to sort)
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
                 .eq('student_name', studentName)
-                .order('indian_time', { ascending: false })
-                .range(0, 9999);
+                .order('indian_time', { ascending: false });
 
             if(error) { alert("Error: " + error.message); return; }
             
             if(reports) {
                 globalReports = reports;
                 const filteredReports = filterByDate(reports, startDate, endDate);
-                
                 renderTable(filteredReports);
                 renderGraph(filteredReports); 
                 renderCalendar(globalReports); 
@@ -383,7 +395,6 @@
 
         function renderGraph(reports) {
             document.getElementById('graphArea').classList.remove('hidden');
-            
             let counts = { plusMinus: 0, multi: 0, division: 0 };
             reports.forEach(r => {
                 const type = (r.challenge_type || "").toLowerCase();
@@ -391,10 +402,8 @@
                 else if (type.includes('x') || type.includes('marathon') || type.includes('multi')) counts.multi++;
                 else counts.plusMinus++;
             });
-
             const maxVal = Math.max(counts.plusMinus, counts.multi, counts.division);
             if (myChart) myChart.destroy();
-
             const ctx = document.getElementById('practiceChart').getContext('2d');
             myChart = new Chart(ctx, {
                 type: 'bar',
@@ -432,13 +441,11 @@
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
             let count = 0;
-            
             if (reports.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No records found.</td></tr>`;
                 document.getElementById('totalCount').innerText = "0";
                 return;
             }
-
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
                 count++;
@@ -462,7 +469,6 @@
             const monthInput = document.getElementById('monthPicker').value;
             calendarArea.classList.remove('hidden');
             grid.innerHTML = '';
-
             let date = new Date();
             if (monthInput) {
                 const [y, m] = monthInput.split('-');
@@ -470,7 +476,6 @@
             }
             const year = date.getFullYear();
             const month = date.getMonth(); 
-
             const practiceDates = new Set();
             reports.forEach(r => {
                 if(!r.indian_time) return;
@@ -478,27 +483,21 @@
                 const [rYear, rMonth, rDay] = cleanDate.split('-').map(Number);
                 if ((rMonth - 1) === month && rYear === year) practiceDates.add(cleanDate);
             });
-
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-
             for (let i = 0; i < firstDay; i++) {
                 grid.innerHTML += `<div class="h-10 bg-gray-50 rounded"></div>`;
             }
-
             const now = new Date();
             const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-
             for (let day = 1; day <= daysInMonth; day++) {
                 const currentMonth = (month + 1).toString().padStart(2, '0');
                 const currentDay = day.toString().padStart(2, '0');
                 const checkDate = `${year}-${currentMonth}-${currentDay}`;
                 const isPracticed = practiceDates.has(checkDate);
-                
                 let colorClass = "bg-white border-gray-100 text-gray-300"; 
                 if (isPracticed) colorClass = "bg-green-100 border-green-300 text-green-700 shadow-sm";
                 else if (checkDate < todayStr && checkDate >= `${year}-${currentMonth}-01`) colorClass = "bg-red-50 border-red-100 text-red-400";
-
                 grid.innerHTML += `<div class="h-10 border rounded flex items-center justify-center font-bold text-xs ${colorClass}">${day}${isPracticed ? '<span class="ml-1">✓</span>' : ''}</div>`;
             }
         }
