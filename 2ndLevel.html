@@ -131,7 +131,7 @@
                 Pilot: <span id="auto-student-name-display">... Loading ...</span>
             </div>
             
-            <p class="text-lg text-gray-600 mb-8">You have 20 sums to solve. <br>Focus on accuracy.</p>
+            <p class="text-lg text-gray-600 mb-8">You have 10 sums to solve. <br>Focus on accuracy.</p>
             
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-50 disabled:scale-100" disabled>
                 🚀 Launch Mission
@@ -161,7 +161,7 @@
                 
                 <div class="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Start</span>
-                    <span id="progress-text">0/20 Solved</span>
+                    <span id="progress-text">0/10 Solved</span>
                 </div>
             </div>
 
@@ -196,7 +196,7 @@
                 <div class="grid grid-cols-2 gap-6 mb-6">
                     <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
                         <p class="text-sm text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
-                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/20</span></p>
+                        <p class="text-4xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/10</span></p>
                     </div>
                     <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
                         <p class="text-sm text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
@@ -254,7 +254,7 @@
         }
         
         // --- CONFIGURATION ---
-        const TOTAL_QUESTIONS = 20;
+        const TOTAL_QUESTIONS = 10;
         const POSITIVE_NUMBERS = [11, 22, 33, 44, 55, 66, 77, 88, 99];
         const NEGATIVE_NUMBERS = [-11, -22, -33, -44, -55, -66, -77, -88, -99];
         const N2_RESTRICTED_NEGATIVE = [-11, -22, -33, -44];
