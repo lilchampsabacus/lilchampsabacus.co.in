@@ -445,7 +445,7 @@
         // --- YOUR SECURE SCRIPT URL ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
-        let TOTAL_SUMS = 20; 
+        let TOTAL_SUMS = 10; 
         let sumsData = [];
         let startTime;
         let currentSlideIndex = 0;
@@ -536,9 +536,7 @@
             document.getElementById('report-level-title').textContent = levelText;
 
             try {
-                // --- CHANGED: GENERATE LOCALLY ---
-                // We ask for 20 sums of the selected type
-                const questions = window.generateQuestions(LEVEL_CODE, 20);
+                const questions = window.generateQuestions(LEVEL_CODE, 10);
 
                 // Prepare Data
                 sumsData = questions.map(q => ({
