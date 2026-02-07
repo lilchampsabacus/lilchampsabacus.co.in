@@ -78,12 +78,24 @@
     </script>
 
     <header class="bg-indigo-600 text-white p-6 shadow-lg relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-        <div class="absolute bottom-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full translate-x-1/3 translate-y-1/3"></div>
-        <div class="max-w-6xl mx-auto text-center relative z-10">
+    <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full translate-x-1/3 translate-y-1/3"></div>
+    
+    <div class="max-w-6xl mx-auto flex justify-between items-center relative z-10">
+        <div class="hidden md:block w-12"></div> 
+
+        <div class="text-center">
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">Li'l Champs Abacus Academy</h1>
             <h2 id="student-greeting" class="text-indigo-100 text-xl md:text-2xl font-semibold">Welcome, Champ!</h2>
         </div>
+
+        <a href="practice_options.html" class="bg-white text-indigo-600 p-2 md:px-4 md:py-2 rounded-xl shadow-md hover:bg-indigo-50 transition-all flex items-center gap-2 font-bold text-sm md:text-base">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span class="hidden md:inline">Home</span>
+        </a>
+    </div>
     </header>
 
     <main class="flex-grow p-6 md:p-10">
@@ -269,6 +281,7 @@
     </script>
 </body>
 </html>
+
 
 
 
