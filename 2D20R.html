@@ -744,7 +744,9 @@
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
             
             const now = new Date();
-            document.getElementById('report-datetime').textContent = now.toLocaleDateString();
+            document.getElementById('report-datetime').textContent = now.toLocaleString('en-IN', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
             
             document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
             // Save for Review
