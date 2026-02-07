@@ -157,7 +157,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/20</div>
+                        <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/10</div>
                     </div>
 
                     <div id="custom-keypad" class="grid grid-cols-4 gap-2 mt-4 select-none">
@@ -191,7 +191,7 @@
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
                         <p class="text-xs text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
-                        <p class="text-3xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/20</span></p>
+                        <p class="text-3xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/10</span></p>
                     </div>
                     <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
                         <p class="text-xs text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
@@ -224,7 +224,7 @@
         
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
-        let TOTAL_SUMS = 20; 
+        let TOTAL_SUMS = 10; 
         let sumsData = [];
         let startTime;
         let currentSlideIndex = 0;
@@ -285,9 +285,7 @@
             document.getElementById('report-level-title').textContent = levelText;
 
             try {
-                // --- CHANGED: GENERATE LOCALLY ---
-                // Ask the Brain for 20 sums based on the code (e.g. "neg-2d10r")
-                const questions = window.generateQuestions(LEVEL_CODE, 20);
+                const questions = window.generateQuestions(LEVEL_CODE, 10);
                 
                 // Prepare Data Structure
                 sumsData = questions.map(q => ({
