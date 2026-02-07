@@ -379,51 +379,53 @@
                 this.synth.speak(utterance);
             }
 
-            // --- Number Text Formatting (No "And") ---
-            formatNumberText(num) {
-                const absNum = Math.abs(num);
-                const prefix = num < 0 ? "Minus " : "";
-                
-                // For small numbers, default to string is fine usually, but to be safe:
-                if (absNum < 100) return prefix + absNum.toString();
+            // --- Updated Number Text Formatting for Natural Speech ---
+formatNumberText(num) {
+    const absNum = Math.abs(num);
+    const prefix = num < 0 ? "Minus " : "";
+    
+    if (absNum === 0) return "Zero";
 
-                const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-                const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-                const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 
-                function convertChunk(n) {
-                    let str = "";
-                    if (n >= 100) {
-                        str += ones[Math.floor(n / 100)] + " hundred ";
-                        n %= 100;
-                    }
-                    if (n >= 20) {
-                        str += tens[Math.floor(n / 10)] + " ";
-                        n %= 10;
-                    }
-                    if (n >= 10) {
-                        str += teens[n - 10] + " ";
-                        n = 0;
-                    }
-                    if (n > 0) {
-                        str += ones[n] + " ";
-                    }
-                    return str.trim();
-                }
+    function convertChunk(n) {
+        let str = "";
+        // Handle Hundreds
+        if (n >= 100) {
+            str += ones[Math.floor(n / 100)] + " hundred ";
+            n %= 100;
+        }
+        // Handle Tens (20-99)
+        if (n >= 20) {
+            str += tens[Math.floor(n / 10)] + " ";
+            n %= 10;
+        } 
+        // Handle Teens (10-19)
+        else if (n >= 10) {
+            str += teens[n - 10] + " ";
+            n = 0; // Teens are self-contained
+        }
+        // Handle Units (1-9)
+        if (n > 0) {
+            str += ones[n] + " ";
+        }
+        return str.trim();
+    }
 
-                let text = "";
-                // Handle Thousands
-                if (absNum >= 1000) {
-                    const th = Math.floor(absNum / 1000);
-                    const rem = absNum % 1000;
-                    text += convertChunk(th) + " thousand ";
-                    if (rem > 0) text += convertChunk(rem);
-                } else {
-                    text += convertChunk(absNum);
-                }
+    let text = "";
+    if (absNum >= 1000) {
+        const th = Math.floor(absNum / 1000);
+        const rem = absNum % 1000;
+        text += convertChunk(th) + " thousand ";
+        if (rem > 0) text += convertChunk(rem);
+    } else {
+        text += convertChunk(absNum);
+    }
 
-                return prefix + text.trim();
-            }
+    return prefix + text.trim();
+    }
 
             // --- Game Logic ---
 
@@ -602,48 +604,49 @@
             }
 
             speakSequence(index) {
-                const numbers = this.state.currentSumData.numbers;
+    const numbers = this.state.currentSumData.numbers;
 
-                if (index >= numbers.length) {
-                    this.speak("That is", () => {
-                        this.enableInput();
-                    });
-                    return;
-                }
+    if (index >= numbers.length) {
+        // "That is" signal before writing the answer
+        this.speak("That is", () => {
+            this.enableInput();
+        });
+        return;
+    }
 
-                const progress = ((index + 1) / numbers.length) * 100;
-                document.getElementById('progress-bar').style.width = `${progress}%`;
+    const progress = ((index + 1) / numbers.length) * 100;
+    document.getElementById('progress-bar').style.width = `${progress}%`;
 
-                let num = numbers[index];
-                
-                // Use new formatter
-                let text = this.formatNumberText(num);
-                
-                // Visual Update
-                const numDisplay = document.getElementById('number-display');
-                numDisplay.classList.remove('pop-in');
-                void numDisplay.offsetWidth; 
-                numDisplay.classList.add('pop-in');
-                
-                if(num < 0) {
-                    numDisplay.classList.remove('text-slate-100');
-                    numDisplay.classList.add('text-rose-400');
-                    numDisplay.textContent = num; 
-                } else {
-                    numDisplay.classList.remove('text-rose-400');
-                    numDisplay.classList.add('text-slate-100');
-                    numDisplay.textContent = num;
-                }
+    let num = numbers[index];
+    let text = this.formatNumberText(num);
+    
+    const numDisplay = document.getElementById('number-display');
+    numDisplay.classList.remove('pop-in');
+    void numDisplay.offsetWidth; 
+    numDisplay.classList.add('pop-in');
+    
+    // Color coding for positive/negative
+    numDisplay.textContent = num;
+    numDisplay.className = num < 0 ? 
+        "text-7xl md:text-9xl font-black text-rose-400 pop-in" : 
+        "text-7xl md:text-9xl font-black text-slate-100 pop-in";
 
-                this.speak(text, () => {
-                    if (this.config.speed < 800) {
-                        this.setTimeout(() => this.speakSequence(index + 1), 100);
-                    } else {
-                        this.setTimeout(() => this.speakSequence(index + 1), this.config.speed * 0.5); 
-                    }
-                });
-            }
+    this.speak(text, () => {
+        /* DYNAMIC DELAY CALCULATION:
+           We wait longer for long words (like "seventy-seven") 
+           and shorter for small words (like "five").
+        */
+        let baseDelay = this.config.speed * 0.4; // Initial gap
+        
+        // Add extra 150ms for every 5 characters to prevent overlap
+        let wordBuffer = (text.length / 5) * 150; 
+        
+        // Ensure "Turbo" mode remains fast but audible
+        let finalDelay = Math.max(100, baseDelay + wordBuffer);
 
+        this.setTimeout(() => this.speakSequence(index + 1), finalDelay);
+    });
+}
             enableInput() {
                 document.getElementById('number-display').classList.add('hidden');
                 const inputArea = document.getElementById('input-area');
@@ -730,3 +733,4 @@
     </script>
 </body>
 </html>
+
