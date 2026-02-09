@@ -395,33 +395,39 @@
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
-		// --- SECURITY: ANTI-TAMPER WATCHDOG ---
+		// --- SECURITY: AGGRESSIVE ANTI-TAMPER WATCHDOG ---
 function activateWatchdog(correctScore) {
     const scoreElement = document.getElementById('report-correct');
     
-    // 1. Create the observer
-    const observer = new MutationObserver((mutations) => {
-        // If the text content doesn't match the real score
-        if (scoreElement.textContent.trim() !== String(correctScore)) {
+    // The Enforcer: Runs constantly to keep the score honest
+    const enforceScore = () => {
+        const currentText = scoreElement.innerText.trim();
+        const correctText = String(correctScore);
+        
+        if (currentText !== correctText) {
+            // 1. Silent Revert (No Alert!)
+            scoreElement.innerText = correctText; 
             
-            // A. Revert the value immediately
-            scoreElement.textContent = correctScore;
-            
-            // B. (Optional) Mark of Shame: Turn it red or show alert
-            scoreElement.style.color = "red";
+            // 2. Mark of Shame (Optional: turn red so you know they tried)
+            scoreElement.style.color = "#dc2626"; // Red color
             scoreElement.style.textDecoration = "line-through";
             
-            alert("⚠️ Security Alert: modifying the score is not allowed!");
+            // 3. console warning for you (user won't see unless looking)
+            console.log("Security: Score tampered. Reverted.");
         }
-    });
+    };
 
-    // 2. Start watching the element for changes
+    // Layer 1: MutationObserver (Reacts instantly to changes)
+    const observer = new MutationObserver(enforceScore);
     observer.observe(scoreElement, { 
         characterData: true, 
         childList: true, 
-        subtree: true,
-        attributes: true 
+        subtree: true 
     });
+
+    // Layer 2: The Heartbeat (Checks every 100ms forever)
+    // This beats them even if they delete the Observer!
+    setInterval(enforceScore, 100);
 }
 
         // --- NETWORK-PROOF END TEST ---
@@ -548,9 +554,34 @@ function activateWatchdog(correctScore) {
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
         }
+
+		// --- SECURITY: BLOCK KEYBOARD SHORTCUTS ---
+	document.addEventListener('keydown', function(e) {
+    // Block F12
+    if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+    }
+    // Block Ctrl+Shift+I (Inspector)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        return false;
+    }
+    // Block Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+        e.preventDefault();
+        return false;
+    }
+    // Block Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+    }
+});
     </script>
 </body>
 </html>
+
 
 
 
