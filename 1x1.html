@@ -395,6 +395,35 @@
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
+		// --- SECURITY: ANTI-TAMPER WATCHDOG ---
+function activateWatchdog(correctScore) {
+    const scoreElement = document.getElementById('report-correct');
+    
+    // 1. Create the observer
+    const observer = new MutationObserver((mutations) => {
+        // If the text content doesn't match the real score
+        if (scoreElement.textContent.trim() !== String(correctScore)) {
+            
+            // A. Revert the value immediately
+            scoreElement.textContent = correctScore;
+            
+            // B. (Optional) Mark of Shame: Turn it red or show alert
+            scoreElement.style.color = "red";
+            scoreElement.style.textDecoration = "line-through";
+            
+            alert("⚠️ Security Alert: modifying the score is not allowed!");
+        }
+    });
+
+    // 2. Start watching the element for changes
+    observer.observe(scoreElement, { 
+        characterData: true, 
+        childList: true, 
+        subtree: true,
+        attributes: true 
+    });
+}
+
         // --- NETWORK-PROOF END TEST ---
         async function endTest() {
             console.log("🚀 Ending Test..."); 
@@ -440,6 +469,7 @@
 
             // 5. Update Report Card UI
             document.getElementById('report-correct').textContent = score;
+			activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             
             let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
@@ -521,6 +551,7 @@
     </script>
 </body>
 </html>
+
 
 
 
