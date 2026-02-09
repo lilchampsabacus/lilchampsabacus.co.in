@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Reports V2</title>
+    <title>Teacher Reports V2 - Li'l Champs Abacus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -15,10 +15,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* WEB FONTS */
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
         
-        /* --- PDF SPECIFIC STYLES --- */
+        /* PDF SPECIFIC STYLES */
         .pdf-mode {
             background-color: #f0f9ff !important; 
             width: 1024px !important; 
@@ -37,7 +36,6 @@
             border-radius: 8px !important;
         }
 
-        /* LAYOUT GRID */
         .pdf-mode .pdf-row {
             display: flex !important;
             gap: 20px !important;
@@ -47,19 +45,16 @@
         .pdf-mode .pdf-col-calendar { width: 55% !important; }
         .pdf-mode .pdf-col-graph { width: 45% !important; }
 
-        /* HEADER */
         .pdf-mode header {
             border-bottom: 3px solid #2563eb !important;
             margin-bottom: 25px !important;
             padding-bottom: 15px !important;
         }
 
-        /* TABLE STYLING */
         .pdf-mode table { font-size: 12px !important; background-color: white !important; }
         .pdf-mode th { background-color: #e5e7eb !important; color: #111 !important; border-bottom: 2px solid #9ca3af !important; }
         .pdf-mode td { border-bottom: 1px solid #e5e7eb !important; }
 
-        /* --- THE FIX: PREVENT CLIPPING --- */
         .pdf-mode #tableContainer {
             page-break-before: always !important; 
             margin-top: 0 !important;
@@ -68,7 +63,6 @@
             display: block !important;
         }
 
-        /* AVOID CUTS */
         .avoid-break { page-break-inside: avoid; break-inside: avoid; }
         tr { page-break-inside: avoid; break-inside: avoid; }
         
@@ -205,7 +199,6 @@
         let myChart = null; 
         let globalReports = []; 
 
-        // --- PDF GENERATOR ---
         function downloadPDF() {
             if(document.getElementById('resultsArea').classList.contains('hidden')) {
                 alert("Please select a student and click 'Show Report' first.");
@@ -256,7 +249,6 @@
             });
         }
 
-        // --- HELPERS ---
         function getRawDate(isoString) {
             if (!isoString) return "-";
             const cleanDate = isoString.split('T')[0].split(' ')[0]; 
@@ -276,8 +268,6 @@
             return `${secs}s`;
         }
 
-        // --- STARTUP: PAGINATION FIX ---
-        // This function loops until it gets ALL records from database
         document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('studentDropdown');
             dropdown.innerHTML = '<option>Loading...</option>';
@@ -289,7 +279,6 @@
                 return;
             }
 
-            // --- SMART FETCHER: GET ALL RECORDS ---
             let allStudents = new Set();
             let from = 0;
             let step = 1000;
@@ -314,7 +303,6 @@
                         if(item.student_name) allStudents.add(item.student_name);
                     });
                     from += step;
-                    // Safety break
                     if (from > 20000) keepFetching = false; 
                 }
             }
@@ -336,7 +324,6 @@
             document.getElementById('monthPicker').value = `${yyyy}-${mm}`;
         });
 
-        // --- FETCH DATA ---
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
             const startDate = document.getElementById('startDate').value;
@@ -359,7 +346,6 @@
             document.getElementById('calendarArea').classList.add('hidden');
             document.getElementById('graphArea').classList.add('hidden');
             
-            // Fetch student specific data (usually small enough, but safer to sort)
             const { data: reports, error } = await supabase
                 .from('reports')
                 .select('*')
@@ -369,8 +355,14 @@
             if(error) { alert("Error: " + error.message); return; }
             
             if(reports) {
-                globalReports = reports;
-                const filteredReports = filterByDate(reports, startDate, endDate);
+                // FILTER: Remove all entries where score is 0
+                globalReports = reports.filter(r => {
+                    const scoreVal = r.score_text || r.score || "0";
+                    const numericScore = parseInt(scoreVal);
+                    return numericScore > 0;
+                });
+
+                const filteredReports = filterByDate(globalReports, startDate, endDate);
                 renderTable(filteredReports);
                 renderGraph(filteredReports); 
                 renderCalendar(globalReports); 
@@ -440,15 +432,15 @@
             document.getElementById('tableContainer').classList.remove('hidden');
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = '';
-            let count = 0;
+            
             if (reports.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-6 text-center text-gray-400 font-bold">No valid practice records found (Scores of 0 are hidden).</td></tr>`;
                 document.getElementById('totalCount').innerText = "0";
                 return;
             }
+
             reports.forEach(row => {
                 const dateStr = getRawDate(row.indian_time);
-                count++;
                 const timeTaken = row.time_taken || row.duration || row.timer || 0;
                 const tr = `
                     <tr class="hover:bg-gray-50 border-b">
@@ -459,8 +451,8 @@
                     </tr>`;
                 tbody.innerHTML += tr;
             });
-            document.getElementById('totalCount').innerText = count;
-            document.getElementById('lastActive').innerText = globalReports.length > 0 ? getRawDate(globalReports[0].indian_time) : 'N/A';
+            document.getElementById('totalCount').innerText = reports.length;
+            document.getElementById('lastActive').innerText = reports.length > 0 ? getRawDate(reports[0].indian_time) : 'N/A';
         }
 
         function renderCalendar(reports) {
