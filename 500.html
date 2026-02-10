@@ -65,7 +65,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="alert('🚫 Access Denied: Marathon Security Active!'); return false;">
 
     <header class="flex justify-between items-center">
         <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy, Ambernath</h1>
@@ -350,6 +350,7 @@
             document.getElementById('report-section').style.display = 'block';
 
             document.getElementById('report-correct').textContent = score;
+            activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             const avgTime = (timeElapsedSeconds / TOTAL_QUESTIONS).toFixed(2);
             document.getElementById('report-avg-time').textContent = `${avgTime}s`;
@@ -430,9 +431,45 @@
         });
         
         document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
+
+        // --- SECURITY: AGGRESSIVE WATCHDOG ---
+        function activateWatchdog(correctScore) {
+            const scoreElement = document.getElementById('report-correct');
+            
+            // The Enforcer: Runs constantly to keep the score honest
+            const enforceScore = () => {
+                const currentText = scoreElement.innerText.trim();
+                const correctText = String(correctScore);
+                
+                if (currentText !== correctText) {
+                    scoreElement.innerText = correctText; 
+                    scoreElement.style.color = "#dc2626"; 
+                    scoreElement.style.textDecoration = "line-through";
+                }
+            };
+
+            // Layer 1: MutationObserver (Instant reaction)
+            const observer = new MutationObserver(enforceScore);
+            observer.observe(scoreElement, { characterData: true, childList: true, subtree: true });
+
+            // Layer 2: The Heartbeat (Checks 10 times a second)
+            setInterval(enforceScore, 100);
+        }
+
+        // --- SECURITY: BLOCK KEYBOARD SHORTCUTS ---
+        document.addEventListener('keydown', function(e) {
+            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
+               (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
