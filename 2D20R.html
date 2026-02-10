@@ -277,7 +277,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="alert('🚫 Access Denied: Secure Mission Active!'); return false;">
     
     <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10 flex-none">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -704,9 +704,6 @@
         async function endTest() {
             if (isSubmitting) return;
             isSubmitting = true;
-
-            // NOTE: Removed #submit-button logic since it is deleted from DOM.
-            // We can optionally update keypad 'Enter' button text if we had access, but it's fine.
             
             clearInterval(timerInterval);
 
@@ -740,6 +737,7 @@
 
             // Update UI
             document.getElementById('report-correct').textContent = score;
+            activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
             
@@ -834,6 +832,36 @@
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
         }
+
+        function activateWatchdog(correctScore) {
+            const scoreElement = document.getElementById('report-correct');
+            
+            const enforceScore = () => {
+                const currentText = scoreElement.innerText.trim();
+                const correctText = String(correctScore);
+                
+                if (currentText !== correctText) {
+                    scoreElement.innerText = correctText; 
+                    scoreElement.style.color = "#dc2626"; 
+                    scoreElement.style.textDecoration = "line-through";
+                }
+            };
+
+            const observer = new MutationObserver(enforceScore);
+            observer.observe(scoreElement, { characterData: true, childList: true, subtree: true });
+
+            setInterval(enforceScore, 100);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
+               (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
