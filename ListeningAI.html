@@ -69,7 +69,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow flex items-center justify-center p-4">
+    <main class="flex-grow flex items-center justify-center p-4" oncontextmenu="alert('🚫 Security: Report is Read-Only'); return false;">
         
         <!-- Screen 1: Configuration -->
         <div id="config-screen" class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
@@ -730,8 +730,32 @@ formatNumberText(num) {
 
         const app = new AbacusApp();
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
     </script>
 </body>
 </html>
+
 
 
