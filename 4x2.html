@@ -71,7 +71,7 @@
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans" oncontextmenu="alert('🚫 Access Denied: This is a secure mission, Agent!'); return false;">
 
     <header class="bg-indigo-600 text-black p-4 shadow-lg sticky top-0 z-10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -392,7 +392,31 @@
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
-        // --- NETWORK-PROOF END TEST ---
+		function activateWatchdog(correctScore) {
+    	const scoreElement = document.getElementById('report-correct');
+    
+    	const enforceScore = () => {
+        const currentText = scoreElement.innerText.trim();
+        const correctText = String(correctScore);
+        
+        if (currentText !== correctText) {
+            scoreElement.innerText = correctText;
+            scoreElement.style.color = "#dc2626";
+            scoreElement.style.textDecoration = "line-through";
+            console.log("Security: Score tampered. Reverted.");
+        }
+    	};
+			
+    	const observer = new MutationObserver(enforceScore);
+   	 	observer.observe(scoreElement, { 
+        characterData: true, 
+        childList: true, 
+        subtree: true 
+    	});
+			
+    	setInterval(enforceScore, 100);
+		}
+
         async function endTest() {
             console.log("🚀 Ending 4x2 Test..."); 
 
@@ -435,6 +459,7 @@
 
             // 5. Update Report Card UI
             document.getElementById('report-correct').textContent = score;
+			activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             
             let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
@@ -509,9 +534,33 @@
             document.getElementById('wrong-answer-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
         }
+
+		document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
