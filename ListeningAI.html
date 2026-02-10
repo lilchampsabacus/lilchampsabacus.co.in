@@ -141,7 +141,7 @@
             <div class="flex justify-between items-end mb-4 px-2">
                 <div>
                     <span class="text-sm font-bold text-teal-700 tracking-wider uppercase">Question</span>
-                    <h2 class="text-3xl md:text-4xl font-black text-gray-800"><span id="current-q-num">1</span><span class="text-gray-400 text-2xl">/20</span></h2>
+                    <h2 class="text-3xl md:text-4xl font-black text-gray-800"><span id="current-q-num">1</span><span class="text-gray-400 text-2xl">/10</span></h2>
                 </div>
                 <!-- Back Button in Header for safety (optional, but good for UX) -->
             </div>
@@ -281,7 +281,7 @@
 
                 this.state = {
                     currentQuestion: 0,
-                    totalQuestions: 20,
+                    totalQuestions: 10,
                     results: [],
                     currentSumData: null,
                 };
@@ -707,7 +707,7 @@ formatNumberText(num) {
                 const correctCount = this.state.results.filter(r => r.correct).length;
 
                 document.getElementById('report-difficulty').textContent = `${this.config.digits} Digit`;
-                document.getElementById('report-score').textContent = `${correctCount}/20`;
+                document.getElementById('report-score').textContent = `${correctCount}/10`;
 
                 const tbody = document.getElementById('report-body');
                 tbody.innerHTML = '';
@@ -733,4 +733,5 @@ formatNumberText(num) {
     </script>
 </body>
 </html>
+
 
