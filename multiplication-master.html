@@ -254,49 +254,75 @@
             }, 100);
         }
 
-        async function endTest() {
-            clearInterval(timerInterval);
-            const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-            const timeFormatted = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
-            
-            let score = 0, mistakesArray = [];
-            sumsData.forEach(q => {
-                const correct = q.x * q.y;
-                if (parseInt(q.studentAnswer) === correct) score++;
-                else if (q.studentAnswer) mistakesArray.push({ question: `${q.x} × ${q.y}`, wrong: q.studentAnswer, correct: correct });
-            });
+        // --- 1. STUDENT NAME & DATE IN REPORT ---
+async function endTest() {
+    clearInterval(timerInterval);
+    const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+    const timeFormatted = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
+    
+    // Capture Current Date and Time
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    
+    // Get Student Name from Session
+    const studentIdentifier = sessionStorage.getItem('studentIdentifier') || "Guest Pilot";
+    const studentDisplayName = studentIdentifier.split('@')[0].toUpperCase();
 
-            if (isTerminated) {
-                document.getElementById('report-main-msg').textContent = "Terminated (Breach)";
-                document.getElementById('report-main-msg').style.color = "red";
+    // Update Report UI
+    document.getElementById('report-datetime').textContent = `${dateStr} | ${timeStr}`;
+    document.getElementById('report-student-name').textContent = studentDisplayName;
+
+    let score = 0, mistakesArray = [];
+    sumsData.forEach(q => {
+        const correct = q.x * q.y;
+        if (parseInt(q.studentAnswer) === correct) score++;
+        else if (q.studentAnswer) mistakesArray.push({ question: `${q.x} × ${q.y}`, wrong: q.studentAnswer, correct: correct });
+    });
+
+    // ... [Rest of your grading logic and Supabase save call] ...
+
+    document.getElementById('report-correct').textContent = score;
+    document.getElementById('report-time-elapsed').textContent = timeFormatted;
+    document.body.classList.remove('focus-mode');
+    document.getElementById('test-area').classList.add('hidden');
+    document.getElementById('report-area').classList.remove('hidden');
+}
+
+// --- 2. AUTO-MOVE CURSOR ON ENTER ---
+function setupInputInteraction() {
+    const inputs = document.querySelectorAll('.answer-input');
+    inputs.forEach((input, idx) => {
+        // Standard input tracking
+        input.addEventListener('input', () => {
+            sumsData[input.dataset.index].studentAnswer = input.value;
+            updateProgress();
+        });
+
+        // Keydown logic for Enter key
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent default form submission behavior
+                
+                const nextInput = inputs[idx + 1];
+                if (nextInput) {
+                    // Check if the next input is in the current visible set
+                    if (nextInput.closest('.slide-container').classList.contains('active')) {
+                        nextInput.focus();
+                    } else {
+                        // If it's in the next set, move the slide first
+                        changeSlide(1);
+                        // Small delay to let the animation finish before focusing
+                        setTimeout(() => inputs[idx + 1].focus(), 100);
+                    }
+                } else {
+                    // If no more inputs, focus the finish button
+                    document.getElementById('submit-button').focus();
+                }
             }
-
-            document.getElementById('report-correct').textContent = score;
-            activateWatchdog(score);
-            document.getElementById('report-time-elapsed').textContent = timeFormatted;
-            sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
-            document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
-
-            // Save via gamify.js utility
-            if (window.lilChampUtils?.saveResult) {
-                window.lilChampUtils.saveResult({
-                    challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
-                    score: score,
-                    total: TOTAL_SUMS, 
-                    time: timeFormatted,
-                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray,
-                    questions: sumsData,
-                    answers: sumsData.map(s => s.studentAnswer)
-                });
-            }
-
-            document.body.classList.remove('focus-mode');
-            document.getElementById('test-area').classList.add('hidden');
-            document.getElementById('report-area').classList.remove('hidden');
-            if (score === TOTAL_SUMS && !isTerminated) window.lilChampUtils?.celebrate();
-        }
-
+        });
+    });
+}
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
             document.getElementById('wrong-sums-list').innerHTML = mistakes.map(m => `
