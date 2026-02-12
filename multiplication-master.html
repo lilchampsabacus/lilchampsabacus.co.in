@@ -7,13 +7,12 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="gamify.js?v=6" defer></script>
+    <script src="gamify.js?v=7" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- TABLET SCROLL & GLITCH FIXES --- */
         html, body { 
             height: 100%; width: 100%; margin: 0; padding: 0;
             font-family: 'Nunito', sans-serif; background-color: #f0f9ff; 
@@ -53,6 +52,16 @@
             
             <p class="text-lg text-gray-600 mb-2">You have 30 multiplication targets to hit.</p>
             <p class="text-lg text-gray-600 mb-8">Solve them in sets of 5.</p>
+
+            <div class="mb-8">
+                <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
+                    💡 For best result do this 3 times in a row on Abacus.
+                </p>
+            </div>
+            
+            <div class="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200 text-sm font-bold mb-6">
+                ⚠️ SECURITY PROTOCOL: Switching tabs more than 2 times will end the test immediately.
+            </div>
 
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105" disabled>
                 🚀 Launch Mission
@@ -111,15 +120,15 @@
         </div>
     </main>
 
+    <footer class="bg-white text-center p-6 mt-auto border-t"><p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p></footer>
+
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
         const params = new URLSearchParams(window.location.search);
-        // Extracts the part after 'mul-' if provided, or defaults to 1x1
         const RAW_CODE = params.get('type') || '1x1';
         const CHALLENGE_CODE = RAW_CODE.replace('mul-', ''); 
         
-        // YOUR UPDATED CONFIG
         const challengeConfig = {
             'mul-1x1': '1 Digit x 1 Digit', 'mul-2x1': '2 Digit x 1 Digit',
             'mul-3x1': '3 Digit x 1 Digit', 'mul-4x1': '4 Digit x 1 Digit',
@@ -163,7 +172,6 @@
             document.getElementById('test-area').classList.remove('hidden');
 
             try {
-                // IMPORTANT: Adds 'mul-' back for the gamify.js engine logic
                 const questions = window.generateQuestions('mul-' + CHALLENGE_CODE, TOTAL_SUMS); 
                 sumsData = questions.map(q => ({ ...q, studentAnswer: null }));
                 renderChunks();
