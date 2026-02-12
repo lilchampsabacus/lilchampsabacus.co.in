@@ -13,56 +13,116 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- APP MODE LAYOUT --- */
+        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
         html, body {
-            height: 100%;
+            height: 100%;          /* Lock height to screen size */
             width: 100%;
-            overflow: hidden;
-            position: fixed;
-            touch-action: none;
+            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
+            position: fixed;       /* Freeze the page in place */
+            touch-action: none;    /* Disable browser gestures */
             margin: 0;
+            
+            /* Theme */
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
+
+            /* Flex layout to keep Header/Footer/Main organized */
             display: flex;
             flex-direction: column;
         }
 
+        /* --- SCROLLABLE CONTENT AREA --- */
         main {
-            flex-grow: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            flex-grow: 1;          /* Take up all available space */
+            overflow-y: auto;      /* Allow scrolling ONLY inside here */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.5rem;       /* Default padding (mobile) */
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        /* Focus Mode Update: Just hide elements, don't mess with body scroll */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link { 
             display: none !important; 
         }
+        
+        body.focus-mode #test-area {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
+        /* --- EXISTING ANIMATIONS & TABLES --- */
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
-        .number-cell { text-align: center; font-size: 1.5rem; font-weight: 800; padding: 0; border-bottom: none; color: #334155; line-height: 1.2; }
+        .number-cell { text-align: center; font-size: 1.5rem; font-weight: 800; padding: 0; border-bottom: none; color: #334155; line-height: 1.2; font-family: 'Nunito', sans-serif; }
         
+        /* --- DESKTOP COMPACT MODE (10 Rows fit 100vh) --- */
         @media (min-width: 768px) {
             main { padding: 0 !important; }
+            /* body padding removed globally in new layout */
+
+            /* Table Compact Styles */
             .number-cell { font-size: 1.25rem; padding: 0; line-height: 1.1; }
             .sum-table td { padding: 0px; }
             .sum-table tr:last-child .number-cell { border-bottom: 2px solid #1f2937; }
+
+            /* Dots Compact Styles */
+            .hint-dot { width: 6px; height: 6px; margin-top: 1px; margin-bottom: 0; }
+            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } /* Dots container */
+
+            /* Test Area & Carousel Compact Styles */
+            #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
+            #question-carousel { margin-top: 0; }
+
+            /* Keypad Area Compact Styles */
+            #custom-keypad {
+                position: static;
+                width: 100%;
+                background-color: transparent;
+                box-shadow: none;
+                padding: 0;
+                margin-top: 0.2rem;
+                z-index: auto;
+                gap: 4px;
+            }
+
+            .keypad-btn {
+                min-height: 35px;
+                font-size: 1.1rem;
+            }
+
+            /* Tighten Right Column Spacing */
+            .bg-blue-50.p-3 { padding: 4px; margin-bottom: 4px; }
+
+            /* Compact Progress Bar */
+            .bg-white.p-3.border-orange-400 { padding: 2px 8px; margin-bottom: 4px; display: block; }
+            .bg-white.p-3.border-orange-400 .text-xs { font-size: 0.6rem; }
+            .bg-white.p-3.border-orange-400 .h-8 { height: 1rem; margin-top: 0; margin-bottom: 0; }
+            .bg-white.p-3.border-orange-400 #progress-bead svg { width: 30px; height: 20px; }
+
+            .progress-container { margin-bottom: 4px; padding: 4px; }
         }
 
+        .sum-table tr:nth-child(even) { background-color: #f8fafc; }
+        .sum-table tr:nth-child(odd) { background-color: #ffffff; }
+        @media (min-width: 768px) {
+            .sum-table tr:hover { background-color: #f1f5f9; transition: background-color 0.2s; }
+        }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
+        .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; display: none !important; }
         .negative-number { color: #dc2626; } 
 
+        /* Formula Hint Dots */
         .hint-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
         .hint-green { background-color: #22c55e; border: 1px solid #166534; }
         .hint-yellow { background-color: #eab308; border: 1px solid #a16207; }
@@ -71,8 +131,22 @@
         
         .hidden { display: none !important; }
 
+        /* --- MOBILE FIX FOR 10 ROWS --- */
         @media (max-width: 768px) {
+            .sum-table td { padding: 0 !important; height: auto !important; }
+            .number-cell { font-size: 1.25rem !important; line-height: 1.1 !important; padding-bottom: 2px !important; }
+            .row-index { font-size: 0.6rem !important; width: 15px !important; padding-right: 2px !important; }
+            #question-carousel { margin-bottom: 0.5rem; }
+            #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
+
+            /* Ensure enough bottom padding so keypad doesn't cover content */
             main { padding-bottom: 350px !important; }
+        }
+
+        /* --- LAYOUT STRUCTURE --- */
+        #game-layout {
+            display: block; /* Mobile Default */
+            height: 100%;
         }
 
         @media (min-width: 768px) {
@@ -80,56 +154,134 @@
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
+                align-items: stretch;
                 gap: 40px;
-                height: 100%;
+                height: 100%; /* Fill the main container */
+                overflow: visible;
                 width: 100%;
             }
-            .left-panel, .right-panel {
-                background: white;
-                border-radius: 1.5rem;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                border: 1px solid #e2e8f0;
+
+            .left-panel {
+                width: 50%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: stretch;
                 padding: 1rem;
+                height: 100%;
+                padding-bottom: 0;
+                overflow: hidden;
+
+                background-color: white;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e2e8f0;
             }
-            .left-panel { width: 50%; }
-            .right-panel { width: 40%; }
+
+            .left-panel > div { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            #question-carousel { flex: 1; display: flex; flex-direction: column; }
+
+            .slide-container { height: 100%; width: 100%; }
+            .slide-container.active { display: flex !important; flex-direction: column; }
+
+            .sum-table { height: 100%; width: 100%; display: flex; flex-direction: column; }
+            .sum-table tr { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+            .number-cell { font-size: clamp(1.5rem, 4vh, 3rem); height: auto; }
+
+            .right-panel {
+                width: 40%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 1rem;
+
+                background-color: white;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e2e8f0;
+            }
+
+            #custom-keypad {
+                position: static !important;
+                bottom: auto !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                margin-top: 10px;
+            }
         }
         
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
 
+        /* --- CUSTOM NUMERIC KEYPAD --- */
         #custom-keypad {
             display: grid;
+            /* Mobile Default: Fixed at bottom */
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             background-color: #f3f4f6;
             padding: 8px;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
             z-index: 9999;
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
         }
 
         .keypad-btn {
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            min-height: 60px;
+            min-height: 60px; /* Touch friendly */
             font-size: 1.5rem;
             font-weight: 700;
+            color: #374151;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+            touch-action: manipulation;
+            user-select: none;
         }
 
-        .keypad-btn.action-btn { background-color: #4f46e5; color: white; grid-column: span 2; }
+        .keypad-btn:active {
+            background-color: #f9fafb;
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .keypad-btn.action-btn {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4338ca;
+            grid-column: span 2;
+            font-size: 1.25rem;
+        }
+
+        .keypad-btn.action-btn:active {
+            background-color: #4338ca;
+        }
+
+        .keypad-btn.backspace-btn {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .keypad-btn.op-btn {
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
     </style>
 </head>
-<body oncontextmenu="alert('🚫 Access Denied!'); return false;">
+<body oncontextmenu="alert('🚫 Access Denied: Secure Mission Active!'); return false;">
     
     <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10 flex-none">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
     </header>
 
@@ -138,6 +290,10 @@
 
         <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full mb-10">
             <h3 class="text-2xl font-bold mb-4 text-gray-800">Configure Your Mission</h3>            
+            <div class="mb-6 hidden"> 
+                <input type="text" id="student-identifier-input" class="w-full" readonly>
+            </div>
+            
             <div class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold mb-6">
                 Pilot: <span id="auto-student-name-display">... Loading ...</span>
             </div>
@@ -145,107 +301,199 @@
             <div class="mb-8 text-left">
                 <label for="practice-type" class="block text-sm font-bold text-gray-700 mb-2">Select Difficulty Level:</label>
                 <select id="practice-type" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-gray-50 text-lg font-semibold">
-                    <option value="3">1-Digit 10 Rows (1D10R)</option>
-                    <option value="1" selected>2-Digit 10 Rows (2D10R)</option>
-                    <option value="2">3-Digit 10 Rows (3D10R)</option>
-                    <option value="4">4-Digit 10 Rows (4D10R)</option>
-                    <option value="5">5-Digit 10 Rows (5D10R)</option>
+                    <option value="3">1-Digit 10 Rows</option>
+                    <option value="1" selected>2-Digit 10 Rows</option>
+                    <option value="2">3-Digit 10 Rows</option>
+                    <option value="4">4-Digit 10 Rows</option>
+                    <option value="5">5-Digit 10 Rows</option>
                 </select>
             </div>
 
             <div class="mb-8 flex flex-col items-center gap-4">
+                <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
+                    💡 For best result do this 3 times in a row on Abacus.
+                </p>
+
                 <div class="flex items-center bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
-                    <input type="checkbox" id="show-hints-toggle" class="w-5 h-5 text-indigo-600">
-                    <label for="show-hints-toggle" class="ml-2 text-gray-700 font-bold cursor-pointer">Show Traffic Light Hints 🚦</label>
+                    <input type="checkbox" id="show-hints-toggle" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                    <label for="show-hints-toggle" class="ml-2 text-gray-700 font-bold select-none cursor-pointer">
+                        Show Traffic Light Formula Hints 🚦
+                    </label>
                 </div>
             </div>
             
-            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg">🚀 Launch Mission</button>
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
+                🚀 Launch Mission
+            </button>
         </section>
 
         <section id="test-area" class="hidden w-full max-w-4xl">
             <div id="game-layout">
                 <div class="left-panel">
-                    <div id="question-carousel"></div>
+                    <div class="w-full max-w-sm mx-auto p-2 md:p-4">
+                        <div id="question-carousel"></div>
+                    </div>
                 </div>
+
                 <div class="right-panel">
-                    <input type="text" id="answer-input" class="w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold bg-white mb-4" placeholder="?" readonly>
-                    <div id="custom-keypad">
-                        <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
-                        <button class="keypad-btn" onclick="handleBackspace()">⌫</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('-')">-</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
-                        <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
-                        <button class="keypad-btn" onclick="handleKeypadEnter()">ENT</button>
-                        <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
-                        <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">NEXT</button>
+                    <div class="w-full max-w-sm mx-auto">
+                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm mb-4">
+                            <label class="hidden md:block text-blue-900 font-bold mb-2 text-center">Enter Answer:</label>
+                            <input type="text" inputmode="none" autocomplete="off" id="answer-input" class="answer-input w-full p-3 border-2 border-blue-300 rounded-lg text-center text-3xl font-bold focus:outline-none focus:border-blue-600 bg-white mb-2 shadow-inner" placeholder="?">
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
+                            </div>
+                            <div class="relative w-full h-8 mt-2 mb-2 select-none">
+                                <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
+                                <div id="progress-bead" class="absolute top-1/2 -translate-y-1/2 transition-all duration-500 transform -translate-x-1/2 z-10 drop-shadow-lg" style="left: 0%">
+                                    <svg width="46" height="30" viewBox="0 0 46 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 15 L26 15" stroke="#333" stroke-width="4"/>
+                                        <path d="M3 15 L23 27 L43 15" fill="#A0522D" stroke="#8B4513" stroke-width="1"/>
+                                        <path d="M3 15 L23 3 L43 15" fill="#E67C26" stroke="#CD853F" stroke-width="1"/>
+                                        <path d="M3 15 L43 15" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                                        <ellipse cx="23" cy="9" rx="8" ry="3" fill="white" fill-opacity="0.3"/>
+                                        <circle cx="23" cy="3" r="1.5" fill="#333" fill-opacity="0.2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="text-right text-xs text-gray-500 mt-1 font-bold" id="progress-text">0/10</div>
+                        </div>
+
+                        <div id="custom-keypad">
+                             <div id="formula-legend" class="col-span-4 hidden flex flex-row justify-evenly items-center bg-gray-100 rounded mb-1 py-2 text-[1.1rem] font-bold text-gray-700 select-none">
+                                 <div><span class="text-2xl align-middle" style='color:#22c55e'>●</span> Direct</div>
+                                 <div><span class="text-2xl align-middle" style='color:#eab308'>●</span> Small</div>
+                                 <div><span class="text-2xl align-middle" style='color:#ef4444'>●</span> Big</div>
+                                 <div><span class="text-2xl align-middle" style='color:#a855f7'>●</span> Mix</div>
+                             </div>
+                             <button class="keypad-btn" onclick="handleKeypadInput('7')">7</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('8')">8</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('9')">9</button>
+                             <button class="keypad-btn backspace-btn" onclick="handleBackspace()">⌫</button>
+
+                             <button class="keypad-btn" onclick="handleKeypadInput('4')">4</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('5')">5</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('6')">6</button>
+                             <button class="keypad-btn op-btn" onclick="handleKeypadInput('-')">-</button>
+
+                             <button class="keypad-btn" onclick="handleKeypadInput('1')">1</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('2')">2</button>
+                             <button class="keypad-btn" onclick="handleKeypadInput('3')">3</button>
+                             <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
+
+                             <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
+                             <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
+                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="report-area" class="hidden flex justify-center mt-4 mb-20">
-            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl">
-                <h2 class="text-2xl font-extrabold text-gray-700 text-center" id="report-level-title">Result</h2>
-                <div class="grid grid-cols-2 gap-4 my-6">
-                    <div class="bg-green-50 p-4 rounded-xl text-center">
-                        <p class="text-xs text-green-600 font-bold uppercase">Accuracy</p>
-                        <p class="text-3xl font-black text-green-700"><span id="report-correct">0</span>/10</p>
+            <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="text-center border-b border-gray-100 pb-2 mb-4">
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
+                    <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="report-level-title">Add/Sub 10 Rows</h2>
+                </div>
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <p class="text-center text-gray-500 mb-6 border-b pb-4"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
+                        <p class="text-xs text-green-600 uppercase font-bold tracking-wider">Accuracy</p>
+                        <p class="text-3xl font-black text-green-700"><span id="report-correct">0</span><span class="text-xl text-gray-400">/10</span></p>
                     </div>
-                    <div class="bg-purple-50 p-4 rounded-xl text-center">
-                        <p class="text-xs text-purple-600 font-bold uppercase">Time</p>
+                    <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-100 text-center">
+                        <p class="text-xs text-purple-600 uppercase font-bold tracking-wider">Total Time</p>
                         <p class="text-3xl font-black text-purple-800" id="report-time-elapsed">0:00</p>
                     </div>
                 </div>
-                <p class="text-center mb-4">Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
-                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3">Review Mistakes</button>
-                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg">🔄 Replay</button>
+                <div class="bg-gray-50 p-3 rounded-lg mb-6 text-center">
+                    <p class="text-xs text-gray-500">Avg Speed per 10-Row Sum</p>
+                    <p class="text-xl font-bold text-gray-700" id="report-avg-time">N/A</p>
+                </div>
+                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3 shadow-lg flex items-center justify-center gap-2">Save Badge (Download)</button>
+                
+                <button id="see-wrong-button" onclick="showWrongAnswers()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg hover:bg-red-200 mb-3" disabled>
+                    Review Mistakes
+                </button>
+
+                <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg hover:bg-gray-50">🔄 Replay Mission</button>
             </div>
         </section>
 
         <section id="wrong-answer-area" class="hidden w-full max-w-4xl mx-auto p-4 mb-20">
             <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
-            
-            <button onclick="printMistakes()" class="mb-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2">
-                🖨️ Print Mistakes for Re-Practice
+            <div id="wrong-sums-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            </div>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">
+                &larr; Back to Scoreboard
             </button>
-
-            <div id="wrong-sums-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-            
-            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">Back to Scoreboard</button>
         </section>
 
     </main>
 
     <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200 flex-none">
-        <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
+    <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
         
+        // --- YOUR SECURE SCRIPT URL ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
-        let sumsData = [], startTime, currentSlideIndex = 0, timerInterval, isSubmitting = false;
+        
+        let TOTAL_SUMS = 10; 
+        let sumsData = [];
+        let startTime;
+        let currentSlideIndex = 0;
+        let timerInterval;
+        let isSubmitting = false;
 
+        function formatStudentName(identifier) {
+            if (!identifier || typeof identifier !== 'string') return 'Pilot';
+            const namePart = identifier.split('@')[0];
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        }
+
+        function downloadReport() {
+            const reportElement = document.getElementById('report-card');
+            const studentName = document.getElementById('report-student-name').textContent || "Student";
+            html2canvas(reportElement, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Mission_Report_AddSub_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('student-identifier-input');
+            const startButton = document.getElementById('start-button');
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            const displayStudentName = formatStudentName(studentIdentifier); 
             if (studentIdentifier) {
-                document.getElementById('auto-student-name-display').textContent = studentIdentifier.split('@')[0].toUpperCase();
+                nameInput.value = studentIdentifier;
+                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+                startButton.disabled = false;
+            } else {
+                startButton.disabled = true;
             }
+            // START PRE-LOADING IMMEDIATELY
+            preLoadQuestions(); 
+            document.getElementById('practice-type').addEventListener('change', preLoadQuestions);
         });
 
-        async function startTest() {
-            document.body.classList.add('focus-mode');
+        // --- NEW: PRE-LOAD VARIABLES ---
+        let pendingQuestionsPromise = null; 
+
+        // 1. Helper: Start loading data immediately (Call this on page load!)
+        function preLoadQuestions() {
             const typeSelect = document.getElementById('practice-type');
             const val = typeSelect.value;
             
-            // Map the dropdown selection to digit counts
             let digits = "2"; 
             if (val === "3") digits = "1";
             if (val === "1") digits = "2";
@@ -255,87 +503,327 @@
 
             const LEVEL_CODE = `add-${digits}d10r`;
             
+            console.log("Pre-fetching data for:", LEVEL_CODE);
+            
+            // Fetch and store the promise
+            pendingQuestionsPromise = fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`)
+                .then(response => response.json())
+                .catch(err => {
+                    console.error("Pre-load failed", err);
+                    return null;
+                });
+        }
+
+        // 2. Updated Start Function: Uses the pre-loaded data
+        async function startTest() {
+            document.body.classList.add('focus-mode');
+            const startBtn = document.getElementById('start-button');
+            startBtn.textContent = "Starting..."; 
+            startBtn.disabled = true;
+
+            // Get Level Code
+            const typeSelect = document.getElementById('practice-type');
+            const val = typeSelect.value;
+            let digits = "2"; 
+            if (val === "3") digits = "1";
+            if (val === "1") digits = "2";
+            if (val === "2") digits = "3";
+            if (val === "4") digits = "4";
+            if (val === "5") digits = "5";
+            
+            const LEVEL_CODE = `add-${digits}d10r`;
+            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
+            document.getElementById('report-level-title').textContent = levelText;
+
             try {
                 const questions = window.generateQuestions(LEVEL_CODE, 10);
-                sumsData = questions.map(q => ({ numbers: q.numbers, studentAnswer: null }));
+
+                // Prepare Data
+                sumsData = questions.map(q => ({
+                    numbers: q.numbers,
+                    type: 'addition',
+                    studentAnswer: null
+                }));
+                
+                TOTAL_SUMS = sumsData.length;
+
                 renderCards();
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
-                document.getElementById('report-level-title').textContent = typeSelect.options[typeSelect.selectedIndex].text;
+                
+                // Show/Hide Legend
+                const showHints = document.getElementById('show-hints-toggle').checked;
+                const legend = document.getElementById('formula-legend');
+                if (showHints) {
+                    legend.classList.remove('hidden');
+                } else {
+                    legend.classList.add('hidden');
+                }
+
+                // Setup Input
+                const input = document.getElementById('answer-input');
+                input.value = '';
+                input.disabled = false;
+
+                // Universal Keypad: Always ReadOnly to block native keyboard
+                input.readOnly = true;
+
+                // Note: We don't focus() because it might bring up keyboard on some devices even if readonly (rare but possible)
+                // But generally readonly prevents keyboard.
+                // However, we want the user to see where the input goes.
+                // input.focus(); // Optional.
+                
+                // Remove old event listeners by cloning
+                const newNode = input.cloneNode(true);
+                input.parentNode.replaceChild(newNode, input);
+
+                // Note: Global key listener in gamify.js handles physical keyboard input now.
+
                 startTime = Date.now();
-            } catch (err) { alert("Error launching mission."); }
+                startTimer();
+
+            } catch (err) {
+                console.error(err);
+                alert("Error launching mission. Please refresh.");
+                startBtn.textContent = "Launch Mission";
+                startBtn.disabled = false;
+            }
+        }
+        
+        function toggleHintsVisibility() {
+            const isChecked = document.getElementById('toggle-hints').checked;
+            const dots = document.querySelectorAll('.hint-dot');
+            dots.forEach(dot => {
+                if (isChecked) dot.classList.remove('hidden');
+                else dot.classList.add('hidden');
+            });
         }
 
-        function createSumTableHtml(numbers, hideHints = false) {
-            let hints = window.calculateFormulaHints ? window.calculateFormulaHints(numbers) : numbers.map(() => ['green']);
-            const showHints = document.getElementById('show-hints-toggle').checked && !hideHints;
-            
+        function createSumTableHtml(numbers) {
+            // Calculate hints if possible
+            let hints = [];
+            if (window.calculateFormulaHints) {
+                hints = window.calculateFormulaHints(numbers);
+            }
+
             let tableHtml = '<table class="sum-table">';
-            numbers.forEach((num, i) => {
-                let dots = '';
-                if (showHints) {
-                    (hints[i] || ['green']).forEach(c => dots += `<span class="hint-dot hint-${c}"></span>`);
-                }
-                tableHtml += `<tr><td class="number-cell ${num < 0 ? 'negative-number' : ''}">${num < 0 ? '-' + Math.abs(num) : num}<div>${dots}</div></td></tr>`;
+
+            // Check if hints is empty
+            if (hints.length === 0) {
+                 hints = numbers.map(() => ['green']); // Default to array of green if logic fails
+            }
+
+            const showHints = document.getElementById('show-hints-toggle').checked;
+            const visibilityClass = showHints ? '' : 'hidden';
+
+            numbers.forEach((num, rIndex) => {
+                const isNeg = num < 0;
+                const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
+                const colorClass = isNeg ? 'negative-number' : '';
+
+                let rowHints = hints[rIndex] || ['green'];
+                // Backwards compatibility if logic returns string
+                if (typeof rowHints === 'string') rowHints = [rowHints];
+
+                let dotsHtml = '';
+                rowHints.forEach(color => {
+                    dotsHtml += `<span class="hint-dot hint-${color} ${visibilityClass}"></span>`;
+                });
+
+                tableHtml += `
+                    <tr>
+                        <td class="row-index">${rIndex + 1}</td>
+                        <td class="number-cell ${colorClass}">
+                            ${displayNum}
+                            <div style="line-height: 0.5;">
+                            ${dotsHtml}
+                            </div>
+                        </td>
+                    </tr>`;
             });
-            return tableHtml + '</table>';
+            tableHtml += '</table>';
+            return tableHtml;
         }
 
         function renderCards() {
             const carousel = document.getElementById('question-carousel');
             carousel.innerHTML = '';
             sumsData.forEach((data, index) => {
-                const slide = document.createElement('div');
-                slide.className = `slide-container ${index === 0 ? 'active' : ''}`;
-                slide.id = `slide-${index}`;
-                slide.innerHTML = `<div class="text-center font-bold text-gray-400 text-xs">Q ${index + 1} / 10</div>` + createSumTableHtml(data.numbers);
-                carousel.appendChild(slide);
+                const slideDiv = document.createElement('div');
+                slideDiv.className = `slide-container ${index === 0 ? 'active' : ''}`;
+                slideDiv.id = `slide-${index}`;
+                
+                const tableHtml = createSumTableHtml(data.numbers);
+                const headerHtml = `<div class="text-center py-2 border-b border-gray-100 font-bold text-gray-400 text-xs uppercase tracking-widest">Question ${index + 1} / ${TOTAL_SUMS}</div>`;
+                slideDiv.innerHTML = headerHtml + tableHtml;
+                carousel.appendChild(slideDiv);
             });
         }
 
-        function handleKeypadEnter() {
+        // --- SUBMIT LOGIC (STRICT - NO SKIPPING) ---
+        function submitAndNext() {
+            if (isSubmitting) return;
             const input = document.getElementById('answer-input');
-            if (!input.value.trim()) return;
-            sumsData[currentSlideIndex].studentAnswer = parseInt(input.value);
+            const valStr = input.value.trim();
+            
+            // STRICT: Empty not allowed
+            if (valStr === '') {
+                input.focus();
+                input.classList.add('border-red-500');
+                setTimeout(() => input.classList.remove('border-red-500'), 500);
+                return;
+            }
 
-            if (currentSlideIndex < 9) {
+            const val = parseInt(valStr);
+            sumsData[currentSlideIndex].studentAnswer = val;
+
+            if (currentSlideIndex < TOTAL_SUMS - 1) {
                 document.getElementById(`slide-${currentSlideIndex}`).classList.remove('active');
                 currentSlideIndex++;
                 document.getElementById(`slide-${currentSlideIndex}`).classList.add('active');
+                
                 input.value = '';
-            } else { endTest(); }
+                input.focus();
+                
+                const pct = ((currentSlideIndex) / TOTAL_SUMS) * 100;
+                const bead = document.getElementById('progress-bead');
+                if(bead) bead.style.left = `${pct}%`;
+                document.getElementById('progress-text').textContent = `${currentSlideIndex}/${TOTAL_SUMS}`;
+                
+            } else {
+                const bead = document.getElementById('progress-bead');
+                if(bead) bead.style.left = '100%';
+                document.getElementById('progress-text').textContent = `${TOTAL_SUMS}/${TOTAL_SUMS}`;
+                endTest();
+            }
         }
 
-        function handleKeypadInput(val) { document.getElementById('answer-input').value += val; }
-        function handleBackspace() { const inp = document.getElementById('answer-input'); inp.value = inp.value.slice(0, -1); }
+        function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
+        // --- NEW: ROBUST END TEST (Handles Weak Network) ---
         async function endTest() {
+            if (isSubmitting) return;
             isSubmitting = true;
-            const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+            
+            clearInterval(timerInterval);
+
+            // Calculate Time
+            const endTime = Date.now();
+            const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeElapsedSeconds / 60);
+            const seconds = timeElapsedSeconds % 60;
+            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // --- GRADE LOCALLY ---
             let score = 0;
-            sumsData.forEach(q => { if (q.studentAnswer === q.numbers.reduce((a, b) => a + b, 0)) score++; });
+            let mistakesArray = [];
 
-            document.getElementById('report-correct').textContent = score;
-            document.getElementById('report-time-elapsed').textContent = `${Math.floor(timeElapsed/60)}:${timeElapsed%60}`;
-            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
-            sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData));
-
-            document.getElementById('test-area').classList.add('hidden');
-            document.getElementById('report-area').classList.remove('hidden');
-            document.body.classList.remove('focus-mode');
-        }
-
-        function showWrongAnswers() {
-            const list = document.getElementById('wrong-sums-list');
-            list.innerHTML = '';
-            const data = JSON.parse(sessionStorage.getItem('addSubSumsData'));
-            data.forEach(sum => {
-                const correct = sum.numbers.reduce((a, b) => a + b, 0);
-                if (sum.studentAnswer !== correct) {
-                    list.innerHTML += `<div class="review-card p-2 flex flex-col items-center">${createSumTableHtml(sum.numbers)}
-                    <div class="text-xs mt-2">You: <span class="text-red-600">${sum.studentAnswer}</span> | Correct: <span class="text-green-600">${correct}</span></div></div>`;
+            sumsData.forEach((q, index) => {
+                // Calculate correct sum locally
+                let correctVal = q.numbers.reduce((a, b) => a + b, 0);
+                
+                if (q.studentAnswer === correctVal) {
+                    score++;
+                } else {
+                    if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                        mistakesArray.push({
+                            question: "Row Sum " + (index + 1), // Simplification for display
+                            wrong: q.studentAnswer, 
+                            correct: correctVal
+                        });
+                    }
                 }
             });
+
+            // Update UI
+            document.getElementById('report-correct').textContent = score;
+            activateWatchdog(score);
+            document.getElementById('report-time-elapsed').textContent = timeFormatted;
+            document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
+            
+            const now = new Date();
+            document.getElementById('report-datetime').textContent = now.toLocaleString('en-IN', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+            
+            document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
+            // Save for Review
+            sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
+
+            // Setup Review Button
+            const wrongBtn = document.getElementById('see-wrong-button');
+            if (mistakesArray.length > 0) {
+                wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
+                wrongBtn.disabled = false;
+                wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                wrongBtn.textContent = "Perfect Score!";
+                wrongBtn.disabled = true;
+                wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // --- SAVE TO SUPABASE ---
+            const typeSelect = document.getElementById('practice-type');
+            const levelText = typeSelect.options[typeSelect.selectedIndex].text;
+
+            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
+                window.lilChampUtils.saveResult({
+                    challenge: levelText, // e.g. "2-Digit 10 Rows"
+                    score: score,
+                    total: TOTAL_SUMS, 
+                    time: timeFormatted,
+                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                    mistakes: mistakesArray,
+                    // Pass full data for verification (SECURE MODE)
+                    questions: sumsData,
+                    answers: sumsData.map(s => s.studentAnswer)
+                });
+            }
+
+            // Switch Screens
+            document.body.classList.remove('focus-mode');
+            document.getElementById('test-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
+            
+            if (score === TOTAL_SUMS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
+            }
+        }
+        
+        // --- WRONG ANSWERS VIEW ---
+        function showWrongAnswers() {
+            // Retrieve data
+            const storedSums = JSON.parse(sessionStorage.getItem('addSubSumsData'));
+            const listContainer = document.getElementById('wrong-sums-list');
+            listContainer.innerHTML = '';
+            
+            storedSums.forEach((sum) => {
+                // Calculate correct locally for display review
+                const correctTotal = sum.numbers.reduce((a,b)=>a+b, 0);
+                
+                if (sum.studentAnswer !== correctTotal) {
+                    const tableHtml = createSumTableHtml(sum.numbers);
+                    
+                    const card = `
+                        <div class="review-card shadow-lg p-2 flex flex-col items-center">
+                            <div class="w-full border-b pb-2 mb-2 text-center text-gray-500 font-bold text-xs">Correction</div>
+                            ${tableHtml}
+                            <div class="w-full mt-2 pt-2 border-t flex justify-between px-4 bg-gray-50">
+                                <div class="text-center">
+                                    <div class="text-xs text-red-500 font-bold">You Said</div>
+                                    <div class="text-lg font-bold text-red-600 line-through">${sum.studentAnswer}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-green-600 font-bold">Correct</div>
+                                    <div class="text-lg font-bold text-green-700">${correctTotal}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.innerHTML += card;
+                }
+            });
+
             document.getElementById('report-area').classList.add('hidden');
             document.getElementById('wrong-answer-area').classList.remove('hidden');
         }
@@ -345,41 +833,35 @@
             document.getElementById('report-area').classList.remove('hidden');
         }
 
-        function printMistakes() {
-            const storedSums = JSON.parse(sessionStorage.getItem('addSubSumsData'));
-            const studentName = document.getElementById('report-student-name').textContent;
-            const academyHeader = "Li'l Champs Abacus Academy, Ambernath";
-            const contactInfo = "Contact: 9730482620 | www.lilchampsabacus.co.in";
-            const printWindow = window.open('', '_blank');
+        function activateWatchdog(correctScore) {
+            const scoreElement = document.getElementById('report-correct');
             
-            let sumsHtml = '';
-            storedSums.forEach((sum, index) => {
-                const correct = sum.numbers.reduce((a, b) => a + b, 0);
-                if (sum.studentAnswer !== correct) {
-                    sumsHtml += `
-                        <div style="border:1px solid #000; padding:10px; margin:10px; break-inside:avoid; width:220px; display:inline-block; vertical-align:top; text-align:center;">
-                            <b style="font-size:12px;">Sum #${index+1}</b><br>
-                            ${createSumTableHtml(sum.numbers, true)}
-                            <div style="border-top:1px dashed #000; margin-top:10px; padding-top:5px; font-size:12px;">Answer: ________</div>
-                        </div>`;
+            const enforceScore = () => {
+                const currentText = scoreElement.innerText.trim();
+                const correctText = String(correctScore);
+                
+                if (currentText !== correctText) {
+                    scoreElement.innerText = correctText; 
+                    scoreElement.style.color = "#dc2626"; 
+                    scoreElement.style.textDecoration = "line-through";
                 }
-            });
+            };
 
-            printWindow.document.write(`
-                <html>
-                <body style="font-family:Arial; padding:20px;">
-                    <div style="text-align:center; border-bottom:2px solid #000; margin-bottom:20px;">
-                        <h1 style="margin:0; font-size: 20px;">${academyHeader}</h1>
-                        <p style="margin:5px; font-size: 14px;">${contactInfo}</p>
-                    </div>
-                    <div style="margin-bottom:20px;"><b>Student:</b> ${studentName} | <b>Date:</b> ${new Date().toLocaleDateString()}</div>
-                    <div style="display:block; text-align: left;">${sumsHtml}</div>
-                    <script>setTimeout(() => { window.print(); window.close(); }, 500);<\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            const observer = new MutationObserver(enforceScore);
+            observer.observe(scoreElement, { characterData: true, childList: true, subtree: true });
+
+            setInterval(enforceScore, 100);
         }
+        
+        document.addEventListener('keydown', function(e) {
+            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
+               (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
