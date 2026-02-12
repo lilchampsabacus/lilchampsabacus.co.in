@@ -7,7 +7,7 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="gamify.js?v=3" defer></script>
+    <script src="gamify.js?v=6" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -15,48 +15,21 @@
     <style>
         /* --- TABLET SCROLL & GLITCH FIXES --- */
         html, body { 
-            height: 100%; 
-            width: 100%; 
-            margin: 0; 
-            padding: 0;
-            font-family: 'Nunito', sans-serif; 
-            background-color: #f0f9ff; 
-            /* Allows natural scrolling on tablets so the Finish button isn't hidden */
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            font-family: 'Nunito', sans-serif; background-color: #f0f9ff; 
             overflow-y: auto; 
         }
-
-        main { 
-            min-height: 100vh;
-            width: 100%;
-            padding-bottom: 120px; /* Extra space at bottom for the Finish button */
-        }
-
+        main { min-height: 100vh; width: 100%; padding-bottom: 120px; }
         .slide-container { display: none; }
         .slide-container.active { display: block; animation: fadeIn 0.4s ease-out; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .sum-item { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 1.2rem; 
-            margin-bottom: 0.75rem; 
-            background: white; 
-            border: 1px solid #e5e7eb; 
-            border-radius: 0.75rem; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 1.2rem; margin-bottom: 0.75rem; background: white; 
+            border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
         }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { 
-            display: none !important; 
-        }
+        header { position: sticky; top: 0; z-index: 50; }
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
         body.focus-mode { background-color: #fbf0d9; }
     </style>
 </head>
@@ -80,16 +53,6 @@
             
             <p class="text-lg text-gray-600 mb-2">You have 30 multiplication targets to hit.</p>
             <p class="text-lg text-gray-600 mb-8">Solve them in sets of 5.</p>
-
-            <div class="mb-8">
-                <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
-                    💡 For best result do this 3 times in a row on Abacus.
-                </p>
-            </div>
-            
-            <div class="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200 text-sm font-bold mb-6">
-                ⚠️ SECURITY PROTOCOL: Switching tabs more than 2 times will end the test immediately.
-            </div>
 
             <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105" disabled>
                 🚀 Launch Mission
@@ -123,7 +86,7 @@
         <section id="report-area" class="hidden flex justify-center">
             <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative">
                 <div class="text-center border-b pb-2 mb-4">
-                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Skill Mastery</span>
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
                     <h2 id="report-level-name" class="text-2xl font-extrabold text-gray-700 mt-2">Level</h2>
                 </div>
                 <h3 id="report-main-msg" class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
@@ -137,17 +100,26 @@
                 <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg">🔄 Replay</button>
             </div>
         </section>
+
+        <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                <div id="wrong-sums-list" class="space-y-2"></div>
+            </div>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">&larr; Back to Scoreboard</button>
+        </section>
         </div>
     </main>
-
-    <footer class="bg-white text-center p-6 mt-auto border-t"><p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p></footer>
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
         const params = new URLSearchParams(window.location.search);
-        const CHALLENGE_CODE = params.get('type') || '1x1'; 
+        // Extracts the part after 'mul-' if provided, or defaults to 1x1
+        const RAW_CODE = params.get('type') || '1x1';
+        const CHALLENGE_CODE = RAW_CODE.replace('mul-', ''); 
         
+        // YOUR UPDATED CONFIG
         const challengeConfig = {
             'mul-1x1': '1 Digit x 1 Digit', 'mul-2x1': '2 Digit x 1 Digit',
             'mul-3x1': '3 Digit x 1 Digit', 'mul-4x1': '4 Digit x 1 Digit',
@@ -159,7 +131,8 @@
         const TOTAL_SUMS = 30, SUMS_PER_SLIDE = 5, TOTAL_SLIDES = 6;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const levelName = challengeConfig[CHALLENGE_CODE] || "Multiplication Mission";
+            const configKey = 'mul-' + CHALLENGE_CODE;
+            const levelName = challengeConfig[configKey] || "Multiplication Mission";
             document.getElementById('dynamic-mission-heading').textContent = levelName;
             document.getElementById('report-level-name').textContent = levelName;
             
@@ -190,7 +163,8 @@
             document.getElementById('test-area').classList.remove('hidden');
 
             try {
-                const questions = window.generateQuestions(CHALLENGE_CODE, TOTAL_SUMS);
+                // IMPORTANT: Adds 'mul-' back for the gamify.js engine logic
+                const questions = window.generateQuestions('mul-' + CHALLENGE_CODE, TOTAL_SUMS); 
                 sumsData = questions.map(q => ({ ...q, studentAnswer: null }));
                 renderChunks();
                 document.getElementById('next-btn').classList.remove('hidden');
@@ -229,7 +203,6 @@
                     sumsData[input.dataset.index].studentAnswer = input.value;
                     updateProgress();
                 });
-
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -281,17 +254,24 @@
 
             let score = 0, mistakesArray = [];
             sumsData.forEach(q => {
-                const correct = q.x * q.y;
-                if (parseInt(q.studentAnswer) === correct) score++;
-                else if (q.studentAnswer) mistakesArray.push({ question: `${q.x} × ${q.y}`, wrong: q.studentAnswer, correct: correct });
+                const correct = q.x * q.y; 
+                if (parseInt(q.studentAnswer) === correct) {
+                    score++;
+                } else if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                    mistakesArray.push({ question: `${q.x} × ${q.y}`, wrong: q.studentAnswer, correct: correct });
+                }
             });
+
+            sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
 
             document.getElementById('report-datetime').textContent = `${dateStr} | ${timeStr}`;
             document.getElementById('report-student-name').textContent = (sessionStorage.getItem('studentIdentifier') || "PILOT").split('@')[0].toUpperCase();
             document.getElementById('report-correct').textContent = score;
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
-            sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
-            document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
+            
+            const mistakesBtn = document.getElementById('see-wrong-button');
+            mistakesBtn.disabled = mistakesArray.length === 0;
+            mistakesBtn.textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
             if (window.lilChampUtils?.saveResult) {
                 window.lilChampUtils.saveResult({
@@ -312,12 +292,24 @@
 
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
-            document.getElementById('wrong-sums-list').innerHTML = mistakes.map(m => `
-                <div class="grid grid-cols-3 py-2 border-b">
-                    <span>${m.question}</span><span class="text-red-500 line-through">${m.wrong}</span><span class="text-green-600 font-bold">${m.correct}</span>
+            const list = document.getElementById('wrong-sums-list');
+            list.innerHTML = `
+                <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center">
+                    <span>Problem</span><span>You Said</span><span>Correct</span>
+                </div>`;
+            list.innerHTML += mistakes.map(m => `
+                <div class="grid grid-cols-3 text-center py-2 border-b">
+                    <span class="font-bold text-gray-700">${m.question}</span>
+                    <span class="text-red-500 font-bold line-through">${m.wrong}</span>
+                    <span class="text-green-600 font-bold">${m.correct}</span>
                 </div>`).join('');
             document.getElementById('report-area').classList.add('hidden');
             document.getElementById('wrong-answer-area').classList.remove('hidden');
+        }
+
+        function showReport() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
         }
 
         function downloadReport() {
