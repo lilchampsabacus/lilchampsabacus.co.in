@@ -7,7 +7,7 @@
     
     <link rel="stylesheet" href="elegant-theme.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="gamify.js?v=4" defer></script>
+    <script src="gamify.js?v=5" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -135,6 +135,14 @@
                 <button id="see-wrong-button" onclick="showSecureMistakes()" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-lg mb-3" disabled>Mistakes</button>
                 <button onclick="window.location.reload()" class="w-full border-2 border-gray-300 text-gray-600 font-bold py-3 rounded-lg">🔄 Replay</button>
             </div>
+        </section>
+
+        <section id="wrong-answer-area" class="hidden max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Mission Debrief: Corrections</h3>
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                <div id="wrong-sums-list" class="space-y-2"></div>
+            </div>
+            <button onclick="showReport()" class="mt-6 w-full bg-gray-600 text-white font-bold py-3 rounded-lg">&larr; Back to Scoreboard</button>
         </section>
         </div>
     </main>
@@ -269,7 +277,9 @@
         async function endTest() {
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-            const timeFormatted = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
+            const minutes = Math.floor(timeElapsed / 60);
+            const seconds = timeElapsed % 60;
+            const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
             
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -277,9 +287,13 @@
 
             let score = 0, mistakesArray = [];
             sumsData.forEach(q => {
-                const correct = q.quotient;
-                if (parseInt(q.studentAnswer) === correct) score++;
-                else if (q.studentAnswer) mistakesArray.push({ question: `${q.x} ÷ ${q.y}`, wrong: q.studentAnswer, correct: correct });
+                // FIX: Use quotient for division logic
+                const correct = q.quotient; 
+                if (parseInt(q.studentAnswer) === correct) {
+                    score++;
+                } else if (q.studentAnswer !== null && q.studentAnswer !== "") {
+                    mistakesArray.push({ question: `${q.x} ÷ ${q.y}`, wrong: q.studentAnswer, correct: correct });
+                }
             });
 
             document.getElementById('report-datetime').textContent = `${dateStr} | ${timeStr}`;
@@ -288,6 +302,7 @@
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
             document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
+            document.getElementById('see-wrong-button').textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
             if (window.lilChampUtils?.saveResult) {
                 window.lilChampUtils.saveResult({
@@ -308,12 +323,27 @@
 
         function showSecureMistakes() {
             const mistakes = JSON.parse(sessionStorage.getItem('mistakesData') || "[]");
-            document.getElementById('wrong-sums-list').innerHTML = mistakes.map(m => `
-                <div class="grid grid-cols-3 py-2 border-b">
-                    <span>${m.question}</span><span class="text-red-500 line-through">${m.wrong}</span><span class="text-green-600 font-bold">${m.correct}</span>
+            const list = document.getElementById('wrong-sums-list');
+            
+            list.innerHTML = `
+                <div class="grid grid-cols-3 font-bold text-gray-500 border-b pb-2 mb-2 text-center">
+                    <span>Problem</span><span>You Said</span><span>Correct</span>
+                </div>`;
+
+            list.innerHTML += mistakes.map(m => `
+                <div class="grid grid-cols-3 text-center py-2 border-b">
+                    <span class="font-bold text-gray-700">${m.question}</span>
+                    <span class="text-red-500 font-bold line-through">${m.wrong}</span>
+                    <span class="text-green-600 font-bold">${m.correct}</span>
                 </div>`).join('');
+
             document.getElementById('report-area').classList.add('hidden');
             document.getElementById('wrong-answer-area').classList.remove('hidden');
+        }
+
+        function showReport() {
+            document.getElementById('wrong-answer-area').classList.add('hidden');
+            document.getElementById('report-area').classList.remove('hidden');
         }
 
         function downloadReport() {
