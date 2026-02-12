@@ -13,20 +13,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        html, body { height: 100%; width: 100%; overflow: hidden; position: fixed; touch-action: none; margin: 0; font-family: 'Nunito', sans-serif; background-color: #f0f9ff; background-image: radial-gradient(#e0f2fe 2px, transparent 2px); background-size: 24px 24px; display: flex; flex-direction: column; }
-        main { flex-grow: 1; width: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        main::-webkit-scrollbar { display: none; }
-        .slide-container { display: none; animation: fadeIn 0.5s ease-in-out; }
-        .slide-container.active { display: block; }
+        /* --- TABLET SCROLL & GLITCH FIXES --- */
+        html, body { 
+            height: 100%; 
+            width: 100%; 
+            margin: 0; 
+            padding: 0;
+            font-family: 'Nunito', sans-serif; 
+            background-color: #f0f9ff; 
+            /* Allows natural scrolling on tablets so the Finish button isn't hidden */
+            overflow-y: auto; 
+        }
+
+        main { 
+            min-height: 100vh;
+            width: 100%;
+            padding-bottom: 120px; /* Extra space at bottom for the Finish button */
+        }
+
+        .slide-container { display: none; }
+        .slide-container.active { display: block; animation: fadeIn 0.4s ease-out; }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .sum-item { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; margin-bottom: 0.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        body.focus-mode { background-color: #fbf0d9; color: #433422; }
-        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
+
+        .sum-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 1.2rem; 
+            margin-bottom: 0.75rem; 
+            background: white; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { 
+            display: none !important; 
+        }
+        body.focus-mode { background-color: #fbf0d9; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans" oncontextmenu="return false;">
+<body class="font-sans" oncontextmenu="return false;">
 	
-    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
+    <header class="bg-indigo-600 text-white p-4 shadow-lg">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl sm:text-2xl font-bold">Li'l Champs Abacus Academy, Ambernath</h1>
         </div>
@@ -42,7 +78,7 @@
                 Pilot: <span id="auto-student-name-display">... Loading ...</span>
             </div>
             
-            <p class="text-lg text-gray-600 mb-2">You have 30 targets to hit.</p>
+            <p class="text-lg text-gray-600 mb-2">You have 30 multiplication targets to hit.</p>
             <p class="text-lg text-gray-600 mb-8">Solve them in sets of 5.</p>
 
             <div class="mb-8">
@@ -64,7 +100,7 @@
             <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-0 z-20 border-b-4 border-blue-200">
                 <div class="flex justify-between items-center mb-2">
                     <div class="text-gray-600 font-semibold">Mission Progress</div>
-                    <div id="security-status" class="text-xs font-bold text-green-600 uppercase">🛡️ SECURE</div>
+                    <div id="security-status" class="text-xs font-bold text-green-600 uppercase">🛡️ Connection Secure</div>
                 </div>
                 <div class="relative w-full h-8 mt-2 mb-2 select-none">
                     <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded border border-gray-600"></div>
@@ -87,7 +123,7 @@
         <section id="report-area" class="hidden flex justify-center">
             <div id="report-card" class="max-w-fit w-full bg-white border-4 border-blue-100 p-8 rounded-2xl shadow-2xl relative">
                 <div class="text-center border-b pb-2 mb-4">
-                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Skill Mastery</span>
                     <h2 id="report-level-name" class="text-2xl font-extrabold text-gray-700 mt-2">Level</h2>
                 </div>
                 <h3 id="report-main-msg" class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
@@ -110,13 +146,13 @@
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
         const params = new URLSearchParams(window.location.search);
-        const CHALLENGE_CODE = params.get('type') || 'mul-1x1'; 
+        const CHALLENGE_CODE = params.get('type') || '1x1'; 
         
         const challengeConfig = {
-            'mul-1x1': '1 Digit x 1 Digit', 'mul-2x1': '2 Digit x 1 Digit',
-            'mul-3x1': '3 Digit x 1 Digit', 'mul-4x1': '4 Digit x 1 Digit',
-            'mul-5x1': '5 Digit x 1 Digit', 'mul-2x2': '2 Digit x 2 Digit',
-            'mul-3x2': '3 Digit x 2 Digit', 'mul-4x2': '4 Digit x 2 Digit'
+            '1x1': '1 Digit x 1 Digit', '2x1': '2 Digit x 1 Digit',
+            '3x1': '3 Digit x 1 Digit', '4x1': '4 Digit x 1 Digit',
+            '5x1': '5 Digit x 1 Digit', '2x2': '2 Digit x 2 Digit',
+            '3x2': '3 Digit x 2 Digit', '4x2': '4 Digit x 2 Digit'
         };
 
         let timerInterval, sumsData = [], startTime, currentSlideIndex = 0, tabSwitchCount = 0, isTerminated = false;
@@ -206,7 +242,7 @@
                                 setTimeout(() => inputs[idx + 1].focus(), 100);
                             }
                         } else {
-                            document.getElementById('submit-button').click(); // FIX: Click submit button on last Enter
+                            document.getElementById('submit-button').click();
                         }
                     }
                 });
@@ -227,20 +263,10 @@
             document.getElementById('prev-btn').classList.toggle('hidden', currentSlideIndex === 0);
             document.getElementById('next-btn').classList.toggle('hidden', currentSlideIndex === TOTAL_SLIDES - 1);
             document.getElementById('submit-button').classList.toggle('hidden', currentSlideIndex !== TOTAL_SLIDES - 1);
-            document.querySelector('main').scrollTo(0,0);
+            window.scrollTo(0,0);
         }
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
-
-        function activateWatchdog(correctScore) {
-            const scoreElement = document.getElementById('report-correct');
-            setInterval(() => {
-                if (scoreElement.innerText !== String(correctScore)) {
-                    scoreElement.innerText = correctScore;
-                    scoreElement.style.color = "red";
-                }
-            }, 100);
-        }
 
         async function endTest() {
             clearInterval(timerInterval);
@@ -263,7 +289,6 @@
             document.getElementById('report-datetime').textContent = `${dateStr} | ${timeStr}`;
             document.getElementById('report-student-name').textContent = (sessionStorage.getItem('studentIdentifier') || "PILOT").split('@')[0].toUpperCase();
             document.getElementById('report-correct').textContent = score;
-            activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
             document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
@@ -281,6 +306,7 @@
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
+            window.scrollTo(0,0);
             if (score === TOTAL_SUMS && !isTerminated) window.lilChampUtils?.celebrate();
         }
 
@@ -294,11 +320,6 @@
             document.getElementById('wrong-answer-area').classList.remove('hidden');
         }
 
-        function showReport() {
-            document.getElementById('wrong-answer-area').classList.add('hidden');
-            document.getElementById('report-area').classList.remove('hidden');
-        }
-
         function downloadReport() {
             html2canvas(document.getElementById('report-card')).then(canvas => {
                 const link = document.createElement('a');
@@ -307,6 +328,13 @@
                 link.click();
             });
         }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
