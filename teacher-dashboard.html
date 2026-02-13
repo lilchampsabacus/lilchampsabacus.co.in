@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; min-height: 100vh; display: flex; flex-direction: column; }
@@ -19,6 +20,10 @@
         .card-daily { border-color: #10b981; } .card-daily:hover { border-bottom-color: #047857; }
         @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .option-card:hover .card-icon { animation: wiggle 1s ease-in-out infinite; }
+        
+        /* Admin Modal Styling */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 2rem; border-radius: 1rem; max-width: 500px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -38,18 +43,31 @@
 
     <main class="flex-grow p-6 md:p-10 flex flex-col items-center">
         
+        <div id="admin-controls" class="w-full max-w-4xl mx-auto mb-10 hidden">
+            <div class="bg-indigo-50 border-l-8 border-indigo-600 p-6 rounded-r-lg shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-800">Owner Management Tools</h3>
+                    <p class="text-indigo-900 mt-1">Enroll new students or perform bulk uploads.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('addStudentModal').style.display='block'" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-sm transition"> + Add Student</button>
+                    <button onclick="document.getElementById('csv-input').click()" class="bg-white text-indigo-600 border border-indigo-300 px-4 py-2 rounded-lg font-bold hover:bg-indigo-100 transition"> ⬆️ Bulk Import</button>
+                    <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="handleCSV(event)">
+                </div>
+            </div>
+        </div>
+
         <div class="w-full max-w-4xl mx-auto mb-10 space-y-4">
             <div class="bg-blue-50 border-l-8 border-blue-500 p-6 rounded-r-lg shadow-md flex items-center gap-4">
                 <div class="text-4xl">📊</div>
                 <div>
                     <h3 class="text-xl font-bold text-blue-800">Class Overview</h3>
-                    <p class="text-blue-900 mt-1">Use the cards below to monitor student progress.</p>
+                    <p class="text-blue-900 mt-1">Monitor student progress and daily activity.</p>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-
             <a href="teacher-reports-v2.html" class="option-card card-multi bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">📑</div>
@@ -61,7 +79,7 @@
             <a href="inactive-students.html" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">⚠️</div> 
-                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading Data...</h4>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Loading...</h4>
                 <p class="text-gray-500 mb-6 z-10">Checking inactivity.</p>
                 <span class="card-btn bg-amber-100 text-amber-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-amber-600 group-hover:text-white transition-colors z-10">Please Wait</span>
             </a>
@@ -71,20 +89,34 @@
                 <div class="card-icon text-6xl mb-6 z-10">📅</div>
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 z-10">Daily Status</h4>
                 <p class="text-gray-500 mb-6 z-10">Who practiced today?</p>
-                <div id="daily-stats" class="text-3xl font-extrabold text-green-600 mb-2 z-10 relative">
-                    ...
-                </div>
+                <div id="daily-stats" class="text-3xl font-extrabold text-green-600 mb-2 z-10">...</div>
                 <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-green-600 group-hover:text-white transition-colors z-10">View Today's List</span>
             </a>
-
         </div>
 
         <button onclick="logout()" class="mt-16 text-gray-500 hover:text-red-600 font-bold py-3 px-8 rounded-full border-2 border-gray-200 hover:border-red-200 hover:bg-red-50 transition-all">Log Out</button>
-
     </main>
 
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-4">Register New Student</h3>
+            <div class="space-y-4">
+                <input type="text" id="stdFirstName" placeholder="First Name" class="w-full border p-2 rounded" oninput="updateEmailPreview()">
+                <input type="text" id="stdLastName" placeholder="Surname" class="w-full border p-2 rounded" oninput="updateEmailPreview()">
+                <p class="text-sm text-gray-500">Auto-Generated Username: <span id="emailPreview" class="font-bold text-indigo-600">...</span></p>
+                <select id="stdLevel" class="w-full border p-2 rounded">
+                    <option value="1">Level 1</option>
+                    <option value="2">Level 2</option>
+                    <option value="8">Level 8 (Final)</option>
+                </select>
+                <button onclick="addNewStudent()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded">Enroll Student</button>
+                <button onclick="document.getElementById('addStudentModal').style.display='none'" class="w-full text-gray-500">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-white text-gray-500 p-6 text-center border-t border-gray-200 mt-auto">
-        <p class="text-sm">Li'l Champs Admin Panel</p>
+        <p class="text-sm">Li'l Champs Admin Panel | Ambernath Center</p>
     </footer>
 
     <script>
@@ -93,16 +125,54 @@
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const userRole = sessionStorage.getItem('userRole');
-        if (userRole !== 'teacher') window.location.href = 'index.html'; 
+        const userEmail = sessionStorage.getItem('userEmail'); // Assumes email is stored at login
+
+        if (!userRole) window.location.href = 'index.html'; 
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Show Admin UI if the owner is logged in
+            if (userEmail === 'admin.ambernath@gmail.com') {
+                document.getElementById('admin-controls').classList.remove('hidden');
+            }
+
             const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
             if (error) return;
             processMissingPractice(reports);
             processDailyStatus(reports);
         });
 
+        // --- NEW: ADMIN FUNCTIONS ---
+        function updateEmailPreview() {
+            const fName = document.getElementById('stdFirstName').value.trim().toLowerCase();
+            const lName = document.getElementById('stdLastName').value.trim().toLowerCase();
+            if(fName && lName) {
+                document.getElementById('emailPreview').innerText = `${fName}.${lName}@gmail.com`;
+            }
+        }
+
+        async function addNewStudent() {
+            const fName = document.getElementById('stdFirstName').value;
+            const lName = document.getElementById('stdLastName').value;
+            const email = `${fName.toLowerCase()}.${lName.toLowerCase()}@gmail.com`;
+            
+            // Logic: You will call your Edge Function here via supabase.functions.invoke()
+            alert(`Ready to create student: ${email}. \n(For demo: This will now trigger the Edge Function to create Auth user and Log the action.)`);
+            document.getElementById('addStudentModal').style.display='none';
+        }
+
+        function handleCSV(event) {
+            const file = event.target.files[0];
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    console.log("CSV Data:", results.data);
+                    alert(`CEO Demo: Successfully parsed ${results.data.length} students. Ready for bulk upload!`);
+                }
+            });
+        }
+
+        // --- EXISTING LOGIC ---
         function processMissingPractice(reports) {
             const studentLastActive = {};
             reports.forEach(row => {
@@ -120,45 +190,24 @@
             const alertCard = document.querySelector('.card-plus'); 
             if(alertCard) {
                 alertCard.style.borderColor = "#ef4444"; 
-                alertCard.querySelector('.absolute').classList.remove('bg-amber-100');
-                alertCard.querySelector('.absolute').classList.add('bg-red-100');
+                alertCard.querySelector('.absolute').classList.replace('bg-amber-100', 'bg-red-100');
                 alertCard.querySelector('h4').innerText = "Missing Practice";
                 alertCard.querySelector('p').innerHTML = `<span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">${missingCount}</span><span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>`;
                 const btn = alertCard.querySelector('.card-btn');
-                if(btn) { btn.innerText = "View Inactive List"; btn.classList.remove('bg-amber-100', 'text-amber-700'); btn.classList.add('bg-red-600', 'text-white'); }
+                if(btn) { btn.innerText = "View Inactive List"; btn.classList.replace('bg-amber-100', 'text-amber-700', 'bg-red-600', 'text-white'); }
             }
         }
 
-        // --- NEW: DAILY STATUS LOGIC ---
         function processDailyStatus(reports) {
-            // 1. Get Today's Date String (YYYY-MM-DD in Local Time)
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-
-            // 2. Find Total Unique Students (Ever)
+            const todayStr = new Date().toISOString().split('T')[0];
             const allStudents = new Set();
-            reports.forEach(r => { if(r.student_name) allStudents.add(r.student_name); });
-
-            // 3. Find Who Practiced Today
             const practicedToday = new Set();
             reports.forEach(r => {
-                // Check if the timestamp string starts with "2026-02-04"
-                if(r.indian_time && r.indian_time.startsWith(todayStr)) {
-                    practicedToday.add(r.student_name);
-                }
+                if(r.student_name) allStudents.add(r.student_name);
+                if(r.indian_time && r.indian_time.startsWith(todayStr)) practicedToday.add(r.student_name);
             });
-
-            const count = practicedToday.size;
-            const total = allStudents.size;
-
-            // 4. Update UI
             const statsDiv = document.getElementById('daily-stats');
-            if(statsDiv) {
-                statsDiv.innerHTML = `${count} <span class="text-sm text-gray-400 font-normal">/ ${total}</span>`;
-            }
+            if(statsDiv) statsDiv.innerHTML = `${practicedToday.size} <span class="text-sm text-gray-400 font-normal">/ ${allStudents.size}</span>`;
         }
     </script>
 </body>
