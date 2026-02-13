@@ -269,60 +269,61 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const dropdown = document.getElementById('studentDropdown');
-            dropdown.innerHTML = '<option>Loading...</option>';
-            
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                dropdown.innerHTML = '<option>Error: No Session</option>';
-                alert("You are not logged in!");
-                return;
+    const dropdown = document.getElementById('studentDropdown');
+    dropdown.innerHTML = '<option>Loading Students...</option>';
+    
+    // FETCH UNIQUE NAMES FROM REPORTS TABLE
+    // We use a Set to ensure names are unique
+    let allStudents = new Set();
+    let from = 0;
+    let step = 1000;
+    let keepFetching = true;
+
+    try {
+        while(keepFetching) {
+            const { data, error } = await supabase
+                .from('reports')
+                .select('student_name')
+                .range(from, from + step - 1);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                keepFetching = false;
+            } else {
+                data.forEach(item => {
+                    if(item.student_name && item.student_name.trim() !== "") {
+                        allStudents.add(item.student_name.trim());
+                    }
+                });
+                from += step;
             }
+        }
 
-            let allStudents = new Set();
-            let from = 0;
-            let step = 1000;
-            let keepFetching = true;
+        if (allStudents.size === 0) {
+            dropdown.innerHTML = '<option>No students found in records</option>';
+            return;
+        }
 
-            while(keepFetching) {
-                const { data, error } = await supabase
-                    .from('reports')
-                    .select('student_name')
-                    .range(from, from + step - 1);
-
-                if (error) { 
-                    console.error(error); 
-                    dropdown.innerHTML = '<option>Error loading</option>'; 
-                    return; 
-                }
-
-                if (data.length === 0) {
-                    keepFetching = false;
-                } else {
-                    data.forEach(item => {
-                        if(item.student_name) allStudents.add(item.student_name);
-                    });
-                    from += step;
-                    if (from > 20000) keepFetching = false; 
-                }
-            }
-
-            if (allStudents.size === 0) { dropdown.innerHTML = '<option>No students</option>'; return; }
-
-            const uniqueNames = Array.from(allStudents).sort();
-            dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
-            uniqueNames.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                dropdown.appendChild(option);
-            });
-            
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('monthPicker').value = `${yyyy}-${mm}`;
+        const uniqueNames = Array.from(allStudents).sort();
+        dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
+        uniqueNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            dropdown.appendChild(option);
         });
+    } catch (err) {
+        console.error("Fetch error:", err);
+        dropdown.innerHTML = '<option>Error loading students</option>';
+    }
+    
+    // Set default month picker
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    document.getElementById('monthPicker').value = `${yyyy}-${mm}`;
+});
 
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
