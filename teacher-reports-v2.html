@@ -268,12 +268,10 @@
             return `${secs}s`;
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const dropdown = document.getElementById('studentDropdown');
     dropdown.innerHTML = '<option>Loading Students...</option>';
     
-    // FETCH UNIQUE NAMES FROM REPORTS TABLE
-    // We use a Set to ensure names are unique
     let allStudents = new Set();
     let from = 0;
     let step = 1000;
@@ -292,6 +290,7 @@
                 keepFetching = false;
             } else {
                 data.forEach(item => {
+                    // Critical fix: trim() avoids empty or space-only names
                     if(item.student_name && item.student_name.trim() !== "") {
                         allStudents.add(item.student_name.trim());
                     }
@@ -301,7 +300,7 @@
         }
 
         if (allStudents.size === 0) {
-            dropdown.innerHTML = '<option>No students found in records</option>';
+            dropdown.innerHTML = '<option>No students found</option>';
             return;
         }
 
@@ -315,14 +314,12 @@
         });
     } catch (err) {
         console.error("Fetch error:", err);
-        dropdown.innerHTML = '<option>Error loading students</option>';
+        dropdown.innerHTML = '<option>Error loading list</option>';
     }
     
-    // Set default month picker
+    // Default month picker
     const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    document.getElementById('monthPicker').value = `${yyyy}-${mm}`;
+    document.getElementById('monthPicker').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 });
 
         async function getReport() {
