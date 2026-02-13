@@ -21,14 +21,24 @@
         @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .option-card:hover .card-icon { animation: wiggle 1s ease-in-out infinite; }
         
+        /* Professional Glow for Admin Tools */
+        #admin-controls > div {
+            border: 2px solid #4f46e5;
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.2);
+            background: linear-gradient(to right, #f5f3ff, #ffffff);
+            transition: all 0.3s ease;
+        }
+        #admin-controls > div:hover { box-shadow: 0 0 25px rgba(79, 70, 229, 0.3); transform: scale(1.01); }
+
         /* Admin Modal Styling */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 2rem; border-radius: 1rem; max-width: 500px; }
+        .modal-content { background: white; margin: 10% auto; padding: 2rem; border-radius: 1rem; max-width: 500px; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <header class="bg-indigo-600 text-white p-6 shadow-lg sticky top-0 z-50">
+    <header class="bg-indigo-600 text-white p-6 shadow-lg sticky top-0 z-40">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div>
                 <h1 class="text-3xl font-extrabold">Li'l Champs Abacus Academy, Ambernath</h1>
@@ -42,9 +52,8 @@
     </header>
 
     <main class="flex-grow p-6 md:p-10 flex flex-col items-center">
-        
-        <div id="admin-controls" class="w-full max-w-4xl mx-auto mb-10 hidden">
-            <div class="bg-indigo-50 border-l-8 border-indigo-600 p-6 rounded-r-lg shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+        <div id="admin-controls" class="w-full max-w-4xl mx-auto mb-10 hidden relative z-10">
+            <div class="p-6 rounded-r-lg shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h3 class="text-xl font-bold text-indigo-800">Owner Management Tools</h3>
                     <p class="text-indigo-900 mt-1">Enroll new students or perform bulk uploads.</p>
@@ -75,7 +84,6 @@
                 <p class="text-gray-500 mb-6 z-10">View detailed progress & graphs.</p>
                 <span class="card-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-colors z-10">View Data</span>
             </a>
-
             <a href="inactive-students.html" class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">⚠️</div> 
@@ -83,7 +91,6 @@
                 <p class="text-gray-500 mb-6 z-10">Checking inactivity.</p>
                 <span class="card-btn bg-amber-100 text-amber-700 px-4 py-2 rounded-full font-bold text-sm group-hover:bg-amber-600 group-hover:text-white transition-colors z-10">Please Wait</span>
             </a>
-
             <a href="daily-status.html" class="option-card card-daily bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group cursor-pointer no-underline relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-bl-full -mr-10 -mt-10 z-0"></div>
                 <div class="card-icon text-6xl mb-6 z-10">📅</div>
@@ -103,11 +110,9 @@
             <div class="space-y-4">
                 <input type="text" id="stdFirstName" placeholder="First Name" class="w-full border p-2 rounded" oninput="updateEmailPreview()">
                 <input type="text" id="stdLastName" placeholder="Surname" class="w-full border p-2 rounded" oninput="updateEmailPreview()">
-                <p class="text-sm text-gray-500">Auto-Generated Username: <span id="emailPreview" class="font-bold text-indigo-600">...</span></p>
+                <p class="text-sm text-gray-500">Username: <span id="emailPreview" class="font-bold text-indigo-600">...</span></p>
                 <select id="stdLevel" class="w-full border p-2 rounded">
-                    <option value="1">Level 1</option>
-                    <option value="2">Level 2</option>
-                    <option value="8">Level 8 (Final)</option>
+                    <option value="1">Level 1</option><option value="2">Level 2</option><option value="8">Level 8</option>
                 </select>
                 <button onclick="addNewStudent()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded">Enroll Student</button>
                 <button onclick="document.getElementById('addStudentModal').style.display='none'" class="w-full text-gray-500">Cancel</button>
@@ -115,17 +120,13 @@
         </div>
     </div>
 
-    <footer class="bg-white text-gray-500 p-6 text-center border-t border-gray-200 mt-auto">
-        <p class="text-sm">Li'l Champs Admin Panel | Ambernath Center</p>
-    </footer>
-
     <script>
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const userRole = sessionStorage.getItem('userRole');
-        const userEmail = sessionStorage.getItem('userEmail'); // Assumes email is stored at login
+        const userEmail = sessionStorage.getItem('userEmail');
 
         if (!userRole) window.location.href = 'index.html'; 
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
@@ -133,55 +134,44 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const welcomeName = document.getElementById('welcome-name');
             const adminControls = document.getElementById('admin-controls');
-            
-            if (userRole === 'admin') {
-            welcomeDiv.innerText = "Center Owner";
-            document.getElementById('admin-controls').classList.remove('hidden');
+
+            if (userRole === 'admin' || userEmail === 'admin.ambernath@gmail.com') {
+                if (welcomeName) welcomeName.innerText = "Center Owner";
+                if (adminControls) adminControls.classList.remove('hidden');
             } else {
-            welcomeDiv.innerText = "Teacher";
-            }
-            // Show Admin UI if the owner is logged in
-            if (userEmail === 'admin.ambernath@gmail.com') {
-                document.getElementById('admin-controls').classList.remove('hidden');
+                if (welcomeName) welcomeName.innerText = "Teacher";
             }
 
             const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
-            if (error) return;
-            processMissingPractice(reports);
-            processDailyStatus(reports);
+            if (!error) { processMissingPractice(reports); processDailyStatus(reports); }
         });
 
-        // --- NEW: ADMIN FUNCTIONS ---
         function updateEmailPreview() {
             const fName = document.getElementById('stdFirstName').value.trim().toLowerCase();
             const lName = document.getElementById('stdLastName').value.trim().toLowerCase();
-            if(fName && lName) {
-                document.getElementById('emailPreview').innerText = `${fName}.${lName}@gmail.com`;
-            }
+            if(fName && lName) document.getElementById('emailPreview').innerText = `${fName}.${lName}@gmail.com`;
         }
 
         async function addNewStudent() {
-            const fName = document.getElementById('stdFirstName').value;
-            const lName = document.getElementById('stdLastName').value;
-            const email = `${fName.toLowerCase()}.${lName.toLowerCase()}@gmail.com`;
+            const firstName = document.getElementById('stdFirstName').value;
+            const lastName = document.getElementById('stdLastName').value;
+            const level = document.getElementById('stdLevel').value;
+            const adminEmail = sessionStorage.getItem('userEmail');
             
-            // Logic: You will call your Edge Function here via supabase.functions.invoke()
-            alert(`Ready to create student: ${email}. \n(For demo: This will now trigger the Edge Function to create Auth user and Log the action.)`);
-            document.getElementById('addStudentModal').style.display='none';
+            // Invoke Edge Function
+            const { data, error } = await supabase.functions.invoke('manage-student', {
+                body: { firstName, lastName, level, adminEmail }
+            });
+
+            if (error) { alert("Error: " + error.message); } 
+            else { alert(`Success! Enrolled: ${data.email}`); document.getElementById('addStudentModal').style.display='none'; location.reload(); }
         }
 
         function handleCSV(event) {
             const file = event.target.files[0];
-            Papa.parse(file, {
-                header: true,
-                complete: function(results) {
-                    console.log("CSV Data:", results.data);
-                    alert(`CEO Demo: Successfully parsed ${results.data.length} students. Ready for bulk upload!`);
-                }
-            });
+            Papa.parse(file, { header: true, complete: (res) => alert(`CEO Demo: Parsed ${res.data.length} students. Ready for bulk upload!`) });
         }
 
-        // --- EXISTING LOGIC ---
         function processMissingPractice(reports) {
             const studentLastActive = {};
             reports.forEach(row => {
@@ -192,8 +182,7 @@
             const now = new Date();
             let missingCount = 0;
             for (const [name, lastDate] of Object.entries(studentLastActive)) {
-                const diffTime = Math.abs(now - lastDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                const diffDays = Math.ceil(Math.abs(now - lastDate) / (1000 * 60 * 60 * 24)); 
                 if (diffDays > 3) missingCount++;
             }
             const alertCard = document.querySelector('.card-plus'); 
@@ -201,9 +190,7 @@
                 alertCard.style.borderColor = "#ef4444"; 
                 alertCard.querySelector('.absolute').classList.replace('bg-amber-100', 'bg-red-100');
                 alertCard.querySelector('h4').innerText = "Missing Practice";
-                alertCard.querySelector('p').innerHTML = `<span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">${missingCount}</span><span style="font-weight:600; color:#7f1d1d">Students Inactive (>3 days)</span>`;
-                const btn = alertCard.querySelector('.card-btn');
-                if(btn) { btn.innerText = "View Inactive List"; btn.classList.replace('bg-amber-100', 'text-amber-700', 'bg-red-600', 'text-white'); }
+                alertCard.querySelector('p').innerHTML = `<span style="display:block; font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1;">${missingCount}</span><span style="font-weight:600; color:#7f1d1d">Students Inactive</span>`;
             }
         }
 
