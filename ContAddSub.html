@@ -38,7 +38,7 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;   /* Keep content centered */
+            align-items: center;
             padding: 1.5rem 0;
         }
 
@@ -54,7 +54,6 @@
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
         }
-        /* Custom states for answer box feedback */
         .feedback-correct {
             border-color: #10B981 !important; /* Green 500 */
             background-color: #ECFDF5; /* Green 50 */
@@ -77,99 +76,60 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-6">Start Your Practice</h2>
                 
                 <div class="space-y-4">
-                    
                     <div class="text-lg font-bold text-indigo-700 mb-6 border-b pb-2">
                         Student: <span id="autoStudentNameDisplay" class="text-indigo-900">... Loading ...</span>
                     </div>
 
                     <div>
                         <label for="startNumber" class="block text-sm font-medium text-gray-700 mb-1" id="startNumberLabel">Number to subtract in each step</label>
-                        <select id="startNumber" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                        <select id="startNumber" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500">
                             <optgroup label="1st level">
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
+                                <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                                <option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                                <option value="8">8</option><option value="9">9</option>
                             </optgroup>
                             <optgroup label="2nd level">
-                                <option value="22">22</option>
-                                <option value="33">33</option>
-                                <option value="44">44</option>
-                                <option value="55">55</option>
-                                <option value="66" selected>66</option>
-                                <option value="77">77</option>
-                                <option value="88">88</option>
-                                <option value="99">99</option>
+                                <option value="22">22</option><option value="33">33</option><option value="44">44</option>
+                                <option value="55">55</option><option value="66" selected>66</option><option value="77">77</option>
+                                <option value="88">88</option><option value="99">99</option>
                             </optgroup>
                             <optgroup label="3rd Level">
-                                <option value="222">222</option>
-                                <option value="333">333</option>
-                                <option value="444">444</option>
-                                <option value="555">555</option>
-                                <option value="666">666</option>
-                                <option value="777">777</option>
-                                <option value="888">888</option>
-                                <option value="999">999</option>
+                                <option value="222">222</option><option value="333">333</option><option value="444">444</option>
+                                <option value="555">555</option><option value="666">666</option><option value="777">777</option>
+                                <option value="888">888</option><option value="999">999</option>
                             </optgroup>
-                            <optgroup label="4th Level Onwards">
-                                <option value="2222">2,222</option>
-                                <option value="3333">3,333</option>
-                                <option value="4444">4,444</option>
-                                <option value="5555">5,555</option>
-                                <option value="6666">6,666</option>
-                                <option value="7777">7,777</option>
-                                <option value="8888">8,888</option>
-                                <option value="9999">9,999</option>
-                            </optgroup>
-                            <optgroup label="5th Level Onwards">
-                                <option value="22222">22,222</option>
-                                <option value="33333">33,333</option>
-                                <option value="44444">44,444</option>
-                                <option value="55555">55,555</option>
-                                <option value="66666">66,666</option>
-                                <option value="77777">77,777</option>
-                                <option value="88888">88,888</option>
-                                <option value="99999">99,999</option>
+                            <optgroup label="4th Level">
+                                <option value="2222">2,222</option><option value="3333">3,333</option><option value="4444">4,444</option>
+                                <option value="5555">5,555</option><option value="6666">6,666</option><option value="7777">7,777</option>
+                                <option value="8888">8,888</option><option value="9999">9,999</option>
                             </optgroup>
                         </select>
                     </div>
 
                     <div>
                         <label for="stepCount" class="block text-sm font-medium text-gray-700 mb-1">Number of Steps</label>
-                        <select id="stepCount" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                            <option value="10">10 Steps</option>
-                            <option value="20">20 Steps</option>
-                            <option value="30">30 Steps</option>
-                            <option value="40">40 Steps</option>
-                            <option value="50">50 Steps</option>
-                            <option value="60">60 Steps</option>
-                            <option value="70">70 Steps</option>
-                            <option value="80">80 Steps</option>
-                            <option value="90">90 Steps</option>
-                            <option value="100">100 Steps</option>
+                        <select id="stepCount" class="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                            <option value="10">10 Steps</option><option value="20" selected>20 Steps</option>
+                            <option value="30">30 Steps</option><option value="40">40 Steps</option>
+                            <option value="50">50 Steps</option><option value="100">100 Steps</option>
                         </select>
                     </div>
 
                     <div class="pt-2">
                         <span class="text-sm font-medium text-gray-700 block mb-2">Select Operation</span>
                         <div class="flex space-x-4">
-                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
-                                   <input type="radio" name="operation" value="addition" checked class="form-radio text-gray-400 focus:ring-0">
-                                   <span class="text-sm font-medium text-gray-900">Continuous Addition</span>
+                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                                   <input type="radio" name="operation" value="addition" checked class="form-radio text-indigo-600">
+                                   <span class="text-sm font-medium text-gray-900">Addition</span>
                               </label>
-
-                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition duration-150 hover:bg-indigo-50 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
-                                   <input type="radio" name="operation" value="subtraction" checked class="form-radio text-indigo-600 focus:ring-indigo-500">
-                                   <span class="text-sm font-medium text-gray-900">Continuous Subtraction</span>
+                              <label class="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                                   <input type="radio" name="operation" value="subtraction" class="form-radio text-indigo-600">
+                                   <span class="text-sm font-medium text-gray-900">Subtraction</span>
                               </label>
                         </div>
                     </div>
 
-                    <button id="startButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg mt-6" disabled>
+                    <button id="startButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg mt-6" disabled>
                         Start Practice
                     </button>
                     <p id="setupError" class="text-sm text-red-600 text-center mt-2 hidden"></p>
@@ -182,36 +142,26 @@
                 
                 <div class="bg-gray-100 p-6 rounded-xl shadow-inner mb-6">
                     <p class="text-sm text-gray-600">Current Value</p>
-                    <p id="currentNumber" class="text-5xl font-extrabold text-gray-900 mt-1 transition duration-500 ease-in-out"></p>
+                    <p id="currentNumber" class="text-5xl font-extrabold text-gray-900 mt-1"></p>
                     <p id="operationText" class="text-xl font-bold text-indigo-500 mt-2"></p>
-                    <p id="stepNumber" class="text-3xl font-extrabold text-indigo-600 mt-1"></p>
                 </div>
 
                 <label for="answerInput" class="block text-sm font-medium text-gray-700 mb-2">Enter Your Answer</label>
-                <input type="number" id="answerInput" placeholder="Type your total here" class="text-center text-2xl font-bold w-full p-4 border-4 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150" autocomplete="off">
-                <p id="answerFeedback" class="text-sm mt-2 text-gray-500"></p>
-
-                <button id="nextButton" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200 mt-6 shadow-md" disabled>
-                    Next Step <span id="currentStepCount"></span> / <span id="totalStepCount"></span>
-                </button>
+                <input type="number" id="answerInput" placeholder="Type answer..." class="text-center text-2xl font-bold w-full p-4 border-4 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" autocomplete="off">
+                <p id="answerFeedback" class="text-sm mt-3 font-bold"></p>
             </div>
 
             <div id="completionScreen" class="card hidden text-center">
-                <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
                 <h2 class="text-2xl font-bold text-gray-800 mt-4 mb-2">Practice Complete!</h2>
-                <p id="completionMessage" class="text-lg text-gray-600 mb-6">Great job, [Name]! You finished all the steps.</p>
-                
+                <p id="completionMessage" class="text-lg text-gray-600 mb-6"></p>
                 <p id="dateTimeDisplay" class="text-sm text-gray-500 mb-8 font-medium"></p>
-                
-                <button id="mainPageButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg">
+                <button id="mainPageButton" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 shadow-lg">
                     Go to Main Page
                 </button>
             </div>
-            
+
             <div class="w-full text-center mt-8">
-                <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
+                <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline">
                     &larr; Back to Plus Minus
                 </a>
             </div>
@@ -223,104 +173,45 @@
     </footer>
 
     <script>
-        // ... (All existing JavaScript remains exactly the same) ...
-        let state = {
-            studentName: '',
-            studentNumber: 0,
-            totalSteps: 0,
-            operation: '',
-            currentStep: 0,
-            currentValue: 0,
-            targetValue: 0
-        };
-
+        let state = { studentName: '', studentNumber: 0, totalSteps: 0, operation: '', currentStep: 0, currentValue: 0, targetValue: 0 };
         const $ = id => document.getElementById(id);
-        const setupScreen = $('setupScreen');
-        const practiceScreen = $('practiceScreen');
-        const completionScreen = $('completionScreen');
-        const startButton = $('startButton');
-        const nextButton = $('nextButton');
-        const mainPageButton = $('mainPageButton');
-        const autoStudentNameDisplay = $('autoStudentNameDisplay');
-        const startNumberInput = $('startNumber');
-        const startNumberLabel = $('startNumberLabel'); 
-        const stepCountSelect = $('stepCount');
-        const operationRadios = document.querySelectorAll('input[name="operation"]');
-        const setupError = $('setupError');
-        const studentDisplay = $('studentDisplay');
-        const stepDisplay = $('stepDisplay');
-        const currentNumberDisplay = $('currentNumber');
-        const operationText = $('operationText');
-        const answerInput = $('answerInput');
-        const answerFeedback = $('answerFeedback');
-        const completionMessage = $('completionMessage');
-        const dateTimeDisplay = $('dateTimeDisplay');
+        const setupScreen = $('setupScreen'), practiceScreen = $('practiceScreen'), completionScreen = $('completionScreen');
+        const startButton = $('startButton'), mainPageButton = $('mainPageButton'), autoStudentNameDisplay = $('autoStudentNameDisplay');
+        const startNumberInput = $('startNumber'), startNumberLabel = $('startNumberLabel'), stepCountSelect = $('stepCount');
+        const studentDisplay = $('studentDisplay'), stepDisplay = $('stepDisplay'), currentNumberDisplay = $('currentNumber');
+        const operationText = $('operationText'), answerInput = $('answerInput'), answerFeedback = $('answerFeedback');
+        const completionMessage = $('completionMessage'), dateTimeDisplay = $('dateTimeDisplay');
 
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') return 'Student';
+            if (!identifier) return 'Student';
             const namePart = identifier.split('@')[0];
-            const parts = namePart.split('.');
-            let formattedName = parts.map(part => {
-                if (part.length > 0) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                return '';
-            }).filter(p => p.length > 0).join(' ');
-            return formattedName || identifier; 
+            return namePart.split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ') || identifier; 
         }
 
         function showScreen(screenId) {
-            setupScreen.classList.add('hidden');
-            practiceScreen.classList.add('hidden');
-            completionScreen.classList.add('hidden');
-            if (screenId === 'setup') {
-                setupScreen.classList.remove('hidden');
-                answerInput.value = '';
-                startNumberInput.focus();
-            } else if (screenId === 'practice') {
-                practiceScreen.classList.remove('hidden');
-                answerInput.focus();
-            } else if (screenId === 'complete') {
-                completionScreen.classList.remove('hidden');
-            }
+            setupScreen.classList.add('hidden'); practiceScreen.classList.add('hidden'); completionScreen.classList.add('hidden');
+            if (screenId === 'setup') { setupScreen.classList.remove('hidden'); startNumberInput.focus(); }
+            else if (screenId === 'practice') { practiceScreen.classList.remove('hidden'); answerInput.focus(); }
+            else if (screenId === 'complete') { completionScreen.classList.remove('hidden'); }
         }
 
         function updatePracticeDisplay() {
             answerInput.value = '';
             answerInput.classList.remove('feedback-correct', 'feedback-wrong');
             answerInput.disabled = false;
-            nextButton.disabled = true;
-            nextButton.textContent = 'Enter your answer first';
             answerFeedback.textContent = '';
-            answerFeedback.classList.remove('text-red-600', 'text-green-600');
             currentNumberDisplay.textContent = state.currentValue;
             stepDisplay.textContent = `Step ${state.currentStep} of ${state.totalSteps}`;
             const operationSign = state.operation === 'addition' ? '+' : '-';
             operationText.textContent = `${operationSign} ${state.studentNumber}`;
-            nextButton.innerHTML = `Next Step <span id="currentStepCount">${state.currentStep}</span> / <span id="totalStepCount">${state.totalSteps}</span>`;
-            if (state.currentStep === state.totalSteps) nextButton.innerHTML = 'Finish Practice';
         }
 
         function startGame() {
-            const name = state.studentName; 
-            const num = parseInt(startNumberInput.value, 10);
-            const steps = parseInt(stepCountSelect.value, 10);
+            const num = parseInt(startNumberInput.value, 10), steps = parseInt(stepCountSelect.value, 10);
             const operation = document.querySelector('input[name="operation"]:checked').value;
-            if (!name || isNaN(num)) {
-                setupError.textContent = 'Please ensure a practice number is selected.';
-                setupError.classList.remove('hidden');
-                return;
-            }
-            setupError.classList.add('hidden');
-            state.studentNumber = num;
-            state.totalSteps = steps;
-            state.operation = operation;
-            state.currentStep = 1;
-            if (operation === 'addition') {
-                state.currentValue = 0;
-                state.targetValue = state.currentValue + state.studentNumber; 
-            } else {
-                state.currentValue = num * (steps + 1);
-                state.targetValue = state.currentValue - state.studentNumber;
-            }
+            state.studentNumber = num; state.totalSteps = steps; state.operation = operation; state.currentStep = 1;
+            if (operation === 'addition') { state.currentValue = 0; state.targetValue = num; } 
+            else { state.currentValue = num * (steps + 1); state.targetValue = state.currentValue - num; }
             studentDisplay.textContent = `Hello, ${state.studentName}!`;
             updatePracticeDisplay();
             showScreen('practice');
@@ -331,119 +222,56 @@
             if (state.currentStep > state.totalSteps) {
                 sendDataToGoogleSheet();
                 const now = new Date();
-                const dateString = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-                completionMessage.textContent = `Excellent work, ${state.studentName}! You completed all ${state.totalSteps} steps of Continuous ${state.operation} with the number ${state.studentNumber}.`;
-                dateTimeDisplay.textContent = `Completed on: ${dateString} at ${timeString}`;
+                completionMessage.textContent = `Excellent work, ${state.studentName}! Completed ${state.totalSteps} steps of ${state.operation}.`;
+                dateTimeDisplay.textContent = `Finished: ${now.toLocaleString()}`;
                 showScreen('complete');
                 return;
             }
             state.currentValue = state.targetValue;
-            if (state.operation === 'addition') {
-                state.targetValue = state.currentValue + state.studentNumber;
-            } else {
-                state.targetValue = state.currentValue - state.studentNumber;
-            }
+            state.targetValue = (state.operation === 'addition') ? state.currentValue + state.studentNumber : state.currentValue - state.studentNumber;
             updatePracticeDisplay();
             answerInput.focus();
         }
 
         function checkAnswer() {
             const studentAnswer = parseInt(answerInput.value, 10);
-            if (isNaN(studentAnswer) || answerInput.value === '') {
-                answerInput.classList.remove('feedback-correct', 'feedback-wrong');
-                nextButton.disabled = true;
-                nextButton.textContent = 'Enter your answer first';
-                return;
-            }
+            if (isNaN(studentAnswer)) { answerInput.classList.remove('feedback-correct', 'feedback-wrong'); return; }
             if (studentAnswer === state.targetValue) {
-                answerInput.classList.add('feedback-correct');
-                answerInput.classList.remove('feedback-wrong');
-                answerInput.disabled = true;
-                nextButton.disabled = false;
-                nextButton.textContent = (state.currentStep === state.totalSteps) ? 'Finish Practice' : 'Correct! Click for Next Step';
-                answerFeedback.textContent = 'Correct! Ready for the next one.';
-                answerFeedback.classList.remove('text-red-600');
-                answerFeedback.classList.add('text-green-600');
+                answerInput.classList.add('feedback-correct'); answerInput.classList.remove('feedback-wrong');
+                answerFeedback.textContent = 'Correct! Press Enter for next step.';
+                answerFeedback.className = 'text-sm mt-3 font-bold text-green-600';
             } else {
-                answerInput.classList.add('feedback-wrong');
-                answerInput.classList.remove('feedback-correct');
-                nextButton.disabled = true;
-                nextButton.textContent = 'Try Again...';
-                answerFeedback.textContent = 'Keep trying! That is not the correct total yet.';
-                answerFeedback.classList.remove('text-green-600');
-                answerFeedback.classList.add('text-red-600');
+                answerInput.classList.add('feedback-wrong'); answerInput.classList.remove('feedback-correct');
+                answerFeedback.textContent = 'Keep trying!';
+                answerFeedback.className = 'text-sm mt-3 font-bold text-red-600';
             }
         }
 
         function sendDataToGoogleSheet() {
             const scriptURL = "https://script.google.com/macros/s/AKfycbwzaHaLlh8hdi6Vv2baqSh-b1XfDRRgSkEjO8mlPlOvnJh10adABNaswqDvmzIyhR6n/exec";
-            const data = {
-                studentName: state.studentName,
-                operation: state.operation === 'addition' ? 'Continuous Addition' : 'Continuous Subtraction',
-                number: state.studentNumber,
-                steps: state.totalSteps
-            };
-            fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => console.log('Data sent to sheet successfully'))
-            .catch(error => console.error('Error sending data:', error));
+            fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: state.studentName, operation: state.operation, number: state.studentNumber, steps: state.totalSteps }) });
         }
          
         startButton.addEventListener('click', startGame);
         mainPageButton.addEventListener('click', () => showScreen('setup'));
-        nextButton.addEventListener('click', nextStep);
         answerInput.addEventListener('input', checkAnswer);
-        answerInput.addEventListener('keypress', function(e) {
+        answerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                e.preventDefault(); 
-                if (!nextButton.disabled) nextButton.click(); 
+                e.preventDefault();
+                if (parseInt(answerInput.value, 10) === state.targetValue) nextStep();
                 else checkAnswer();
             }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            let displayStudentName = 'Student';
-            if (!studentIdentifier) {
-                window.location.href = 'index.html'; 
-                return;
-            } 
-            displayStudentName = formatStudentName(studentIdentifier);
-            state.studentName = displayStudentName;
-            autoStudentNameDisplay.textContent = displayStudentName; 
+            const sid = sessionStorage.getItem('studentIdentifier');
+            if (!sid) { window.location.href = 'index.html'; return; }
+            state.studentName = formatStudentName(sid);
+            autoStudentNameDisplay.textContent = state.studentName;
             startButton.disabled = false;
-            startButton.textContent = `Start Practice for ${displayStudentName}`;
+            startButton.textContent = `Start Practice for ${state.studentName}`;
             showScreen('setup');
-            stepCountSelect.value = '20';
-            operationRadios.forEach(radio => {
-                radio.addEventListener('change', () => {
-                    const startNumLabel = startNumberLabel; 
-                    const operation = document.querySelector('input[name="operation"]:checked').value;
-                    if (operation === 'subtraction') startNumLabel.textContent = 'Number to Subtract in each step';
-                    else startNumLabel.textContent = 'Number to Add in each step';
-                });
-            });
-             // Allow pressing Enter key to check the answer or move to next step
-        answerInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); 
-                
-                // If the Next button is already enabled (answer is correct), go to next step
-                if (!nextButton.disabled) {
-                    nextStep(); 
-                } else {
-                    // Otherwise, just run the check logic (though input listener usually handles this)
-                    checkAnswer();
-                }
-            }
-        });
         });
     </script>
 </body>
 </html>
-
