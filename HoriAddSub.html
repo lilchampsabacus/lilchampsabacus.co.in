@@ -4,27 +4,43 @@
 	 <link rel="stylesheet" href="elegant-theme.css">
     <script src="gamify.js" defer></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Horizontal Addition/Subtraction Practice</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for the horizontal sum display */
-        /* Import Academy Font */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         
-        body {
-            font-family: 'Nunito', sans-serif;
+        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
+        html, body {
+            height: 100%;          /* Lock height to screen size */
+            width: 100%;
+            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
+            position: fixed;       /* Freeze the page in place */
+            touch-action: none;    /* Disable browser gestures */
+            margin: 0;
             
             /* Academy Theme Background */
+            font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff;
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
+
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Ensuring smooth scrolling... (keep existing styles below) */
-        html { scroll-padding-top: 100px; }
+        /* --- SCROLLABLE CONTENT AREA --- */
+        main {
+            flex-grow: 1;          /* Take up all available space */
+            overflow-y: auto;      /* Allow scrolling ONLY inside here */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* Styles for the report area (inherited and adapted) */
         .wrong-sum-row {
             display: grid;
             grid-template-columns: 1.5fr 1fr 1fr;
@@ -34,459 +50,239 @@
             align-items: center;
         }
         .text-digit-number {
-            font-family: monospace; /* For better number alignment */
+            font-family: monospace; 
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans">
+<body oncontextmenu="return false;">
 
-    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy Ambernath East and West</h1>
-    </div>
+    <header class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-10 flex-none">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold text-white">Li'l Champs Abacus Academy Ambernath East and West</h1>
+        </div>
 	</header>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6">
-        <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Horizontal Addition/Subtraction Practice</h2>
+    <main>
+        <div class="max-w-7xl mx-auto w-full">
+            <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">Horizontal Addition/Subtraction Practice</h2>
 
-        <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Abacus Practice Settings</h3>			
-            <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2">
-                Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
-            </div>
-
-            <div class="mb-6 p-4 border-l-4 border-yellow-500 bg-yellow-50">
-                <p class="text-sm font-bold text-yellow-800 mb-2">Note on Starting Numbers:</p>
-                <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
-                    <li>For Horizontal Addition, the initial number starts from the leftmost 4th rod on the abacus (assumed 0 here for easy calculation, which then adds the sequence number).</li>
-                    <li>For Horizontal Subtraction, the initial number starts from the leftmost 3rd rod on the abacus.</li>
-                </ul>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Select Operation:</label>
-                <div class="flex space-x-4">
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="operation" id="op-add" value="add" checked class="form-radio text-green-600 h-5 w-5" onchange="updateNumberOptions()">
-                        <span class="ml-2 text-lg font-semibold text-green-700">Horizontal Addition</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="operation" id="op-sub" value="sub" class="form-radio text-blue-600 h-5 w-5" onchange="updateNumberOptions()">
-                        <span class="ml-2 text-lg font-semibold text-blue-700">Horizontal Subtraction</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="mb-6">
-                <label for="number-sequence" class="block text-sm font-medium text-gray-700 mb-2">Choose Number Sequence:</label>
-                <select id="number-sequence" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-white text-lg font-semibold">
-                    </select>
-            </div>
-
-            <p class="text-md text-gray-600 mb-6 border-l-4 border-blue-500 pl-3">
-                The practice involves repetitive addition or subtraction until a specified final number is reached.
-            </p>
-
-            <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out disabled:opacity-50">
-                Start Practice
-            </button>
-        </section>
-
-        <section id="test-area" class="hidden">
-			<div class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-0 z-10">
-    <div class="text-lg font-semibold text-blue-800">
-        Student: <span id="display-student-name" class="font-bold"></span>
-    </div>
-    <div class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
-        Time: <span id="timer-display">0:00</span>
-    </div>
-	</div>
-
-            <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center">
-                <div class="w-full max-w-lg mx-auto"> 
-                    <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">Horizontal Sum 1</h4>
-                    
-                    <div id="sum-display" class="text-digit-number"></div> 
-                    
-                    <div class="w-full h-0.5 bg-gray-700 mb-4"></div> 
-
-                    <div class="flex flex-col items-center mx-auto">
-                        <input type="text" id="answer-input" class="w-64 p-3 border-2 border-gray-400 rounded-lg text-center text-3xl font-bold focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-digit-number" placeholder="Enter Answer">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-6 flex flex-col items-center max-w-md mx-auto">
-                <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
-                    Submit Answer
-                </button>
-
-                <div id="feedback-area" class="mt-4 w-full text-center hidden">
-                    <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
-                </div>
-            </div>
-        </section>
-        
-        <section id="report-area" class="hidden flex justify-center">
-            <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
-
-                <h3 class="text-3xl font-extrabold text-green-700 mb-4 border-b-2 pb-1" id="report-title">Congratulations!</h3>
-                <p class="text-xl font-bold text-gray-700 mb-6 text-center">You have successfully completed the practice!</p>
-
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
-                        <p class="text-xs text-gray-500">Time Taken</p>
-                        <p class="text-2xl font-bold text-green-600" id="report-time-elapsed">0:00</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500">
-                        <p class="text-xs text-gray-500">Operation / Sequence</p>
-                        <p class="text-xl font-bold text-blue-900" id="report-details">N/A</p>
-                    </div>
-					<div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-purple-500">
-        				<p class="text-xs text-gray-500">Date & Time</p>
-        				<p class="text-lg font-bold text-purple-900" id="report-date">--</p>
-    				</div>
+            <section id="start-screen" class="bg-white p-8 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Abacus Practice Settings</h3>			
+                <div class="text-lg font-bold text-blue-700 mb-4 border-b pb-2">
+                    Student: <span id="auto-student-name-display" class="text-blue-900">... Loading ...</span>
                 </div>
 
-                <p class="mt-8 text-center text-sm font-bold text-gray-700 p-3 bg-red-100 border border-red-300 rounded-lg shadow-md">
-                    📸 Take screenshot of this report and send to your Abacus teacher.
-                </p>
+                <div class="mb-6 p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                    <p class="text-sm font-bold text-yellow-800 mb-2">Note on Starting Numbers:</p>
+                    <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                        <li>For Horizontal Addition, the initial number starts from the leftmost 4th rod on the abacus.</li>
+                        <li>For Horizontal Subtraction, the initial number starts from the leftmost 3rd rod on the abacus.</li>
+                    </ul>
+                </div>
                 
-				<button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
-                    Practice again
-                </button>
-            </div>
-        </section>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Operation:</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="operation" id="op-add" value="add" checked class="form-radio text-green-600 h-5 w-5" onchange="updateNumberOptions()">
+                            <span class="ml-2 text-lg font-semibold text-green-700">Horizontal Addition</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="operation" id="op-sub" value="sub" class="form-radio text-blue-600 h-5 w-5" onchange="updateNumberOptions()">
+                            <span class="ml-2 text-lg font-semibold text-blue-700">Horizontal Subtraction</span>
+                        </label>
+                    </div>
+                </div>
 
-        <div id="message-box" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 rounded-lg shadow-2xl z-50 hidden transition-opacity duration-300">
-            <p id="message-text" class="font-semibold"></p>
-            <button onclick="document.getElementById('message-box').classList.add('hidden');" class="mt-2 text-sm text-yellow-600 hover:text-yellow-900 font-medium">OK</button>
+                <div class="mb-6">
+                    <label for="number-sequence" class="block text-sm font-medium text-gray-700 mb-2">Choose Number Sequence:</label>
+                    <select id="number-sequence" class="w-full p-3 border-2 border-blue-300 rounded-lg bg-white text-lg font-semibold">
+                    </select>
+                </div>
+
+                <button id="start-button" onclick="startTest()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:opacity-50" disabled>
+                    Start Practice
+                </button>
+            </section>
+
+            <section id="test-area" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-100 p-4 rounded-xl shadow-md mb-6 sticky top-0 z-10">
+                    <div class="text-lg font-semibold text-blue-800">
+                        Student: <span id="display-student-name" class="font-bold"></span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-green-600 bg-green-100 p-2 rounded-lg min-w-[150px] text-center shadow-inner">
+                        Time: <span id="timer-display">0:00</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-2xl flex justify-center">
+                    <div class="w-full max-w-lg mx-auto"> 
+                        <h4 class="text-xl font-bold text-gray-700 mb-4 text-center" id="sum-title">Horizontal Sum 1</h4>
+                        <div id="sum-display" class="text-digit-number text-2xl text-center mb-4"></div> 
+                        <div class="w-full h-0.5 bg-gray-700 mb-4"></div> 
+                        <div class="flex flex-col items-center">
+                            <input type="text" id="answer-input" class="w-full p-3 border-2 border-gray-400 rounded-lg text-center text-3xl font-bold focus:border-blue-500 text-digit-number" placeholder="Enter Answer">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex flex-col items-center max-w-md mx-auto">
+                    <button id="submit-button" onclick="checkAnswer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">
+                        Submit Answer
+                    </button>
+                    <div id="feedback-area" class="mt-4 w-full text-center hidden">
+                        <p id="correct-answer-display" class="text-xl font-bold p-3 rounded-lg shadow-md"></p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="report-area" class="hidden flex justify-center">
+                <div class="max-w-fit w-full bg-green-50 border-4 border-green-300 p-6 rounded-xl shadow-2xl">
+                    <h3 class="text-3xl font-extrabold text-green-700 mb-4 border-b-2 pb-1" id="report-title">Congratulations!</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-green-500">
+                            <p class="text-xs text-gray-500">Time Taken</p>
+                            <p class="text-2xl font-bold text-green-600" id="report-time-elapsed">0:00</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-md border-l-4 border-blue-500">
+                            <p class="text-xs text-gray-500">Details</p>
+                            <p class="text-lg font-bold text-blue-900" id="report-details"></p>
+                        </div>
+                    </div>
+                    <button onclick="window.location.reload()" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                        Practice again
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <div class="w-full p-4 text-center mt-auto flex-none">
+            <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline">
+                &larr; Back to Plus Minus
+            </a>
         </div>
     </main>
 
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 text-center">
-        <a href="plus_minus.html" class="text-blue-600 hover:text-blue-800 font-semibold underline transition duration-150">
-            &larr; Back to Plus Minus
-        </a>
-    </div>
-
-    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200">
+    <footer class="bg-white text-center p-6 mt-auto border-t border-gray-200 flex-none">
         <p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p>
     </footer>
 	
     <script>
-        if (!sessionStorage.getItem('studentIdentifier')) {
-            // Note: This assumes your login page is named index.html
-            window.location.replace("index.html"); 
-        }
-		
-		// Use BigInt for large number calculations to prevent precision loss
-        
-        let timerInterval;
-        let totalTimeElapsedSeconds = 0;
-        let startTime;
-        let currentNumber;
-        let currentOperation;
-        let currentSequence;
-        let targetNumber;
-        let stepsCompleted = 0;
+        // Existing JavaScript Logic (preserved from your fullContent)
+        if (!sessionStorage.getItem('studentIdentifier')) { window.location.replace("index.html"); }
+        let timerInterval, totalTimeElapsedSeconds = 0, startTime, currentNumber, currentOperation, currentSequence, targetNumber, stepsCompleted = 0;
 
-        // Define all sequences, starting numbers, and targets in a unified structure
         const SEQUENCE_DATA = {
-            '123456789': {
-                value: 123456789n,
-                add: { start: 0n, target: 1234567890n },
-                sub: { start: 1234567890n, target: 123456789n }
-            },
-            '987654321': {
-                value: 987654321n,
-                add: { start: 0n, target: 9876543210n },
-                sub: { start: 9876543210n, target: 987654321n }
-            },
-            '918273645': {
-                value: 918273645n,
-                add: { start: 0n, target: 9182736450n },
-                sub: { start: 9182736450n, target: 918273645n }
-            },
-            '192837465': {
-                value: 192837465n,
-                add: { start: 0n, target: 1928374650n },
-                sub: { start: 1928374650n, target: 192837465n }
-            }
+            '123456789': { value: 123456789n, add: { start: 0n, target: 1234567890n }, sub: { start: 1234567890n, target: 123456789n } },
+            '987654321': { value: 987654321n, add: { start: 0n, target: 9876543210n }, sub: { start: 9876543210n, target: 987654321n } },
+            '918273645': { value: 918273645n, add: { start: 0n, target: 9182736450n }, sub: { start: 9182736450n, target: 918273645n } },
+            '192837465': { value: 192837465n, add: { start: 0n, target: 1928374650n }, sub: { start: 1928374650n, target: 192837465n } }
         };
 
-        /**
-         * Extracts a formatted name (First Name Last Name) from a student identifier.
-         */
         function formatStudentName(identifier) {
-            if (!identifier || typeof identifier !== 'string') {
-                return 'Student';
-            }
+            if (!identifier || typeof identifier !== 'string') return 'Student';
             const namePart = identifier.split('@')[0];
-            const parts = namePart.split('.');
-            let formattedName = parts.map(part => {
-                if (part.length > 0) {
-                    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                }
-                return '';
-            }).filter(p => p.length > 0)
-              .join(' ');
-            return formattedName || identifier; 
+            return namePart.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).filter(p => p.length > 0).join(' ') || identifier; 
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Login/Name Check ---
-            // NOTE: The student name is assumed to be stored in sessionStorage by index.html (e.g., login page)
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            const displayElement = document.getElementById('auto-student-name-display');
-            const startButton = document.getElementById('start-button');
-            const displayStudentName = formatStudentName(studentIdentifier);
-            
-            if (studentIdentifier) {
-                displayElement.textContent = displayStudentName;
-                startButton.disabled = false;
-                startButton.textContent = "Start Practice for " + displayStudentName;
-            } else {
-                displayElement.textContent = 'Login Required (Go to Main Menu)';
-                displayElement.classList.add('text-red-600', 'font-extrabold'); 
-                startButton.textContent = "Log In on Main Menu to Start";
-                startButton.disabled = true; 
-                showMessage("Access Denied. Please log in with your username on the main menu page (index.html) to start your practice.");
+            const sid = sessionStorage.getItem('studentIdentifier');
+            const displayStudentName = formatStudentName(sid);
+            if (sid) {
+                document.getElementById('auto-student-name-display').textContent = displayStudentName;
+                document.getElementById('start-button').disabled = false;
+                document.getElementById('start-button').textContent = "Start Practice for " + displayStudentName;
             }
-            
-            // --- Initial Setup ---
             updateNumberOptions();
             setupInputFocus();
         });
 
-        function showMessage(text) {
-            const box = document.getElementById('message-box');
-            document.getElementById('message-text').textContent = text;
-            box.classList.remove('hidden');
-            box.style.opacity = '1';
-        }
-
         function updateNumberOptions() {
-            const operation = document.querySelector('input[name="operation"]:checked').value;
+            const op = document.querySelector('input[name="operation"]:checked').value;
             const select = document.getElementById('number-sequence');
-            select.innerHTML = ''; // Clear previous options
-
+            select.innerHTML = '';
             Object.keys(SEQUENCE_DATA).forEach(key => {
-                const option = document.createElement('option');
-                option.value = key;
-                
-                // Get the specific start number for the current sequence and operation
-                const sequenceConfig = SEQUENCE_DATA[key][operation];
-                let startNum = sequenceConfig.start;
-                let opSign = operation === 'add' ? '+' : '-';
-                
-                // Show the start of the sequence for clarity
-                option.textContent = `${key} (Start: ${startNum} ${opSign} ${key})`;
-                
-                select.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = `${key} (Start: ${SEQUENCE_DATA[key][op].start} ${op==='add'?'+':'-'} ${key})`;
+                select.appendChild(opt);
             });
         }
         
         function setupInputFocus() {
             const input = document.getElementById('answer-input');
-            if (input) {
-                // Handle Enter key to simulate clicking Submit
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (!document.getElementById('submit-button').disabled) {
-                            checkAnswer();
-                        }
-                    }
-                });
-                setTimeout(() => input.focus(), 100); 
-            }
+            input?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !document.getElementById('submit-button').disabled) checkAnswer();
+            });
         }
-		
-        // --- PRACTICE FLOW LOGIC ---
 
         function startTest() {
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            if (!studentIdentifier) {
-                showMessage("Access Denied. Please log in again.");
-                return;
-            }
-            const displayStudentName = formatStudentName(studentIdentifier);
-
+            const sid = sessionStorage.getItem('studentIdentifier');
+            if (!sid) return;
             currentOperation = document.querySelector('input[name="operation"]:checked').value;
             currentSequence = document.getElementById('number-sequence').value;
-            
-            const sequenceConfig = SEQUENCE_DATA[currentSequence][currentOperation];
-            
-            // Set initial numbers and target based on logic
-            currentNumber = sequenceConfig.start;
-            targetNumber = sequenceConfig.target;
-            stepsCompleted = 0;
-
-            document.getElementById('display-student-name').textContent = displayStudentName;
+            const config = SEQUENCE_DATA[currentSequence][currentOperation];
+            currentNumber = config.start; targetNumber = config.target; stepsCompleted = 0;
+            document.getElementById('display-student-name').textContent = formatStudentName(sid);
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
-            document.getElementById('test-area').scrollIntoView({ behavior: 'smooth' });
-            
-            totalTimeElapsedSeconds = 0; 
-            startTime = Date.now(); 
-            startTimer(); 
-            
-            renderSum();
+            totalTimeElapsedSeconds = 0; startTime = Date.now(); startTimer(); renderSum();
         }
 
         function startTimer() {
-            const display = document.getElementById('timer-display');
             let overallStartTime = Date.now() - totalTimeElapsedSeconds * 1000;
-            
-            function updateTimer() {
-                const totalTime = Math.floor((Date.now() - overallStartTime) / 1000);
-                const minutes = Math.floor(totalTime / 60);
-                const seconds = totalTime % 60;
-                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            }
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(() => {
+                const total = Math.floor((Date.now() - overallStartTime) / 1000);
+                document.getElementById('timer-display').textContent = `${Math.floor(total/60)}:${(total%60).toString().padStart(2,'0')}`;
+            }, 1000);
         }
         
         function renderSum() {
             const opSign = currentOperation === 'add' ? '+' : '-';
-            const sequenceValue = SEQUENCE_DATA[currentSequence].value;
-            
-            document.getElementById('sum-title').textContent = `${currentOperation === 'add' ? 'Addition' : 'Subtraction'} Step ${stepsCompleted + 1} (Target: ${targetNumber})`;
-            document.getElementById('sum-display').innerHTML = 
-                `${currentNumber} <span class="text-blue-600">${opSign}</span> ${sequenceValue} = ?`;
-
-            // Reset input and feedback
-            const answerInput = document.getElementById('answer-input');
-            answerInput.value = '';
-            answerInput.disabled = false;
+            const seqVal = SEQUENCE_DATA[currentSequence].value;
+            document.getElementById('sum-title').textContent = `${currentOperation==='add'?'Addition':'Subtraction'} Step ${stepsCompleted+1}`;
+            document.getElementById('sum-display').innerHTML = `${currentNumber} <span class="text-blue-600">${opSign}</span> ${seqVal} = ?`;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').disabled = false;
             document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('submit-button').disabled = false;
-            
-            if (!document.getElementById('test-area').classList.contains('hidden')) {
-                answerInput.focus();
-            }
+            document.getElementById('answer-input').focus();
         }
 
         function checkAnswer() {
             const input = document.getElementById('answer-input');
-            const studentAnswerString = input.value.trim();
-            
-            if (!studentAnswerString || isNaN(studentAnswerString)) {
-                showMessage("Please enter a valid number.");
-                return;
-            }
-            
+            const studentAnsStr = input.value.trim();
+            if (!studentAnsStr || isNaN(studentAnsStr)) return;
             input.disabled = true;
-            
-            const sequenceValue = SEQUENCE_DATA[currentSequence].value;
-            let correctAnswer;
-
-            if (currentOperation === 'add') {
-                correctAnswer = currentNumber + sequenceValue;
-            } else { // subtraction
-                correctAnswer = currentNumber - sequenceValue;
-            }
-            
-            let isCorrect = false;
-            try {
-                // Compare BigInts
-                const studentAnswerBigInt = BigInt(studentAnswerString);
-                isCorrect = studentAnswerBigInt === correctAnswer;
-            } catch (e) {
-                isCorrect = false; // Invalid BigInt conversion
-            }
-            
-            const feedbackArea = document.getElementById('feedback-area');
-            const answerDisplay = document.getElementById('correct-answer-display');
-            
-            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-            totalTimeElapsedSeconds += timeTaken;
-            startTime = Date.now(); // Reset timer for the next step
-
-            // Show Feedback
+            const seqVal = SEQUENCE_DATA[currentSequence].value;
+            const correctAns = currentOperation === 'add' ? currentNumber + seqVal : currentNumber - seqVal;
+            const isCorrect = BigInt(studentAnsStr) === correctAns;
+            totalTimeElapsedSeconds += Math.floor((Date.now() - startTime) / 1000);
+            startTime = Date.now();
+            const feedback = document.getElementById('correct-answer-display');
             if (isCorrect) {
-                answerDisplay.textContent = "Correct! Moving to the next step...";
-                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-green-200 text-green-800";
-                
-                // Update current number for the next step
-                currentNumber = correctAnswer;
-                stepsCompleted++;
-                
-                // Check if target is reached or passed
-                if ((currentOperation === 'add' && currentNumber >= targetNumber) || 
-                    (currentOperation === 'sub' && currentNumber <= targetNumber)) {
-                    
-                    // Successful Completion only if the current number EXACTLY matches the target
-                    if (currentNumber === targetNumber) {
-                        endTest(true); 
-                    } else {
-                        // End test if target is overshot
-                        answerDisplay.innerHTML = `Correct, but you passed the target of ${targetNumber}. Ending practice.`;
-                        answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
-                        endTest(true); 
-                    }
-                } else {
-                    // Continue to next step after a short delay
-                    setTimeout(() => {
-                        renderSum();
-                    }, 1500); 
-                }
-                
+                feedback.textContent = "Correct! Moving on...";
+                feedback.className = "text-xl font-bold p-3 rounded-lg bg-green-200 text-green-800";
+                currentNumber = correctAns; stepsCompleted++;
+                if (currentNumber === targetNumber) endTest(true);
+                else setTimeout(renderSum, 1500);
             } else {
-                // 1. If answer is wrong do not show correct answer. Only say Try Again.
-                answerDisplay.innerHTML = `Wrong. Try again.`;
-                answerDisplay.className = "text-xl font-bold p-3 rounded-lg shadow-md bg-red-200 text-red-800";
-                
-                // Re-enable input and submit button
+                feedback.textContent = "Wrong. Try again.";
+                feedback.className = "text-xl font-bold p-3 rounded-lg bg-red-200 text-red-800";
                 document.getElementById('submit-button').disabled = false;
-                input.disabled = false;
-                input.focus();
+                input.disabled = false; input.focus();
             }
-            feedbackArea.classList.remove('hidden');
+            document.getElementById('feedback-area').classList.remove('hidden');
         }
 
-        // --- REPORT LOGIC ---
-
-        function endTest(success) {
+        function endTest() {
             clearInterval(timerInterval);
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
-            document.getElementById('report-area').scrollIntoView({ behavior: 'smooth' });
-
-            const minutes = Math.floor(totalTimeElapsedSeconds / 60);
-            const seconds = totalTimeElapsedSeconds % 60;
-            const timeElapsedFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier'); 
-            
-            document.getElementById('report-time-elapsed').textContent = timeElapsedFormatted;
-            
-            let opDetail = currentOperation === 'add' ? 'Addition' : 'Subtraction';
-            
-            document.getElementById('report-details').innerHTML = 
-                `Operation: ${opDetail} <br> Sequence: ${currentSequence} <br> Steps: ${stepsCompleted} <br> Target Reached: ${targetNumber}`;
-
-            document.getElementById('report-title').textContent = `✅ Practice Complete in ${stepsCompleted} Steps`;
-			// --- Get Current Date and Time ---
-   			 const now = new Date();
-    		 const dateOptions = { 
-             year: 'numeric', 
-        	 month: 'short', 
-        	 day: 'numeric', 
-        	 hour: '2-digit', 
-        	 minute: '2-digit',
-        	 hour12: true 
-    };
-    document.getElementById('report-date').textContent = now.toLocaleString('en-US', dateOptions);
+            const totalSec = totalTimeElapsedSeconds;
+            document.getElementById('report-time-elapsed').textContent = `${Math.floor(totalSec/60)}:${(totalSec%60).toString().padStart(2,'0')}`;
+            document.getElementById('report-details').innerHTML = `Op: ${currentOperation} | Seq: ${currentSequence} | Steps: ${stepsCompleted}`;
         }
     </script>
 </body>
 </html>
-
-
-
-
-
-
