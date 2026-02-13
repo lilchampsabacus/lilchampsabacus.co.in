@@ -131,6 +131,13 @@
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const welcomeDiv = document.getElementById('welcome-name');
+            if (userRole === 'admin') {
+            welcomeDiv.innerText = "Center Owner";
+            document.getElementById('admin-controls').classList.remove('hidden');
+            } else {
+            welcomeDiv.innerText = "Teacher";
+            }
             // Show Admin UI if the owner is logged in
             if (userEmail === 'admin.ambernath@gmail.com') {
                 document.getElementById('admin-controls').classList.remove('hidden');
