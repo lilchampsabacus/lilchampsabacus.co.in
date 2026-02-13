@@ -428,7 +428,22 @@
                     else startNumLabel.textContent = 'Number to Add in each step';
                 });
             });
+             // Allow pressing Enter key to check the answer or move to next step
+        answerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                
+                // If the Next button is already enabled (answer is correct), go to next step
+                if (!nextButton.disabled) {
+                    nextStep(); 
+                } else {
+                    // Otherwise, just run the check logic (though input listener usually handles this)
+                    checkAnswer();
+                }
+            }
+        });
         });
     </script>
 </body>
 </html>
+
