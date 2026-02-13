@@ -131,7 +131,9 @@
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const welcomeDiv = document.getElementById('welcome-name');
+            const welcomeName = document.getElementById('welcome-name');
+            const adminControls = document.getElementById('admin-controls');
+            
             if (userRole === 'admin') {
             welcomeDiv.innerText = "Center Owner";
             document.getElementById('admin-controls').classList.remove('hidden');
