@@ -66,6 +66,15 @@
             </div>
         </div>
 
+        <div class="w-full max-w-4xl mx-auto mt-6 bg-white p-6 rounded-xl shadow-md border border-red-100">
+    <h3 class="text-lg font-bold text-gray-800 mb-4">🔑 Quick Password Reset</h3>
+    <div class="flex flex-col md:flex-row gap-4">
+        <input type="text" id="resetUserId" placeholder="Student Email (e.g. aryan.kamble@gmail.com)" class="flex-grow border p-2 rounded">
+        <input type="text" id="newPassInput" placeholder="New Password" class="border p-2 rounded">
+        <button onclick="forceResetPassword()" class="bg-red-600 text-white px-6 py-2 rounded font-bold hover:bg-red-700">Update Now</button>
+    </div>
+    </div>
+        
         <div class="w-full max-w-4xl mx-auto mb-10 space-y-4">
             <div class="bg-blue-50 border-l-8 border-blue-500 p-6 rounded-r-lg shadow-md flex items-center gap-4">
                 <div class="text-4xl">📊</div>
@@ -205,6 +214,25 @@
             const statsDiv = document.getElementById('daily-stats');
             if(statsDiv) statsDiv.innerHTML = `${practicedToday.size} <span class="text-sm text-gray-400 font-normal">/ ${allStudents.size}</span>`;
         }
+
+        async function forceResetPassword() {
+    const studentEmail = document.getElementById('resetUserId').value;
+    const newPassword = document.getElementById('newPassInput').value;
+    const adminEmail = sessionStorage.getItem('userEmail');
+
+    if(!studentEmail || !newPassword) return alert("Please enter email and new password.");
+
+    // First, find the user ID by email
+    const { data: userData, error: userError } = await supabase.from('profiles').select('id').eq('full_name', studentEmail.split('@')[0].replace('.',' ')).single();
+
+    // Call the Edge Function with 'resetPassword' action
+    const { data, error } = await supabase.functions.invoke('manage-student', {
+        body: { action: 'resetPassword', userId: userData?.id || studentEmail, newPassword, adminEmail }
+    });
+
+    if (error) alert("Error: " + error.message);
+    else alert("Success! Student can now login with the new password.");
+}
     </script>
 </body>
 </html>
