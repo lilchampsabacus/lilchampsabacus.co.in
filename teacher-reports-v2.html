@@ -272,39 +272,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dropdown = document.getElementById('studentDropdown');
     dropdown.innerHTML = '<option>Loading Students...</option>';
     
-    let allStudents = new Set();
-    let from = 0;
-    let step = 1000;
-    let keepFetching = true;
+    const userRole = sessionStorage.getItem('userRole');
+    const userEmail = sessionStorage.getItem('userEmail');
+    
+    // Check if the current user is the Center Owner
+    const isCenterOwner = (userRole === 'admin' || userEmail === 'admin.ambernath@gmail.com');
 
     try {
-        while(keepFetching) {
-            const { data, error } = await supabase
-                .from('reports')
-                .select('student_name')
-                .range(from, from + step - 1);
+        let uniqueNames = [];
 
-            if (error) throw error;
+        if (isCenterOwner) {
+            // OPTION A: For Center Owner - Fetch directly from PROFILES table
+            // This ensures you see students even if they haven't practiced yet.
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('role', 'student')
+                .order('full_name', { ascending: true });
 
-            if (!data || data.length === 0) {
-                keepFetching = false;
-            } else {
-                data.forEach(item => {
-                    // Critical fix: trim() avoids empty or space-only names
-                    if(item.student_name && item.student_name.trim() !== "") {
-                        allStudents.add(item.student_name.trim());
-                    }
-                });
-                from += step;
+            if (profileError) throw profileError;
+            uniqueNames = profileData.map(p => p.full_name);
+        } else {
+            // OPTION B: For Teachers - Maintain existing logic of scanning reports
+            let allStudents = new Set();
+            let from = 0;
+            let step = 1000;
+            let keepFetching = true;
+
+            while(keepFetching) {
+                const { data, error } = await supabase
+                    .from('reports')
+                    .select('student_name')
+                    .range(from, from + step - 1);
+
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    keepFetching = false;
+                } else {
+                    data.forEach(item => {
+                        if(item.student_name && item.student_name.trim() !== "") {
+                            allStudents.add(item.student_name.trim());
+                        }
+                    });
+                    from += step;
+                }
             }
+            uniqueNames = Array.from(allStudents).sort();
         }
 
-        if (allStudents.size === 0) {
+        // Populate Dropdown
+        if (uniqueNames.length === 0) {
             dropdown.innerHTML = '<option>No students found</option>';
             return;
         }
 
-        const uniqueNames = Array.from(allStudents).sort();
         dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
         uniqueNames.forEach(name => {
             const option = document.createElement('option');
@@ -312,6 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             option.textContent = name;
             dropdown.appendChild(option);
         });
+
     } catch (err) {
         console.error("Fetch error:", err);
         dropdown.innerHTML = '<option>Error loading list</option>';
@@ -321,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const today = new Date();
     document.getElementById('monthPicker').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 });
-
+        
         async function getReport() {
             const studentName = document.getElementById('studentDropdown').value;
             const startDate = document.getElementById('startDate').value;
