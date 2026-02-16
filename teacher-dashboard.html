@@ -208,26 +208,57 @@
             else { alert("Enrolled: " + data.email); document.getElementById('addStudentModal').style.display='none'; location.reload(); }
         }
 
-        function handleCSV(event) {
-            const file = event.target.files[0];
-            Papa.parse(file, { header: true, complete: (res) => alert(`CEO Demo: Successfully parsed ${res.data.length} students. Ready for bulk upload!`) });
-        }
+        async function handleCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        function processMissingPractice(reports) {
-            const lastActive = {};
-            reports.forEach(r => { if(!lastActive[r.student_name] || new Date(r.indian_time) > lastActive[r.student_name]) lastActive[r.student_name] = new Date(r.indian_time); });
-            const now = new Date();
-            let count = 0;
-            for(let name in lastActive) { if(Math.ceil(Math.abs(now - lastActive[name]) / (1000 * 60 * 60 * 24)) > 3) count++; }
-            document.getElementById('inactive-count').innerText = count;
-        }
+    // Show a loading state so the CEO knows it's working
+    const bulkBtn = event.target.previousElementSibling;
+    const originalText = bulkBtn.innerText;
+    bulkBtn.innerText = "⏳ Uploading...";
+    bulkBtn.disabled = true;
 
-        function processDailyStatus(reports) {
-            const today = new Date().toISOString().split('T')[0];
-            const all = new Set(), done = new Set();
-            reports.forEach(r => { all.add(r.student_name); if(r.indian_time && r.indian_time.startsWith(today)) done.add(r.student_name); });
-            document.getElementById('daily-stats').innerHTML = `${done.size} <span class="text-sm text-gray-400 font-normal">/ ${all.size}</span>`;
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+            const students = results.data;
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Loop through each student in your CSV
+            for (const student of students) {
+                try {
+                    const { data, error } = await supabase.functions.invoke('manage-student', {
+                        body: { 
+                            action: 'enroll', 
+                            firstName: student.firstName, 
+                            lastName: student.lastName, 
+                            level: student.level, 
+                            adminEmail: sessionStorage.getItem('userEmail') 
+                        }
+                    });
+
+                    if (error) throw error;
+                    successCount++;
+                } catch (err) {
+                    console.error("Failed to enroll:", student.firstName, err);
+                    errorCount++;
+                }
+            }
+
+            // Final report for the CEO demo
+            alert(`Bulk Upload Complete!\n✅ Success: ${successCount}\n❌ Failed: ${errorCount}`);
+            bulkBtn.innerText = originalText;
+            bulkBtn.disabled = false;
+            
+            if (successCount > 0) {
+                fetchSecurityLogs(); // Show the actions in the audit trail
+                location.reload(); 
+            }
         }
+    });
+}
     </script>
 </body>
 </html>
