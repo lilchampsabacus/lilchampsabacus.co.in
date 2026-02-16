@@ -216,22 +216,27 @@
         }
 
         async function forceResetPassword() {
-    const studentEmail = document.getElementById('resetUserId').value;
-    const newPassword = document.getElementById('newPassInput').value;
+    const studentEmail = document.getElementById('resetUserId').value.trim();
+    const newPassword = document.getElementById('newPassInput').value.trim();
     const adminEmail = sessionStorage.getItem('userEmail');
 
     if(!studentEmail || !newPassword) return alert("Please enter email and new password.");
 
-    // First, find the user ID by email
-    const { data: userData, error: userError } = await supabase.from('profiles').select('id').eq('full_name', studentEmail.split('@')[0].replace('.',' ')).single();
-
-    // Call the Edge Function with 'resetPassword' action
+    // We send the email directly to the Edge Function now
     const { data, error } = await supabase.functions.invoke('manage-student', {
-        body: { action: 'resetPassword', userId: userData?.id || studentEmail, newPassword, adminEmail }
+        body: { 
+            action: 'resetPassword', 
+            email: studentEmail, // Sending email instead of userId
+            newPassword: newPassword, 
+            adminEmail: adminEmail 
+        }
     });
 
-    if (error) alert("Error: " + error.message);
-    else alert("Success! Student can now login with the new password.");
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("Success! Password for " + studentEmail + " has been updated.");
+    }
 }
     </script>
 </body>
