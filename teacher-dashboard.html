@@ -65,6 +65,19 @@
             </div>
         </div>
 
+        <div id="access-control-section" class="w-full max-w-4xl mx-auto hidden mt-6">
+    <div class="bg-white p-6 rounded-xl shadow-md border border-orange-200">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">🛑 Student Access Control <span class="text-xs font-normal text-gray-400 uppercase tracking-widest">(Block / Unblock)</span></h3>
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <input type="text" id="accessUserEmail" placeholder="Student Email (e.g. rahul.patil@gmail.com)" class="flex-grow border p-3 rounded-lg focus:ring-2 focus:outline-none">
+            <div class="flex gap-2">
+                <button onclick="toggleStudentAccess(false)" class="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 transition">Block Access</button>
+                <button onclick="toggleStudentAccess(true)" class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition">Restore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
             <a href="teacher-reports-v2.html" class="option-card card-multi bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group">
                 <div class="text-6xl mb-6">📑</div>
@@ -185,7 +198,7 @@
             });
             if (error) alert(error.message); else location.reload();
         }
-
+        
         async function handleCSV(event) {
             const file = event.target.files[0];
             Papa.parse(file, { header: true, complete: async (results) => {
