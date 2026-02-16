@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Center Owner Dashboard - Li'l Champs</title>
+    <title>Dashboard - Li'l Champs Abacus</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -18,13 +18,6 @@
         .card-plus { border-color: #f59e0b; }
         .card-daily { border-color: #10b981; }
         
-        /* Admin Tool Glow */
-        #admin-controls > div, #password-reset-tool {
-            border: 2px solid #4f46e5;
-            box-shadow: 0 0 15px rgba(79, 70, 229, 0.15);
-            background: linear-gradient(to right, #f5f3ff, #ffffff);
-        }
-
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
         .modal-content { background: white; margin: 10% auto; padding: 2rem; border-radius: 1rem; max-width: 500px; animation: slideIn 0.4s ease-out; }
         @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -40,7 +33,7 @@
             </div>
             <div class="bg-indigo-700 px-4 py-2 rounded-lg border border-indigo-500 text-center mt-4 md:mt-0">
                 <span class="text-indigo-200 text-xs uppercase font-bold">Logged In As</span>
-                <div id="welcome-name" class="text-lg font-bold text-white">Center Owner</div>
+                <div id="welcome-name" class="text-lg font-bold text-white">...</div>
             </div>
         </div>
     </header>
@@ -48,25 +41,27 @@
     <main class="flex-grow p-6 md:p-10 flex flex-col items-center gap-8">
         
         <div id="admin-controls" class="w-full max-w-4xl mx-auto hidden">
-            <div class="p-6 rounded-xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="bg-white p-6 rounded-xl shadow-md border-2 border-indigo-500 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h3 class="text-xl font-bold text-indigo-800">Owner Management Tools</h3>
-                    <p class="text-indigo-900 mt-1">Enroll students or perform bulk uploads.</p>
+                    <p class="text-gray-500 mt-1">Enroll students or perform bulk uploads.</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="document.getElementById('addStudentModal').style.display='block'" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md transition"> + Add Student</button>
+                    <button onclick="document.getElementById('addStudentModal').style.display='block'" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition"> + Add Student</button>
                     <button onclick="document.getElementById('csv-input').click()" class="bg-white text-indigo-600 border border-indigo-300 px-4 py-2 rounded-lg font-bold hover:bg-indigo-100 transition"> ⬆️ Bulk Import</button>
                     <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="handleCSV(event)">
                 </div>
             </div>
         </div>
 
-        <div id="password-reset-tool" class="w-full max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">🔑 Master Password Reset <span class="text-xs font-normal text-gray-400 uppercase tracking-widest">(No Email Required)</span></h3>
-            <div class="flex flex-col md:flex-row gap-4">
-                <input type="text" id="resetUserEmail" placeholder="Student Email (e.g. rahul.patil@gmail.com)" class="flex-grow border p-3 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none">
-                <input type="text" id="newPassInput" placeholder="New Password" class="border p-3 rounded-lg md:w-48 focus:ring-2 focus:ring-indigo-200 outline-none">
-                <button onclick="forceResetPassword()" class="bg-red-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-700 shadow-md transition transform active:scale-95">Update Now</button>
+        <div id="password-reset-section" class="w-full max-w-4xl mx-auto hidden">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-red-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">🔑 Master Password Reset <span class="text-xs font-normal text-gray-400 uppercase tracking-widest">(No Email Required)</span></h3>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="resetUserEmail" placeholder="Student Email (e.g. rahul.patil@gmail.com)" class="flex-grow border p-3 rounded-lg focus:ring-2 focus:outline-none">
+                    <input type="text" id="newPassInput" placeholder="New Password" class="border p-3 rounded-lg md:w-48 focus:ring-2 focus:outline-none">
+                    <button onclick="forceResetPassword()" class="bg-red-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-700 transition">Update Now</button>
+                </div>
             </div>
         </div>
 
@@ -80,9 +75,9 @@
 
             <div class="option-card card-plus bg-white rounded-2xl p-8 shadow-lg flex flex-col items-center text-center group">
                 <div class="text-6xl mb-6">⚠️</div> 
-                <h4 id="inactive-header" class="text-2xl font-bold text-gray-800 mb-2">Missing Practice</h4>
+                <h4 class="text-2xl font-bold text-gray-800 mb-2">Missing Practice</h4>
                 <div id="inactive-count" class="text-4xl font-extrabold text-red-600 my-2">...</div>
-                <p class="text-gray-500 mb-6">Students Inactive (>3 days)</p>
+                <p class="text-gray-500 mb-6">Inactive (>3 days)</p>
                 <a href="inactive-students.html" class="bg-red-50 text-red-600 px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 hover:text-white transition">View List</a>
             </div>
 
@@ -95,37 +90,35 @@
             </a>
         </div>
 
-        <div class="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-10">
-            <div class="bg-gray-800 p-4 flex justify-between items-center">
-                <h3 class="text-white font-bold flex items-center gap-2">🛡️ Live Security Audit Trail</h3>
-                <button onclick="fetchSecurityLogs()" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded transition">Refresh</button>
-            </div>
-            <div class="overflow-x-auto">
+        <div id="security-log-section" class="w-full max-w-4xl mx-auto hidden mb-10">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="bg-gray-800 p-4 flex justify-between items-center text-white">
+                    <h3 class="font-bold flex items-center gap-2">🛡️ Live Security Audit Trail</h3>
+                    <button onclick="fetchSecurityLogs()" class="text-xs bg-gray-700 px-3 py-1 rounded">Refresh</button>
+                </div>
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 text-gray-600 font-bold uppercase text-xs">
-                        <tr><th class="px-6 py-3">Timestamp</th><th class="px-6 py-3">Action</th><th class="px-6 py-3">Target Student</th><th class="px-6 py-3">Status</th></tr>
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                        <tr><th class="px-6 py-3">Timestamp</th><th class="px-6 py-3">Action</th><th class="px-6 py-3">Student</th><th class="px-6 py-3">Status</th></tr>
                     </thead>
-                    <tbody id="securityLogBody" class="divide-y divide-gray-100">
-                        <tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">Loading audit trail...</td></tr>
-                    </tbody>
+                    <tbody id="securityLogBody" class="divide-y divide-gray-100"></tbody>
                 </table>
             </div>
         </div>
 
-        <button onclick="logout()" class="text-gray-400 hover:text-red-600 font-bold py-3 px-8 rounded-full transition-all">Log Out</button>
+        <button onclick="logout()" class="text-gray-400 hover:text-red-600 font-bold py-3 px-8 transition-all">Log Out</button>
     </main>
 
     <div id="addStudentModal" class="modal">
         <div class="modal-content">
-            <h3 class="text-2xl font-bold mb-4">Register New Student</h3>
+            <h3 class="text-2xl font-bold mb-4">Enroll New Student</h3>
             <div class="space-y-4">
                 <input type="text" id="stdFirstName" placeholder="First Name" class="w-full border p-3 rounded-lg" oninput="updateEmailPreview()">
                 <input type="text" id="stdLastName" placeholder="Surname" class="w-full border p-3 rounded-lg" oninput="updateEmailPreview()">
-                <p class="text-sm text-gray-500">Auto-Generated ID: <span id="emailPreview" class="font-bold text-indigo-600">...</span></p>
+                <p class="text-sm text-gray-500">ID: <span id="emailPreview" class="font-bold text-indigo-600">...</span></p>
                 <select id="stdLevel" class="w-full border p-3 rounded-lg">
                     <option value="1">Level 1</option><option value="2">Level 2</option><option value="8">Level 8</option>
                 </select>
-                <button onclick="addNewStudent()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-700 transition">Enroll Student</button>
+                <button onclick="addNewStudent()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md">Enroll Student</button>
                 <button onclick="document.getElementById('addStudentModal').style.display='none'" class="w-full text-gray-400 py-2">Cancel</button>
             </div>
         </div>
@@ -139,62 +132,48 @@
         const userRole = sessionStorage.getItem('userRole');
         const userEmail = sessionStorage.getItem('userEmail');
 
-        if (!userRole) window.location.href = 'index.html'; 
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const welcomeName = document.getElementById('welcome-name');
-            const adminControls = document.getElementById('admin-controls');
-
-            // 1. Role Identification
-            if (userRole === 'admin' || userEmail === 'admin.ambernath@gmail.com') {
-                if (welcomeName) welcomeName.innerText = "Center Owner";
-                if (adminControls) adminControls.classList.remove('hidden');
-            } else {
-                if (welcomeName) welcomeName.innerText = "Teacher";
+            const isOwner = (userRole === 'admin' || userEmail === 'admin.ambernath@gmail.com');
+            
+            // Set Branding & Visibility
+            document.getElementById('welcome-name').innerText = isOwner ? "Center Owner" : "Teacher";
+            if (isOwner) {
+                document.getElementById('admin-controls').classList.remove('hidden');
+                document.getElementById('password-reset-section').classList.remove('hidden');
+                document.getElementById('security-log-section').classList.remove('hidden');
+                fetchSecurityLogs();
             }
 
-            // 2. Fetch Data & Security Logs
-            fetchSecurityLogs();
-            const { data: reports, error } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
-            if (!error) { processMissingPractice(reports); processDailyStatus(reports); }
+            const { data: reports } = await supabase.from('reports').select('*').order('indian_time', { ascending: false });
+            if (reports) { processMissingPractice(reports); processDailyStatus(reports); }
         });
 
-        // FORCE PASSWORD RESET
         async function forceResetPassword() {
             const email = document.getElementById('resetUserEmail').value.trim();
             const newPassword = document.getElementById('newPassInput').value.trim();
-            if(!email || !newPassword) return alert("Please enter student email and new password.");
-
-            const { data, error } = await supabase.functions.invoke('manage-student', {
+            const { error } = await supabase.functions.invoke('manage-student', {
                 body: { action: 'resetPassword', email, newPassword, adminEmail: userEmail }
             });
-
-            if (error) alert("Error: " + error.message);
-            else { alert("Success! Password updated."); fetchSecurityLogs(); }
+            if (error) alert(error.message); else { alert("Updated!"); fetchSecurityLogs(); }
         }
 
-        // FETCH SECURITY LOGS
         async function fetchSecurityLogs() {
-            const { data, error } = await supabase.from('security_logs').select('*').order('created_at', { ascending: false }).limit(5);
-            const logBody = document.getElementById('securityLogBody');
-            if (error || !data) return;
-            logBody.innerHTML = '';
-            data.forEach(log => {
-                const date = new Date(log.created_at).toLocaleString('en-IN');
-                logBody.innerHTML += `<tr class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">${date}</td>
-                    <td class="px-6 py-4 font-bold text-indigo-600">${log.action_type.replace(/_/g, ' ')}</td>
-                    <td class="px-6 py-4 text-gray-700">${log.target_student_email}</td>
-                    <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-[10px] font-bold uppercase">Success</span></td>
-                </tr>`;
-            });
+            const { data } = await supabase.from('security_logs').select('*').order('created_at', { ascending: false }).limit(5);
+            const body = document.getElementById('securityLogBody');
+            body.innerHTML = data.map(log => `<tr>
+                <td class="px-6 py-4 text-xs font-mono">${new Date(log.created_at).toLocaleString('en-IN')}</td>
+                <td class="px-6 py-4 font-bold text-indigo-600 text-xs">${log.action_type}</td>
+                <td class="px-6 py-4 text-xs">${log.target_student_email}</td>
+                <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-2 rounded-full text-[10px] font-bold">SUCCESS</span></td>
+            </tr>`).join('');
         }
 
         function updateEmailPreview() {
-            const fName = document.getElementById('stdFirstName').value.trim().toLowerCase();
-            const lName = document.getElementById('stdLastName').value.trim().toLowerCase();
-            if(fName && lName) document.getElementById('emailPreview').innerText = `${fName}.${lName}@gmail.com`;
+            const f = document.getElementById('stdFirstName').value.trim().toLowerCase();
+            const l = document.getElementById('stdLastName').value.trim().toLowerCase();
+            document.getElementById('emailPreview').innerText = f && l ? `${f}.${l}@gmail.com` : "...";
         }
 
         async function addNewStudent() {
@@ -204,61 +183,34 @@
             const { data, error } = await supabase.functions.invoke('manage-student', {
                 body: { action: 'enroll', firstName, lastName, level, adminEmail: userEmail }
             });
-            if (error) alert("Error: " + error.message);
-            else { alert("Enrolled: " + data.email); document.getElementById('addStudentModal').style.display='none'; location.reload(); }
+            if (error) alert(error.message); else location.reload();
         }
 
         async function handleCSV(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Show a loading state so the CEO knows it's working
-    const bulkBtn = event.target.previousElementSibling;
-    const originalText = bulkBtn.innerText;
-    bulkBtn.innerText = "⏳ Uploading...";
-    bulkBtn.disabled = true;
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async (results) => {
-            const students = results.data;
-            let successCount = 0;
-            let errorCount = 0;
-
-            // Loop through each student in your CSV
-            for (const student of students) {
-                try {
-                    const { data, error } = await supabase.functions.invoke('manage-student', {
-                        body: { 
-                            action: 'enroll', 
-                            firstName: student.firstName, 
-                            lastName: student.lastName, 
-                            level: student.level, 
-                            adminEmail: sessionStorage.getItem('userEmail') 
-                        }
+            const file = event.target.files[0];
+            Papa.parse(file, { header: true, complete: async (results) => {
+                for (const student of results.data) {
+                    await supabase.functions.invoke('manage-student', {
+                        body: { action: 'enroll', firstName: student.firstName, lastName: student.lastName, level: student.level, adminEmail: userEmail }
                     });
-
-                    if (error) throw error;
-                    successCount++;
-                } catch (err) {
-                    console.error("Failed to enroll:", student.firstName, err);
-                    errorCount++;
                 }
-            }
-
-            // Final report for the CEO demo
-            alert(`Bulk Upload Complete!\n✅ Success: ${successCount}\n❌ Failed: ${errorCount}`);
-            bulkBtn.innerText = originalText;
-            bulkBtn.disabled = false;
-            
-            if (successCount > 0) {
-                fetchSecurityLogs(); // Show the actions in the audit trail
-                location.reload(); 
-            }
+                alert("Bulk Upload Done!"); location.reload();
+            }});
         }
-    });
-}
+
+        function processMissingPractice(reports) {
+            const lastActive = {};
+            reports.forEach(r => { if(!lastActive[r.student_name] || new Date(r.indian_time) > lastActive[r.student_name]) lastActive[r.student_name] = new Date(r.indian_time); });
+            const count = Object.values(lastActive).filter(date => Math.ceil(Math.abs(new Date() - date) / (1000 * 60 * 60 * 24)) > 3).length;
+            document.getElementById('inactive-count').innerText = count;
+        }
+
+        function processDailyStatus(reports) {
+            const today = new Date().toISOString().split('T')[0];
+            const all = new Set(reports.map(r => r.student_name));
+            const done = new Set(reports.filter(r => r.indian_time?.startsWith(today)).map(r => r.student_name));
+            document.getElementById('daily-stats').innerHTML = `${done.size} <span class="text-sm text-gray-400">/ ${all.size}</span>`;
+        }
     </script>
 </body>
 </html>
