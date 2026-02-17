@@ -74,60 +74,94 @@
         const password = document.getElementById('password').value.trim();
         const messageElement = document.getElementById('login-message');
         const loginBtn = document.getElementById('loginBtn');
-        const originalBtnText = loginBtn.innerHTML;
+        const originalBtnText = "Log In"; 
 
-        if(!emailInput || !password) {
-            messageElement.innerHTML = '<span class="text-red-600">Please enter credentials.</span>';
+        messageElement.innerHTML = ''; // Clear previous errors
+
+        if (!emailInput || !password) {
+            messageElement.innerHTML = '<span class="text-red-600 font-bold">Please enter email and password.</span>';
             return;
         }
 
-        if (!emailInput.includes('@')) emailInput += "@gmail.com";
+        // Auto-append @gmail.com for student convenience
+        if (!emailInput.includes('@')) {
+            emailInput += "@gmail.com";
+        }
 
         loginBtn.disabled = true;
-        loginBtn.innerHTML = `Verifying...`;
+        loginBtn.innerHTML = `<span>Verifying...</span>`;
 
         try {
+            // 1. AUTHENTICATE: Check Email & Password
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: emailInput,
                 password: password
             });
 
-            if (error) throw error;
+            if (error) throw new Error("Incorrect Password or Email.");
 
-            const userEmail = data.user.email;
+            const user = data.user;
+            
+            // 2. THE GATEKEEPER: Check Profile Status
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('is_active, role, current_level, full_name')
+                .eq('id', user.id)
+                .single();
+
+            // If profile exists, check for BAN or GRADUATION
+            if (profile) {
+                if (profile.is_active === false) {
+                    await supabaseClient.auth.signOut(); // Kick them out immediately
+                    throw new Error("🚫 Access Denied: This account has been deactivated.");
+                }
+
+                // Optional: Block if Level > 8 (Course Completed) - Only for students
+                if (profile.role === 'student' && profile.current_level > 8) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error("🎓 Course Completed. Please contact the center.");
+                }
+            }
+
+            // 3. SUCCESS: Set Session & Redirect
             sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('userId', data.user.id);
-            sessionStorage.setItem('userEmail', userEmail); // REQUIRED for dashboard check
+            sessionStorage.setItem('userId', user.id);
+            sessionStorage.setItem('userEmail', user.email);
+            sessionStorage.setItem('userRole', profile ? profile.role : 'student'); // Default to student if no profile
 
-            // --- REDIRECTION LOGIC ---
-            if (userEmail === 'admin.ambernath@gmail.com') {
-                sessionStorage.setItem('userRole', 'admin');
+            if (profile && profile.role === 'admin') {
                 messageElement.innerHTML = '<span class="text-indigo-600 font-bold">✅ Welcome, Center Owner!</span>';
                 setTimeout(() => window.location.href = 'teacher-dashboard.html', 1000);
-
-            } else if (userEmail === 'teacher.ambernath@gmail.com') {
-                sessionStorage.setItem('userRole', 'teacher');
+            } else if (profile && profile.role === 'teacher') {
                 messageElement.innerHTML = '<span class="text-indigo-600 font-bold">✅ Welcome, Teacher!</span>';
                 setTimeout(() => window.location.href = 'teacher-dashboard.html', 1000);
-
             } else {
-                // STUDENT LOGIC
-                sessionStorage.setItem('userRole', 'student');
-                let cleanName = userEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                sessionStorage.setItem('studentIdentifier', cleanName);
+                // Student Login
+                const studentName = profile ? profile.full_name : emailInput.split('@')[0];
+                sessionStorage.setItem('studentIdentifier', studentName);
                 
-                messageElement.innerHTML = `<span class="text-green-600">✅ Welcome, ${cleanName}!</span>`;
+                messageElement.innerHTML = `<span class="text-green-600 font-bold">✅ Welcome, ${studentName}!</span>`;
                 setTimeout(() => window.location.href = 'practice_options.html', 1000);
             }
 
-        } catch (error) {
+        } catch (err) {
+            console.error("Login Error:", err);
             loginBtn.disabled = false;
-            loginBtn.innerHTML = originalBtnText;
-            messageElement.innerHTML = '<span class="text-red-600">❌ Login Failed. Check Password.</span>';
+            loginBtn.innerHTML = originalBtnText; // Reset button text
+            
+            // Show specific error message (Ban vs Wrong Password)
+            if (err.message.includes("Access Denied")) {
+                messageElement.innerHTML = `<span class="text-red-600 font-bold">${err.message}</span>`;
+            } else {
+                messageElement.innerHTML = '<span class="text-red-600 font-bold">❌ Login Failed. Check Password.</span>';
+            }
         }
     }
 
-    document.getElementById('password').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+    // Allow "Enter" key to submit
+    document.getElementById('password').addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') handleLogin(); 
+    });
 </script>
 </body>
 </html>
