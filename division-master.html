@@ -164,6 +164,40 @@
         let timerInterval, sumsData = [], startTime, currentSlideIndex = 0, tabSwitchCount = 0, isTerminated = false;
         const TOTAL_SUMS = 30, SUMS_PER_SLIDE = 5, TOTAL_SLIDES = 6;
 
+        // --- Offline Sync Functions ---
+        function saveOrQueueResult(payload) {
+            if (navigator.onLine) {
+                if (window.lilChampUtils?.saveResult) {
+                    window.lilChampUtils.saveResult(payload);
+                }
+            } else {
+                // Add exact time: Stamp the payload with the exact time the student finished offline
+                payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+                
+                let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('offlineResultsQueue', JSON.stringify(queue));
+                alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
+            }
+        }
+
+        function syncOfflineResults() {
+            let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+            if (queue.length > 0 && navigator.onLine) {
+                if (window.lilChampUtils?.saveResult) {
+                    queue.forEach(payload => {
+                        window.lilChampUtils.saveResult(payload, true); // true = isBackgroundSync
+                    });
+                    localStorage.removeItem('offlineResultsQueue');
+                    console.log("✅ Offline results successfully synced.");
+                }
+            }
+        }
+
+        // Listen for internet connection returning
+        window.addEventListener('online', syncOfflineResults);
+        // -----------------------------------
+
         document.addEventListener('DOMContentLoaded', () => {
             const levelName = challengeConfig[CHALLENGE_CODE] || "Division Mission";
             document.getElementById('dynamic-mission-heading').textContent = levelName;
@@ -173,6 +207,11 @@
             if (studentIdentifier) {
                 document.getElementById('auto-student-name-display').textContent = studentIdentifier.split('@')[0].toUpperCase();
                 document.getElementById('start-button').disabled = false;
+            }
+
+            // Attempt to sync any unsynced offline reports on load
+            if (navigator.onLine) {
+                syncOfflineResults();
             }
         });
 
@@ -275,6 +314,14 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
+            // --- Prevent duplicate submissions ---
+            const submitBtn = document.getElementById('submit-button');
+            if (submitBtn.disabled) return; 
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Submitting... 📡';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            // -------------------------------------
+
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(timeElapsed / 60);
@@ -304,15 +351,17 @@
             document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
             document.getElementById('see-wrong-button').textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
-            if (window.lilChampUtils?.saveResult) {
-                window.lilChampUtils.saveResult({
-                    challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
-                    score: score, total: TOTAL_SUMS, time: timeFormatted,
-                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray, questions: sumsData,
-                    answers: sumsData.map(s => s.studentAnswer)
-                });
-            }
+            // --- Use saveOrQueue logic ---
+            const payload = {
+                challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
+                score: score, total: TOTAL_SUMS, time: timeFormatted,
+                accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                mistakes: mistakesArray, questions: sumsData,
+                answers: sumsData.map(s => s.studentAnswer)
+            };
+            
+            saveOrQueueResult(payload);
+            // -----------------------------
 
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
