@@ -164,7 +164,7 @@
         let timerInterval, sumsData = [], startTime, currentSlideIndex = 0, tabSwitchCount = 0, isTerminated = false;
         const TOTAL_SUMS = 30, SUMS_PER_SLIDE = 5, TOTAL_SLIDES = 6;
 
-        // --- Offline Sync Functions ---
+        // --- Offline Sync Functions (CLEANED UP) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
@@ -180,23 +180,7 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-
-        function syncOfflineResults() {
-            let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
-            if (queue.length > 0 && navigator.onLine) {
-                if (window.lilChampUtils?.saveResult) {
-                    queue.forEach(payload => {
-                        window.lilChampUtils.saveResult(payload, true); // true = isBackgroundSync
-                    });
-                    localStorage.removeItem('offlineResultsQueue');
-                    console.log("✅ Offline results successfully synced.");
-                }
-            }
-        }
-
-        // Listen for internet connection returning
-        window.addEventListener('online', syncOfflineResults);
-        // -----------------------------------
+        // -------------------------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
             const levelName = challengeConfig[CHALLENGE_CODE] || "Division Mission";
@@ -207,11 +191,6 @@
             if (studentIdentifier) {
                 document.getElementById('auto-student-name-display').textContent = studentIdentifier.split('@')[0].toUpperCase();
                 document.getElementById('start-button').disabled = false;
-            }
-
-            // Attempt to sync any unsynced offline reports on load
-            if (navigator.onLine) {
-                syncOfflineResults();
             }
         });
 
@@ -334,7 +313,6 @@
 
             let score = 0, mistakesArray = [];
             sumsData.forEach(q => {
-                // FIX: Use quotient for division logic
                 const correct = q.quotient; 
                 if (parseInt(q.studentAnswer) === correct) {
                     score++;
@@ -351,7 +329,7 @@
             document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
             document.getElementById('see-wrong-button').textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
-            // --- Use saveOrQueue logic ---
+            // --- Queue the payload ---
             const payload = {
                 challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
                 score: score, total: TOTAL_SUMS, time: timeFormatted,
@@ -361,7 +339,7 @@
             };
             
             saveOrQueueResult(payload);
-            // -----------------------------
+            // -------------------------
 
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
