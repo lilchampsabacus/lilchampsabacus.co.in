@@ -385,7 +385,7 @@
                              <button class="keypad-btn op-btn" onclick="handleKeypadInput('.')">.</button>
 
                              <button class="keypad-btn" style="grid-column: span 2;" onclick="handleKeypadInput('0')">0</button>
-                             <button class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
+                             <button id="enter-btn" class="keypad-btn action-btn" onclick="handleKeypadEnter()">ENTER / NEXT</button>
                          </div>
                     </div>
                 </div>
@@ -451,6 +451,24 @@
         let currentSlideIndex = 0;
         let timerInterval;
         let isSubmitting = false;
+
+        // --- Offline Sync Functions (NEW) ---
+        function saveOrQueueResult(payload) {
+            if (navigator.onLine) {
+                if (window.lilChampUtils?.saveResult) {
+                    window.lilChampUtils.saveResult(payload);
+                }
+            } else {
+                // Add exact time: Stamp the payload with the exact time the student finished offline
+                payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+                
+                let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('offlineResultsQueue', JSON.stringify(queue));
+                alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
+            }
+        }
+        // ------------------------------------
 
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
@@ -568,16 +586,9 @@
                 // Universal Keypad: Always ReadOnly to block native keyboard
                 input.readOnly = true;
 
-                // Note: We don't focus() because it might bring up keyboard on some devices even if readonly (rare but possible)
-                // But generally readonly prevents keyboard.
-                // However, we want the user to see where the input goes.
-                // input.focus(); // Optional.
-                
                 // Remove old event listeners by cloning
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
-
-                // Note: Global key listener in gamify.js handles physical keyboard input now.
 
                 startTime = Date.now();
                 startTimer();
@@ -700,11 +711,20 @@
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
-        // --- NEW: ROBUST END TEST (Handles Weak Network) ---
+        // --- NEW: ROBUST END TEST (Handles Weak Network & Duplicate Submits) ---
         async function endTest() {
             if (isSubmitting) return;
             isSubmitting = true;
             
+            // --- Prevent duplicate submissions visually ---
+            const enterBtn = document.getElementById('enter-btn');
+            if (enterBtn) {
+                enterBtn.disabled = true;
+                enterBtn.innerHTML = 'Submitting... 📡';
+                enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            // ----------------------------------------------
+
             clearInterval(timerInterval);
 
             // Calculate Time
@@ -762,23 +782,24 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // --- SAVE TO SUPABASE ---
+            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const typeSelect = document.getElementById('practice-type');
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
-            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
-                window.lilChampUtils.saveResult({
-                    challenge: levelText, // e.g. "2-Digit 10 Rows"
-                    score: score,
-                    total: TOTAL_SUMS, 
-                    time: timeFormatted,
-                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray,
-                    // Pass full data for verification (SECURE MODE)
-                    questions: sumsData,
-                    answers: sumsData.map(s => s.studentAnswer)
-                });
-            }
+            const payload = {
+                challenge: levelText, // e.g. "2-Digit 10 Rows"
+                score: score,
+                total: TOTAL_SUMS, 
+                time: timeFormatted,
+                accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                mistakes: mistakesArray,
+                // Pass full data for verification (SECURE MODE)
+                questions: sumsData,
+                answers: sumsData.map(s => s.studentAnswer)
+            };
+            
+            saveOrQueueResult(payload);
+            // ------------------------------------------
 
             // Switch Screens
             document.body.classList.remove('focus-mode');
