@@ -224,11 +224,11 @@
                     }
                     
                     tr.innerHTML = `
-                        <td class="py-3 px-6 font-medium text-gray-700">${row.indian_time}</td>
-                        <td class="py-3 px-6">${row.challenge_type}</td>
-                        <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
-                        <td class="py-3 px-6 text-center">${row.time_taken}</td>
-                        <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
+                    <td class="py-3 px-6 font-medium text-gray-700">${formattedDate}</td>
+                    <td class="py-3 px-6">${row.challenge_type}</td>
+                    <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
+                    <td class="py-3 px-6 text-center">${row.time_taken}</td>
+                    <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
                     `;
                     fragment.appendChild(tr);
                 });
@@ -266,3 +266,4 @@
     </script>
 </body>
 </html>
+
