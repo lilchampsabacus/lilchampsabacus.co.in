@@ -150,6 +150,8 @@
     <footer class="bg-white text-center p-6 mt-auto border-t"><p class="text-sm text-gray-500">For any queries call <span class="font-bold text-indigo-600">9730482620</span></p></footer>
 
     <script>
+		// --- GLOBAL LOCK ---
+        let isSaving = false;
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
         const params = new URLSearchParams(window.location.search);
@@ -275,14 +277,17 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
-			// 1. PREVENT DUPLICATES: Disable button immediately
-                const submitBtn = document.getElementById('submit-button');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = "Saving...";
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-			
+            // 1. STOPS DUPLICATES IMMEDIATELY
+            if (isSaving) return; 
+            isSaving = true;
+
+            const submitBtn = document.getElementById('submit-button');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Saving...";
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(timeElapsed / 60);
@@ -293,52 +298,80 @@
             const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
+            // Calculate Score and Mistakes
             let score = 0, mistakesArray = [];
             sumsData.forEach(q => {
-                // FIX: Use quotient for division logic
                 const correct = q.quotient; 
                 if (parseInt(q.studentAnswer) === correct) {
                     score++;
                 } else if (q.studentAnswer !== null && q.studentAnswer !== "") {
-                    mistakesArray.push({ question: `${q.x} ÷ ${q.y}`, wrong: q.studentAnswer, correct: correct });
+                    mistakesArray.push({ 
+                        question: `${q.x} ÷ ${q.y}`, 
+                        wrong: q.studentAnswer, 
+                        correct: correct 
+                    });
                 }
             });
 
+            // Update UI Elements
             document.getElementById('report-datetime').textContent = `${dateStr} | ${timeStr}`;
             document.getElementById('report-student-name').textContent = (sessionStorage.getItem('studentIdentifier') || "PILOT").split('@')[0].toUpperCase();
             document.getElementById('report-correct').textContent = score;
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             sessionStorage.setItem('mistakesData', JSON.stringify(mistakesArray));
-            document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
-            document.getElementById('see-wrong-button').textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
-            if (window.lilChampUtils?.saveResult) {
-                window.lilChampUtils.saveResult({
-                    challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
-                    score: score, total: TOTAL_SUMS, time: timeFormatted,
-                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray, questions: sumsData,
-                    answers: sumsData.map(s => s.studentAnswer)
-                });
+            // Review Mistakes Button Logic
+            const seeWrongBtn = document.getElementById('see-wrong-button');
+            if (seeWrongBtn) {
+                seeWrongBtn.disabled = mistakesArray.length === 0;
+                seeWrongBtn.textContent = mistakesArray.length > 0 ? 
+                    `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
             }
 
-			// 3. SAVE WITH OFFLINE FALLBACK
-                if (window.lilChampUtils?.saveResult) {
-                    try {
-                        await window.lilChampUtils.saveResult(missionResult);
-                    } catch (error) {
-                        console.error("Connection failed. Saving to device.");
-                        const offlineKey = `offline_score_${Date.now()}`;
-                        localStorage.setItem(offlineKey, JSON.stringify(missionResult));
-                        alert("⚠️ Internet weak! Mission saved to your device. Sync it on the login page later.");
-                    }
-                }
+            // Data Object for Supabase (Ensure column names match your 'reports' table)
+            const missionResult = {
+                student_name: sessionStorage.getItem('studentIdentifier'),
+                challenge_type: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
+                score_val: score,
+                total_val: TOTAL_SUMS,
+                score_text: `${score}/${TOTAL_SUMS}`,
+                time_taken: timeFormatted,
+                indian_time: new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"})
+            };
 
+            // 2. THE "WATER-TIGHT" SAVE LOGIC
+            if (window.lilChampUtils?.saveResult) {
+                try {
+                    // This creates a 5-second timer
+                    const timeout = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error("Timeout")), 5000)
+                    );
+
+                    // This races the real save attempt against the 5-second timer
+                    await Promise.race([
+                        window.lilChampUtils.saveResult(missionResult),
+                        timeout
+                    ]);
+                    
+                    console.log("Cloud sync successful.");
+                } catch (error) {
+                    console.error("Save failed or timed out. Saving locally.");
+                    // Fallback: Save to browser storage for the 'Sync' button on index.html
+                    const offlineKey = `offline_score_${Date.now()}`;
+                    localStorage.setItem(offlineKey, JSON.stringify(missionResult));
+                    alert("⚠️ Connection unstable! Result saved on this device. Please 'Sync' on the login page when WiFi returns.");
+                }
+            }
+
+            // 3. FORCE SCREEN TRANSITION (Always happens, even if offline)
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             window.scrollTo(0,0);
-            if (score === TOTAL_SUMS && !isTerminated) window.lilChampUtils?.celebrate();
+            
+            if (score === TOTAL_SUMS && !isTerminated) {
+                window.lilChampUtils?.celebrate();
+            }
         }
 
         function showSecureMistakes() {
