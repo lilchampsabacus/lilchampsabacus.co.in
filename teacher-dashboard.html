@@ -215,10 +215,30 @@
             const firstName = document.getElementById('stdFirstName').value;
             const lastName = document.getElementById('stdLastName').value;
             const level = document.getElementById('stdLevel').value;
+
+            // 1. Basic validation to prevent empty submissions
+            if (!firstName || !lastName) {
+                alert("Please enter both First Name and Surname.");
+                return;
+            }
+
             const { data, error } = await supabase.functions.invoke('manage-student', {
                 body: { action: 'enroll', firstName, lastName, level, adminEmail: userEmail }
             });
-            if (error) alert(error.message); else location.reload();
+
+            if (error) {
+                // 2. Check if it's the generic "non-2xx" error. 
+                // Since the most common backend failure here is a duplicate, we show your custom message.
+                if (error.message && error.message.includes("non-2xx")) {
+                    alert("User already existed");
+                } else {
+                    // Show the actual error if it's something else (like network issues)
+                    alert(error.message);
+                }
+            } else {
+                alert("Student enrolled successfully!");
+                location.reload();
+            }
         }
 
         async function toggleStudentAccess(newStatus) {
