@@ -173,7 +173,7 @@
                         <button class="key-btn bg-white border-2 border-gray-200 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-gray-100" onclick="handleKey('3')">3</button>
                         <button class="key-btn bg-blue-50 border-2 border-blue-100 text-blue-600 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-blue-100" onclick="handleKey('.')">.</button>
                         <button class="key-btn col-span-2 bg-white border-2 border-gray-200 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-gray-100" onclick="handleKey('0')">0</button>
-                        <button class="key-btn col-span-2 bg-indigo-600 text-white rounded-lg text-xl font-bold py-4 shadow-lg active:scale-95 transition-transform" onclick="submitAndNext()">ENTER</button>
+                        <button id="enter-btn" class="key-btn col-span-2 bg-indigo-600 text-white rounded-lg text-xl font-bold py-4 shadow-lg active:scale-95 transition-transform" onclick="submitAndNext()">ENTER</button>
                     </div>
                 </div>
             </div>
@@ -231,6 +231,24 @@
         let timerInterval;
         let isSubmitting = false;
 
+        // --- Offline Sync Functions (NEW) ---
+        function saveOrQueueResult(payload) {
+            if (navigator.onLine) {
+                if (window.lilChampUtils?.saveResult) {
+                    window.lilChampUtils.saveResult(payload);
+                }
+            } else {
+                // Add exact time: Stamp the payload with the exact time the student finished offline
+                payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+                
+                let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('offlineResultsQueue', JSON.stringify(queue));
+                alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
+            }
+        }
+        // ------------------------------------
+
         function handleKey(key) {
             const input = document.getElementById('answer-input');
             if (key === 'backspace') {
@@ -274,83 +292,79 @@
         });
 
         async function startTest() {
-    document.body.classList.add('focus-mode');
-    const startBtn = document.getElementById('start-button');
-    startBtn.textContent = "Starting...";
-    startBtn.disabled = true;
+            document.body.classList.add('focus-mode');
+            const startBtn = document.getElementById('start-button');
+            startBtn.textContent = "Starting...";
+            startBtn.disabled = true;
 
-    const typeSelect = document.getElementById('practice-type');
-    const LEVEL_CODE = typeSelect.value;
-    document.getElementById('report-level-title').textContent = typeSelect.options[typeSelect.selectedIndex].text;
+            const typeSelect = document.getElementById('practice-type');
+            const LEVEL_CODE = typeSelect.value;
+            document.getElementById('report-level-title').textContent = typeSelect.options[typeSelect.selectedIndex].text;
 
-    try {
-        // GENERATE LOCALLY
-        const questions = window.generateQuestions(LEVEL_CODE, 10);
-        
-        sumsData = questions.map(q => ({
-            numbers: q.numbers,
-            type: 'addition',
-            studentAnswer: null
-        }));
-        
-        TOTAL_SUMS = sumsData.length;
-        renderCards();
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('test-area').classList.remove('hidden');
-        
-        // Reset Input logic...
-        const input = document.getElementById('answer-input');
-        input.value = '';
-        input.readOnly = true;
-        input.focus();
+            try {
+                // GENERATE LOCALLY
+                const questions = window.generateQuestions(LEVEL_CODE, 10);
+                
+                sumsData = questions.map(q => ({
+                    numbers: q.numbers,
+                    type: 'addition',
+                    studentAnswer: null
+                }));
+                
+                TOTAL_SUMS = sumsData.length;
+                renderCards();
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('test-area').classList.remove('hidden');
+                
+                // Reset Input logic...
+                const input = document.getElementById('answer-input');
+                input.value = '';
+                input.readOnly = true;
+                input.focus();
 
-        // Remove any existing listeners if possible (or just ensure this runs once)
-        // Better yet, use a named function to prevent duplicates if startTest runs twice
-        document.onkeydown = function(event) {
-            if (event.defaultPrevented) return;
-            const key = event.key;
-            const input = document.getElementById('answer-input');
-            if (!input) return; // Safety check
+                document.onkeydown = function(event) {
+                    if (event.defaultPrevented) return;
+                    const key = event.key;
+                    const input = document.getElementById('answer-input');
+                    if (!input) return; // Safety check
 
-            // Handle Numbers
-            if (/[0-9]/.test(key)) {
-                event.preventDefault(); // STOP browser from typing
-                handleKey(key);
-                return;
+                    // Handle Numbers
+                    if (/[0-9]/.test(key)) {
+                        event.preventDefault(); 
+                        handleKey(key);
+                        return;
+                    }
+                    // Handle Special Keys
+                    if (key === '.' || key === '-') {
+                        event.preventDefault(); 
+                        handleKey(key);
+                        return;
+                    }
+                    if (key === 'Backspace') {
+                        event.preventDefault(); 
+                        handleKey('backspace');
+                        return;
+                    }
+                    if (key === 'Enter') {
+                        event.preventDefault();
+                        submitAndNext();
+                        return;
+                    }
+                };
+
+                startTime = Date.now();
+                startTimer();
+            } catch (err) {
+                console.error(err);
+                startBtn.disabled = false;
+                alert("Error starting.");
             }
-            // Handle Special Keys
-            if (key === '.' || key === '-') {
-                event.preventDefault(); // STOP browser
-                handleKey(key);
-                return;
-            }
-            if (key === 'Backspace') {
-                event.preventDefault(); // STOP browser (prevent navigation back)
-                handleKey('backspace');
-                return;
-            }
-            if (key === 'Enter') {
-                event.preventDefault();
-                submitAndNext();
-                return;
-            }
-        };
-
-        startTime = Date.now();
-        startTimer();
-    } catch (err) {
-        console.error(err);
-        startBtn.disabled = false;
-        alert("Error starting.");
-    }
-}
+        }
         
-        // FORMAT DISPLAY for Integers or Decimals
         function createSumTableHtml(numbers) {
             let tableHtml = '<table class="sum-table">';
             numbers.forEach((num, rIndex) => {
                 const isNeg = num < 0;
-                // Force 2 decimal places if it's a float, otherwise simple display
                 let displayNum;
                 if (Number.isInteger(num)) {
                     displayNum = Math.abs(num);
@@ -393,7 +407,6 @@
                 return;
             }
 
-            // USE parseFloat FOR DECIMALS
             const val = parseFloat(valStr);
             sumsData[currentSlideIndex].studentAnswer = val;
 
@@ -424,7 +437,14 @@
             if (isSubmitting) return;
             isSubmitting = true;
             
-            // --- REMOVED THE BROKEN 'submit-button' CODE HERE ---
+            // --- Prevent duplicate submissions visually ---
+            const enterBtn = document.getElementById('enter-btn');
+            if (enterBtn) {
+                enterBtn.disabled = true;
+                enterBtn.innerHTML = 'Submitting... 📡';
+                enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            // ----------------------------------------------
 
             clearInterval(timerInterval);
 
@@ -439,7 +459,6 @@
             let score = 0;
             let mistakesArray = [];
             sumsData.forEach((q, i) => {
-                // FIX PRECISION
                 let rawSum = q.numbers.reduce((a,b)=>a+b, 0);
                 let correct = parseFloat(rawSum.toFixed(2));
                 
@@ -454,7 +473,6 @@
             activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             
-            // --- ADDED: Fix for Agent Name & Date ---
             document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
             
             const now = new Date();
@@ -462,18 +480,20 @@
                 day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
 
-            // SAVE TO SUPABASE
+            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const levelText = document.getElementById('practice-type').options[document.getElementById('practice-type').selectedIndex].text;
-            if (window.lilChampUtils) {
-                window.lilChampUtils.saveResult({
-                    challenge: levelText,
-                    score: score,
-                    total: TOTAL_SUMS,
-                    time: timeFormatted,
-                    accuracy: Math.round((score/TOTAL_SUMS)*100) + "%",
-                    mistakes: mistakesArray
-                });
-            }
+            
+            const payload = {
+                challenge: levelText,
+                score: score,
+                total: TOTAL_SUMS,
+                time: timeFormatted,
+                accuracy: Math.round((score/TOTAL_SUMS)*100) + "%",
+                mistakes: mistakesArray
+            };
+            
+            saveOrQueueResult(payload);
+            // ------------------------------------------
             
             // Save for review button
             sessionStorage.setItem('decimalSumsData', JSON.stringify(sumsData));
@@ -494,6 +514,10 @@
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
+            
+            if (score === TOTAL_SUMS && window.lilChampUtils) {
+                window.lilChampUtils.celebrate();
+            }
         }
             
         function showWrongAnswers() {
@@ -502,7 +526,6 @@
             listContainer.innerHTML = '';
             
             storedSums.forEach((sum) => {
-                // Precision safe check for decimals
                 const correctTotalRaw = sum.numbers.reduce((a,b)=>a+b, 0);
                 const correctTotal = parseFloat(correctTotalRaw.toFixed(2));
                 
