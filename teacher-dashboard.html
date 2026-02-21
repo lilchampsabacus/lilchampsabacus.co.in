@@ -165,6 +165,10 @@
         const userRole = sessionStorage.getItem('userRole');
         const userEmail = sessionStorage.getItem('userEmail');
 
+        if (!userEmail) {
+            window.location.href = 'index.html'; 
+        }
+
         function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         document.addEventListener('DOMContentLoaded', async () => {
