@@ -84,26 +84,26 @@ function sanitizeString(str) {
 }
 
 // ==================================================
-// PART 4: THE SAVE ENGINE (NOW WITH INDIAN TIME & SECURITY)
+// PART 4: THE SAVE ENGINE (NOW WITH OFFLINE SYNC SUPPORT)
 // ==================================================
 
-async function saveExamResult(data) {
-    console.log("🚀 Saving...", data);
+async function saveExamResult(data, isBackgroundSync = false) {
+    console.log(isBackgroundSync ? "🚀 Background Syncing..." : "🚀 Saving...", data);
 
     if (!supabaseClient && window.supabase) initSupabase();
     if (!supabaseClient) {
-        alert("Database connecting... Please wait 2 seconds and click Submit again.");
+        if (!isBackgroundSync) alert("Database connecting... Please wait 2 seconds and click Submit again.");
         return;
     }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-        alert("⚠️ Not Logged In! Please go to the login page.");
+        if (!isBackgroundSync) alert("⚠️ Not Logged In! Please go to the login page.");
         return;
     }
 
     let studentName = sessionStorage.getItem('studentIdentifier') || session.user.email.split('@')[0];
-    studentName = sanitizeString(studentName); // Sanitize user input
+    studentName = sanitizeString(studentName); 
 
     // Score Verification Logic
     let numericScore;
@@ -111,7 +111,6 @@ async function saveExamResult(data) {
     let mistakes = data.mistakes || [];
     let accuracyStr = data.accuracy;
 
-    // Check if verification data (questions) is provided
     const isVerificationDataProvided = data.questions && Array.isArray(data.questions);
 
     if (isVerificationDataProvided) {
@@ -121,23 +120,13 @@ async function saveExamResult(data) {
 
         data.questions.forEach((q, index) => {
             let correctVal;
-            // Handle different question types
-            if (q.type === 'mul' || !q.type) {
-                correctVal = q.x * q.y;
-            } else if (q.type === 'div') {
-                correctVal = q.quotient; // Assuming question object has quotient
-            } else if (q.type === 'addition') {
-                correctVal = q.numbers.reduce((a, b) => a + b, 0);
-            }
-            // Add other types as needed
+            if (q.type === 'mul' || !q.type) { correctVal = q.x * q.y; } 
+            else if (q.type === 'div') { correctVal = q.quotient; } 
+            else if (q.type === 'addition') { correctVal = q.numbers.reduce((a, b) => a + b, 0); }
 
-            // Map student answer from the provided answers map or array
             let studentVal = null;
-            if (data.answers && Array.isArray(data.answers)) {
-                studentVal = data.answers[index];
-            }
+            if (data.answers && Array.isArray(data.answers)) { studentVal = data.answers[index]; }
 
-            // Use Number() to handle decimals correctly, avoiding parseInt truncation
             if (studentVal !== null && studentVal !== undefined && Number(studentVal) === correctVal) {
                 calculatedScore++;
             } else if (studentVal !== null && studentVal !== "") {
@@ -149,21 +138,17 @@ async function saveExamResult(data) {
             }
         });
 
-        // Override trusted client data with verified data
         numericScore = calculatedScore;
         totalScore = data.questions.length;
         mistakes = verifiedMistakes;
         accuracyStr = Math.round((numericScore / totalScore) * 100) + "%";
-        console.log(`✅ Verified Score: ${numericScore}/${totalScore}`);
     } else {
-        // Fallback to trusting the client (Legacy Mode)
-        console.warn("⚠️ Score verification failed: Missing question data. Using client-provided score (INSECURE).");
         numericScore = typeof data.score === 'string' ? parseInt(data.score) : data.score;
         totalScore = data.total;
     }
 
-    // CAPTURE LOCAL INDIAN TIME
-    const indianTime = new Date().toLocaleString("en-IN", {
+    // CAPTURE CORRECT TIME: Use offline timestamp if it exists, otherwise get current Indian time
+    const indianTime = data.offlineTimestamp || new Date().toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         dateStyle: "medium",
         timeStyle: "short"
@@ -188,7 +173,7 @@ async function saveExamResult(data) {
 
     if (error) {
         console.error(error);
-        alert("Save Error: " + error.message);
+        if (!isBackgroundSync) alert("Save Error: " + error.message);
         return;
     }
 
@@ -196,15 +181,19 @@ async function saveExamResult(data) {
         const mistakeRows = mistakes.map(m => ({
             report_id: reportData.id,
             question: m.question,
-            wrong_answer: sanitizeString(String(m.wrong)), // Sanitize here!
+            wrong_answer: sanitizeString(String(m.wrong)), 
             correct_answer: String(m.correct)
         }));
         await supabaseClient.from('mistakes').insert(mistakeRows);
     }
 
     console.log("✅ Saved!");
-    triggerWinConfetti();
-    alert("✅ Report Saved Successfully!");
+    
+    // Prevent confetti and alert spam if this is a background sync
+    if (!isBackgroundSync) {
+        triggerWinConfetti();
+        alert("✅ Report Saved Successfully!");
+    }
 }
 
 window.lilChampUtils = {
