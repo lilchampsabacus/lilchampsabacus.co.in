@@ -119,7 +119,7 @@
 
             <div class="mb-8">
                 <p class="inline-block bg-blue-50 text-blue-800 font-semibold px-4 py-2 rounded-lg border border-blue-200 shadow-sm">
-                    💡 The final answer will always be negative (-).
+                    ⚠️ The final answer will always be negative (-).
                 </p>
             </div>
             
@@ -174,7 +174,7 @@
                         <button class="key-btn bg-white border-2 border-gray-200 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-gray-100" onclick="handleKey('3')">3</button>
                         <button class="key-btn bg-blue-50 border-2 border-blue-100 text-blue-600 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-blue-100" onclick="handleKey('.')">.</button>
                         <button class="key-btn col-span-2 bg-white border-2 border-gray-200 rounded-lg text-2xl font-bold py-4 shadow-sm active:bg-gray-100" onclick="handleKey('0')">0</button>
-                        <button class="key-btn col-span-2 bg-indigo-600 text-white rounded-lg text-xl font-bold py-4 shadow-lg active:scale-95 transition-transform" onclick="submitAndNext()">ENTER</button>
+                        <button id="enter-btn" class="key-btn col-span-2 bg-indigo-600 text-white rounded-lg text-xl font-bold py-4 shadow-lg active:scale-95 transition-transform" onclick="submitAndNext()">ENTER</button>
                     </div>
                 </div>
             </div>
@@ -230,6 +230,24 @@
         let currentSlideIndex = 0;
         let timerInterval;
         let isSubmitting = false;
+
+        // --- Offline Sync Functions (NEW) ---
+        function saveOrQueueResult(payload) {
+            if (navigator.onLine) {
+                if (window.lilChampUtils?.saveResult) {
+                    window.lilChampUtils.saveResult(payload);
+                }
+            } else {
+                // Add exact time: Stamp the payload with the exact time the student finished offline
+                payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+                
+                let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('offlineResultsQueue', JSON.stringify(queue));
+                alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
+            }
+        }
+        // ------------------------------------
 
         function handleKey(key) {
             const input = document.getElementById('answer-input');
@@ -310,8 +328,6 @@
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
 
-                // Remove any existing listeners if possible (or just ensure this runs once)
-                // Better yet, use a named function to prevent duplicates if startTest runs twice
                 document.onkeydown = function(event) {
                     if (event.defaultPrevented) return;
                     const key = event.key;
@@ -348,7 +364,7 @@
             } catch (err) {
                 console.error(err);
                 alert("Error launching mission. Please refresh.");
-                startBtn.textContent = "Launch Mission";
+                startBtn.textContent = "🚀 Launch Mission";
                 startBtn.disabled = false;
             }
         }
@@ -421,7 +437,14 @@
             if (isSubmitting) return;
             isSubmitting = true;
 
-            // --- REMOVED THE BROKEN 'submit-button' CODE HERE ---
+            // --- Prevent duplicate submissions visually ---
+            const enterBtn = document.getElementById('enter-btn');
+            if (enterBtn) {
+                enterBtn.disabled = true;
+                enterBtn.innerHTML = 'Submitting... 📡';
+                enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            // ----------------------------------------------
             
             clearInterval(timerInterval);
 
@@ -459,7 +482,6 @@
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             document.getElementById('report-avg-time').textContent = `${(timeElapsedSeconds / TOTAL_SUMS).toFixed(2)}s`;
 
-            // --- ADDED: Fix for Agent Name & Date ---
             document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
 
             const now = new Date();
@@ -482,20 +504,24 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // --- SAVE TO SUPABASE ---
+            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const typeSelect = document.getElementById('practice-type');
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
-            if (window.lilChampUtils && window.lilChampUtils.saveResult) {
-                window.lilChampUtils.saveResult({
-                    challenge: levelText, // e.g. "2-Digit 10 Rows (Negative)"
-                    score: score,
-                    total: TOTAL_SUMS, 
-                    time: timeFormatted,
-                    accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
-                    mistakes: mistakesArray
-                });
-            }
+            const payload = {
+                challenge: levelText, // e.g. "2-Digit 10 Rows (Negative)"
+                score: score,
+                total: TOTAL_SUMS, 
+                time: timeFormatted,
+                accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
+                mistakes: mistakesArray,
+                // Pass full data for secure verification
+                questions: sumsData,
+                answers: sumsData.map(s => s.studentAnswer)
+            };
+            
+            saveOrQueueResult(payload);
+            // ------------------------------------------
 
             // Finish & Show Report
             document.body.classList.remove('focus-mode');
