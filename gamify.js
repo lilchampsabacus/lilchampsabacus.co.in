@@ -204,7 +204,45 @@ window.lilChampUtils = {
 };
 
 // ==================================================
-// PART 5: MATH GENERATOR ENGINE
+// PART 5: GLOBAL OFFLINE SYNC MANAGER
+// ==================================================
+
+async function syncOfflineResultsGlobally() {
+    // 1. Check if we have internet and if there is a queue
+    if (!navigator.onLine) return;
+    let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
+    
+    if (queue.length > 0) {
+        console.log(`🔄 Found ${queue.length} offline reports. Syncing to Supabase...`);
+        
+        // 2. Wait 2 seconds to ensure Supabase login session is fully established
+        setTimeout(async () => {
+            for (let i = 0; i < queue.length; i++) {
+                const payload = queue[i];
+                // 3. Save silently in the background (true flag stops alerts/confetti)
+                await saveExamResult(payload, true); 
+            }
+            
+            // 4. Clear the queue so we don't upload duplicates tomorrow
+            localStorage.removeItem('offlineResultsQueue');
+            console.log("✅ All offline results successfully synced to headquarters!");
+        }, 2000); 
+    }
+}
+
+// 5. Trigger this automatically in two scenarios:
+// Scenario A: Internet reconnects while they are staring at the page
+window.addEventListener('online', syncOfflineResultsGlobally);
+
+// Scenario B: They open the website (index.html) after being offline
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncOfflineResultsGlobally);
+} else {
+    syncOfflineResultsGlobally();
+}
+
+// ==================================================
+// PART 6: MATH GENERATOR ENGINE
 // ==================================================
 
 window.generateQuestions = function(code, countParam) {
@@ -502,7 +540,7 @@ function getRand(r, minOverride) {
 }
 
 // ==================================================
-// PART 6: FORMULA HINT SYSTEM (TRAFFIC LIGHT)
+// PART 7: FORMULA HINT SYSTEM (TRAFFIC LIGHT)
 // ==================================================
 
 window.calculateFormulaHints = function(numbers) {
@@ -676,7 +714,7 @@ function getMoveColor(currentVal, move) {
 }
 
 // ==================================================
-// PART 7: UNIVERSAL CUSTOM KEYPAD LOGIC
+// PART 8: UNIVERSAL CUSTOM KEYPAD LOGIC
 // ==================================================
 
 window.handleKeypadInput = function(val) {
