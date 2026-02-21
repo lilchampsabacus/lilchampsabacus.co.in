@@ -275,6 +275,14 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
+			// 1. PREVENT DUPLICATES: Disable button immediately
+                const submitBtn = document.getElementById('submit-button');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "Saving...";
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+			
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(timeElapsed / 60);
@@ -313,6 +321,18 @@
                     answers: sumsData.map(s => s.studentAnswer)
                 });
             }
+
+			// 3. SAVE WITH OFFLINE FALLBACK
+                if (window.lilChampUtils?.saveResult) {
+                    try {
+                        await window.lilChampUtils.saveResult(missionResult);
+                    } catch (error) {
+                        console.error("Connection failed. Saving to device.");
+                        const offlineKey = `offline_score_${Date.now()}`;
+                        localStorage.setItem(offlineKey, JSON.stringify(missionResult));
+                        alert("⚠️ Internet weak! Mission saved to your device. Sync it on the login page later.");
+                    }
+                }
 
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
