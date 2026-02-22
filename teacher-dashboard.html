@@ -158,8 +158,18 @@
     </div>
 
     <script>
-        if (!sessionStorage.getItem('userEmail')) {
-        window.location.href = 'index.html'; 
+        const userEmail = sessionStorage.getItem('userEmail');
+        const userRole = sessionStorage.getItem('userRole');
+
+        // 1. If nobody is logged in, send to login page
+        if (!userEmail) {
+            window.location.replace('index.html'); 
+        }
+
+        // 2. SECURITY FIX: If a student tries to access this, kick them out immediately
+        if (userRole === 'student') {
+            alert("Access Denied: Students cannot view the Teacher Dashboard.");
+            window.location.replace('practice_options.html'); 
         }
         
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
