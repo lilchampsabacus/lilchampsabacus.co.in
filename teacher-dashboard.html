@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Li'l Champs Abacus</title>
+
+    <script>
+        const checkEmail = sessionStorage.getItem('userEmail');
+        const checkRole = sessionStorage.getItem('userRole');
+
+        // If not logged in, or if they are a student, kick them out immediately
+        if (!checkEmail || (checkRole !== 'admin' && checkRole !== 'teacher' && checkEmail !== 'admin.ambernath@gmail.com')) {
+            window.location.replace('practice_options.html'); 
+        }
+    </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -158,21 +168,6 @@
     </div>
 
     <script>
-        const userEmail = sessionStorage.getItem('userEmail');
-        const userRole = sessionStorage.getItem('userRole');
-
-        // 1. If nobody is logged in, send to login page
-        if (!userEmail) {
-            window.location.replace('index.html'); 
-        }
-
-        // 2. DENY BY DEFAULT SECURITY FIX: 
-        // If they are NOT an admin, NOT a teacher, and NOT your specific owner email, kick them out immediately.
-        if (userRole !== 'admin' && userRole !== 'teacher' && userEmail !== 'admin.ambernath@gmail.com') {
-            alert("Security Alert: You do not have permission to view the Teacher Dashboard.");
-            window.location.replace('practice_options.html'); 
-        }
-        
         const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
