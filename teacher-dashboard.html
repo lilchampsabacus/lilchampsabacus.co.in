@@ -166,9 +166,10 @@
             window.location.replace('index.html'); 
         }
 
-        // 2. SECURITY FIX: If a student tries to access this, kick them out immediately
-        if (userRole === 'student') {
-            alert("Access Denied: Students cannot view the Teacher Dashboard.");
+        // 2. DENY BY DEFAULT SECURITY FIX: 
+        // If they are NOT an admin, NOT a teacher, and NOT your specific owner email, kick them out immediately.
+        if (userRole !== 'admin' && userRole !== 'teacher' && userEmail !== 'admin.ambernath@gmail.com') {
+            alert("Security Alert: You do not have permission to view the Teacher Dashboard.");
             window.location.replace('practice_options.html'); 
         }
         
