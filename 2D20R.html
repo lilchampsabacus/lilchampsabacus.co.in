@@ -13,39 +13,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
         html, body {
-            height: 100%;          /* Lock height to screen size */
+            height: 100%;         
             width: 100%;
-            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
-            position: fixed;       /* Freeze the page in place */
-            touch-action: none;    /* Disable browser gestures */
+            overflow: hidden;     
+            position: fixed;       
+            touch-action: none;    
             margin: 0;
             
-            /* Theme */
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex layout to keep Header/Footer/Main organized */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLLABLE CONTENT AREA --- */
         main {
-            flex-grow: 1;          /* Take up all available space */
-            overflow-y: auto;      /* Allow scrolling ONLY inside here */
-            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            flex-grow: 1;         
+            overflow-y: auto;     
+            -webkit-overflow-scrolling: touch;
             width: 100%;
-            padding: 0.5rem;       /* Default padding (mobile) */
+            padding: 0.5rem;     
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Focus Mode Update: Just hide elements, don't mess with body scroll */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link { 
@@ -58,7 +53,6 @@
             flex-direction: column;
         }
 
-        /* --- EXISTING ANIMATIONS & TABLES --- */
         .slide-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .slide-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -66,25 +60,19 @@
         .sum-table { width: 100%; border-collapse: collapse; margin: 0 auto; background: white; }
         .number-cell { text-align: center; font-size: 1.5rem; font-weight: 800; padding: 0; border-bottom: none; color: #334155; line-height: 1.2; font-family: 'Nunito', sans-serif; }
         
-        /* --- DESKTOP COMPACT MODE (10 Rows fit 100vh) --- */
         @media (min-width: 768px) {
             main { padding: 0 !important; }
-            /* body padding removed globally in new layout */
-
-            /* Table Compact Styles */
+           
             .number-cell { font-size: 1.25rem; padding: 0; line-height: 1.1; }
             .sum-table td { padding: 0px; }
             .sum-table tr:last-child .number-cell { border-bottom: 2px solid #1f2937; }
 
-            /* Dots Compact Styles */
             .hint-dot { width: 6px; height: 6px; margin-top: 1px; margin-bottom: 0; }
-            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } /* Dots container */
+            .number-cell > div { line-height: 0 !important; margin-bottom: 2px; } 
 
-            /* Test Area & Carousel Compact Styles */
-            #test-area > div > div:first-child { padding: 0 !important; } /* Left column container */
+            #test-area > div > div:first-child { padding: 0 !important; } 
             #question-carousel { margin-top: 0; }
 
-            /* Keypad Area Compact Styles */
             #custom-keypad {
                 position: static;
                 width: 100%;
@@ -101,10 +89,8 @@
                 font-size: 1.1rem;
             }
 
-            /* Tighten Right Column Spacing */
             .bg-blue-50.p-3 { padding: 4px; margin-bottom: 4px; }
 
-            /* Compact Progress Bar */
             .bg-white.p-3.border-orange-400 { padding: 2px 8px; margin-bottom: 4px; display: block; }
             .bg-white.p-3.border-orange-400 .text-xs { font-size: 0.6rem; }
             .bg-white.p-3.border-orange-400 .h-8 { height: 1rem; margin-top: 0; margin-bottom: 0; }
@@ -122,7 +108,6 @@
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; display: none !important; }
         .negative-number { color: #dc2626; } 
 
-        /* Formula Hint Dots */
         .hint-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
         .hint-green { background-color: #22c55e; border: 1px solid #166534; }
         .hint-yellow { background-color: #eab308; border: 1px solid #a16207; }
@@ -131,7 +116,6 @@
         
         .hidden { display: none !important; }
 
-        /* --- MOBILE FIX FOR 10 ROWS --- */
         @media (max-width: 768px) {
             .sum-table td { padding: 0 !important; height: auto !important; }
             .number-cell { font-size: 1.25rem !important; line-height: 1.1 !important; padding-bottom: 2px !important; }
@@ -139,13 +123,11 @@
             #question-carousel { margin-bottom: 0.5rem; }
             #question-carousel .text-center { font-size: 0.65rem !important; margin-bottom: 0 !important; }
 
-            /* Ensure enough bottom padding so keypad doesn't cover content */
             main { padding-bottom: 350px !important; }
         }
 
-        /* --- LAYOUT STRUCTURE --- */
         #game-layout {
-            display: block; /* Mobile Default */
+            display: block; 
             height: 100%;
         }
 
@@ -156,7 +138,7 @@
                 justify-content: center;
                 align-items: stretch;
                 gap: 40px;
-                height: 100%; /* Fill the main container */
+                height: 100%; 
                 overflow: visible;
                 width: 100%;
             }
@@ -214,10 +196,8 @@
         
         .review-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; background: white; }
 
-        /* --- CUSTOM NUMERIC KEYPAD --- */
         #custom-keypad {
             display: grid;
-            /* Mobile Default: Fixed at bottom */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -235,7 +215,7 @@
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            min-height: 60px; /* Touch friendly */
+            min-height: 60px;
             font-size: 1.5rem;
             font-weight: 700;
             color: #374151;
@@ -441,8 +421,7 @@
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
-        
-        // --- YOUR SECURE SCRIPT URL ---
+
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
         let TOTAL_SUMS = 10; 
@@ -452,14 +431,12 @@
         let timerInterval;
         let isSubmitting = false;
 
-        // --- Offline Sync Functions (NEW) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -468,7 +445,6 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-        // ------------------------------------
 
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
@@ -499,15 +475,12 @@
             } else {
                 startButton.disabled = true;
             }
-            // START PRE-LOADING IMMEDIATELY
             preLoadQuestions(); 
             document.getElementById('practice-type').addEventListener('change', preLoadQuestions);
         });
 
-        // --- NEW: PRE-LOAD VARIABLES ---
         let pendingQuestionsPromise = null; 
 
-        // 1. Helper: Start loading data immediately (Call this on page load!)
         function preLoadQuestions() {
             const typeSelect = document.getElementById('practice-type');
             const val = typeSelect.value;
@@ -522,8 +495,7 @@
             const LEVEL_CODE = `add-${digits}d10r`;
             
             console.log("Pre-fetching data for:", LEVEL_CODE);
-            
-            // Fetch and store the promise
+
             pendingQuestionsPromise = fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`)
                 .then(response => response.json())
                 .catch(err => {
@@ -532,14 +504,12 @@
                 });
         }
 
-        // 2. Updated Start Function: Uses the pre-loaded data
         async function startTest() {
             document.body.classList.add('focus-mode');
             const startBtn = document.getElementById('start-button');
             startBtn.textContent = "Starting..."; 
             startBtn.disabled = true;
 
-            // Get Level Code
             const typeSelect = document.getElementById('practice-type');
             const val = typeSelect.value;
             let digits = "2"; 
@@ -556,7 +526,6 @@
             try {
                 const questions = window.generateQuestions(LEVEL_CODE, 10);
 
-                // Prepare Data
                 sumsData = questions.map(q => ({
                     numbers: q.numbers,
                     type: 'addition',
@@ -568,8 +537,7 @@
                 renderCards();
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
-                
-                // Show/Hide Legend
+
                 const showHints = document.getElementById('show-hints-toggle').checked;
                 const legend = document.getElementById('formula-legend');
                 if (showHints) {
@@ -578,15 +546,12 @@
                     legend.classList.add('hidden');
                 }
 
-                // Setup Input
                 const input = document.getElementById('answer-input');
                 input.value = '';
                 input.disabled = false;
 
-                // Universal Keypad: Always ReadOnly to block native keyboard
                 input.readOnly = true;
 
-                // Remove old event listeners by cloning
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
 
@@ -611,7 +576,6 @@
         }
 
         function createSumTableHtml(numbers) {
-            // Calculate hints if possible
             let hints = [];
             if (window.calculateFormulaHints) {
                 hints = window.calculateFormulaHints(numbers);
@@ -619,7 +583,6 @@
 
             let tableHtml = '<table class="sum-table">';
 
-            // Check if hints is empty
             if (hints.length === 0) {
                  hints = numbers.map(() => ['green']); // Default to array of green if logic fails
             }
@@ -671,13 +634,11 @@
             });
         }
 
-        // --- SUBMIT LOGIC (STRICT - NO SKIPPING) ---
         function submitAndNext() {
             if (isSubmitting) return;
             const input = document.getElementById('answer-input');
             const valStr = input.value.trim();
-            
-            // STRICT: Empty not allowed
+
             if (valStr === '') {
                 input.focus();
                 input.classList.add('border-red-500');
@@ -711,12 +672,10 @@
 
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
-        // --- NEW: ROBUST END TEST (Handles Weak Network & Duplicate Submits) ---
         async function endTest() {
             if (isSubmitting) return;
             isSubmitting = true;
-            
-            // --- Prevent duplicate submissions visually ---
+
             const enterBtn = document.getElementById('enter-btn');
             if (enterBtn) {
                 enterBtn.disabled = true;
@@ -727,14 +686,12 @@
 
             clearInterval(timerInterval);
 
-            // Calculate Time
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // --- GRADE LOCALLY ---
             let score = 0;
             let mistakesArray = [];
 
@@ -755,7 +712,6 @@
                 }
             });
 
-            // Update UI
             document.getElementById('report-correct').textContent = score;
             activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
@@ -767,10 +723,8 @@
             });
             
             document.getElementById('report-student-name').textContent = document.getElementById('auto-student-name-display').textContent;
-            // Save for Review
             sessionStorage.setItem('addSubSumsData', JSON.stringify(sumsData)); 
 
-            // Setup Review Button
             const wrongBtn = document.getElementById('see-wrong-button');
             if (mistakesArray.length > 0) {
                 wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
@@ -782,7 +736,6 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const typeSelect = document.getElementById('practice-type');
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
@@ -799,9 +752,7 @@
             };
             
             saveOrQueueResult(payload);
-            // ------------------------------------------
 
-            // Switch Screens
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
@@ -810,16 +761,13 @@
                 window.lilChampUtils.celebrate();
             }
         }
-        
-        // --- WRONG ANSWERS VIEW ---
+
         function showWrongAnswers() {
-            // Retrieve data
             const storedSums = JSON.parse(sessionStorage.getItem('addSubSumsData'));
             const listContainer = document.getElementById('wrong-sums-list');
             listContainer.innerHTML = '';
             
             storedSums.forEach((sum) => {
-                // Calculate correct locally for display review
                 const correctTotal = sum.numbers.reduce((a,b)=>a+b, 0);
                 
                 if (sum.studentAnswer !== correctTotal) {
@@ -875,7 +823,6 @@
         }
         
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
                (e.ctrlKey && e.key === 'u')) {
