@@ -17,7 +17,6 @@
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
         
-        /* PDF SPECIFIC STYLES */
         .pdf-mode {
             background-color: #f0f9ff !important; 
             width: 1024px !important; 
@@ -283,7 +282,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         let step = 1000;
         let keepFetching = true;
 
-        // Loop through the reports table to find every unique student name
         while(keepFetching) {
             const { data, error } = await supabase
                 .from('reports')
@@ -305,13 +303,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Handle empty results
         if (allStudents.size === 0) {
             dropdown.innerHTML = '<option>No practice records found</option>';
             return;
         }
 
-        // Sort and populate the dropdown for the Center Owner
         const uniqueNames = Array.from(allStudents).sort();
         dropdown.innerHTML = '<option value="">-- Choose a Student --</option>';
         uniqueNames.forEach(name => {
@@ -326,7 +322,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         dropdown.innerHTML = '<option>Error loading list</option>';
     }
     
-    // Set default month for the report view
     const today = new Date();
     document.getElementById('monthPicker').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     });
