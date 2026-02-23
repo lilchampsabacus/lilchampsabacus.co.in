@@ -9,7 +9,6 @@
         const checkEmail = sessionStorage.getItem('userEmail');
         const checkRole = sessionStorage.getItem('userRole');
 
-        // If not logged in, or if they are a student, kick them out immediately
         if (!checkEmail || (checkRole !== 'admin' && checkRole !== 'teacher' && checkEmail !== 'admin.ambernath@gmail.com')) {
             window.location.replace('practice_options.html'); 
         }
@@ -180,7 +179,6 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const isOwner = (userRole === 'admin' || userEmail === 'admin.ambernath@gmail.com');
             
-            // Set Branding & Visibility
             document.getElementById('welcome-name').innerText = isOwner ? "Center Owner" : "Teacher";
             if (isOwner) {
                 document.getElementById('admin-controls').classList.remove('hidden');
@@ -237,12 +235,9 @@
             });
 
             if (error) {
-                // 2. Check if it's the generic "non-2xx" error. 
-                // Since the most common backend failure here is a duplicate, we show your custom message.
                 if (error.message && error.message.includes("non-2xx")) {
                     alert("User already existed");
                 } else {
-                    // Show the actual error if it's something else (like network issues)
                     alert(error.message);
                 }
             } else {
@@ -253,7 +248,7 @@
 
         async function toggleStudentAccess(newStatus) {
     const email = document.getElementById('banUserEmail').value.trim();
-    const userEmail = sessionStorage.getItem('userEmail'); // Admin's email
+    const userEmail = sessionStorage.getItem('userEmail');
 
     if (!email) return alert("Please enter the student's email first.");
 
@@ -263,12 +258,11 @@
 
     if (!confirm(confirmMsg)) return;
 
-    // Call the Edge Function
     const { data, error } = await supabase.functions.invoke('manage-student', {
         body: { 
             action: 'toggleAccess', 
             email: email, 
-            status: newStatus, // 'BLOCKED' or 'ACTIVE'
+            status: newStatus,
             adminEmail: userEmail 
         }
     });
@@ -277,8 +271,8 @@
         alert("Error: " + error.message);
     } else {
         alert("Success: " + data.message);
-        document.getElementById('banUserEmail').value = ''; // Clear input
-        fetchSecurityLogs(); // Show the ban in the audit trail!
+        document.getElementById('banUserEmail').value = '';
+        fetchSecurityLogs();
     }
 }
         
