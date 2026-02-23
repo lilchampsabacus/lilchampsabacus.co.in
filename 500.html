@@ -16,7 +16,6 @@
 
         body {
             font-family: 'Nunito', sans-serif;
-            /* New Blue Dots Background */
             background-color: #f0f9ff;
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
@@ -190,7 +189,6 @@
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 
-        // --- SECURE BRAIN URL ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         const TOTAL_QUESTIONS = 500;
         
@@ -206,14 +204,12 @@
         const inputEl = document.getElementById('answer-input');
         const countEl = document.getElementById('current-count');
 
-        // --- Offline Sync Functions (NEW) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -222,7 +218,6 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-        // ------------------------------------
         
         document.addEventListener('DOMContentLoaded', () => {
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
@@ -233,24 +228,20 @@
             }
             inputEl.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.code === 'Enter' || e.code === 'NumpadEnter') {
-            e.preventDefault(); // Prevents weird browser glitches
-            submitAnswer(e);    // Manually fires your existing submit logic
+            e.preventDefault(); 
+            submitAnswer(e);
             }
             });
         });
 
-        // --- STEP 1: FETCH 500 QUESTIONS ---
         async function startMission() {
             const btn = document.getElementById('start-btn');
             btn.textContent = "Generating 500 Sums...";
             btn.disabled = true;
 
             try {
-                // --- CHANGED: GENERATE LOCALLY ---
-                // 'mul-2x1' is the code, 500 is the count
                 const questions = window.generateQuestions('mul-2x1', 500);
-                
-                // Initialize Data
+
                 questionsData = questions.map(q => ({
                     x: q.x, 
                     y: q.y, 
@@ -258,7 +249,6 @@
                     studentAnswer: null 
                 }));
 
-                // Start Game
                 document.getElementById('start-screen').style.display = 'none';
                 practiceArea.style.display = 'flex';
                 currentQuestionIndex = 0;
@@ -293,11 +283,9 @@
             const val = inputEl.value.trim();
             if (val === '') return;
 
-            // Store Answer locally (no grading yet)
             questionsData[currentQuestionIndex].studentAnswer = parseInt(val);
             currentQuestionIndex++;
 
-            // Milestones
             if (currentQuestionIndex > 0 && currentQuestionIndex < TOTAL_QUESTIONS && currentQuestionIndex % 100 === 0) {
                 showEncouragement(currentQuestionIndex);
             } else {
@@ -329,7 +317,6 @@
             document.getElementById('finish-screen').style.display = 'flex';
         }
 
-        // --- STEP 2: NETWORK-PROOF GRADING ---
         async function endMission() {
             if (isSubmitting) return;
             isSubmitting = true;
@@ -346,7 +333,6 @@
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // --- GRADE LOCALLY ---
             let score = 0;
             let mistakesArray = [];
 
@@ -355,8 +341,6 @@
                 if (q.studentAnswer === correctVal) {
                     score++;
                 } else {
-                     // In 500 sum marathon, we might have nulls if they quit early, 
-                     // but usually they finish all. We log everything wrong/empty.
                      if (q.studentAnswer !== null) {
                         mistakesArray.push({
                             question: `${q.x} × ${q.y}`,
@@ -367,7 +351,6 @@
                 }
             });
 
-            // Update UI
             document.getElementById('finish-screen').style.display = 'none';
             document.getElementById('report-section').style.display = 'block';
 
@@ -382,7 +365,6 @@
                 day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
 
-            // Store mistakes
             sessionStorage.setItem('marathonMistakes', JSON.stringify(mistakesArray));
 
             const wrongBtn = document.getElementById('see-wrong-button');
@@ -396,7 +378,6 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const payload = {
                 challenge: "500 Sum Marathon",
                 score: score,
@@ -404,13 +385,11 @@
                 time: timeFormatted,
                 accuracy: Math.round((score / TOTAL_QUESTIONS) * 100) + "%",
                 mistakes: mistakesArray,
-                // Pass full data for secure local verification
                 questions: questionsData,
                 answers: questionsData.map(s => s.studentAnswer)
             };
             
             saveOrQueueResult(payload);
-            // ------------------------------------------
             
             if (score === TOTAL_QUESTIONS && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
@@ -451,7 +430,6 @@
             });
         }
 
-        // Focus Logic
         document.addEventListener('click', function(e) {
             if (practiceArea.style.display === 'flex' && 
                 e.target.tagName !== 'BUTTON' && 
@@ -463,11 +441,9 @@
         
         document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
 
-        // --- SECURITY: AGGRESSIVE WATCHDOG ---
         function activateWatchdog(correctScore) {
             const scoreElement = document.getElementById('report-correct');
-            
-            // The Enforcer: Runs constantly to keep the score honest
+
             const enforceScore = () => {
                 const currentText = scoreElement.innerText.trim();
                 const correctText = String(correctScore);
@@ -479,17 +455,12 @@
                 }
             };
 
-            // Layer 1: MutationObserver (Instant reaction)
             const observer = new MutationObserver(enforceScore);
             observer.observe(scoreElement, { characterData: true, childList: true, subtree: true });
-
-            // Layer 2: The Heartbeat (Checks 10 times a second)
             setInterval(enforceScore, 100);
         }
 
-        // --- SECURITY: BLOCK KEYBOARD SHORTCUTS ---
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
                (e.ctrlKey && e.key === 'u')) {
@@ -500,3 +471,4 @@
     </script>
 </body>
 </html>
+
