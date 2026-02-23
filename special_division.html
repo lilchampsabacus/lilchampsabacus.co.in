@@ -15,33 +15,28 @@
     
     <style>
 		html, body {
-            height: 100%;          /* Lock height */
+            height: 100%;
             width: 100%;
-            overflow: hidden;      /* STOP BODY SCROLL */
-            position: fixed;       /* Freeze page */
-            touch-action: none;    /* Disable browser gestures */
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
             margin: 0;
-            
-            /* Theme */
+
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex Layout */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLL CONTAINER --- */
-        /* This tag handles the scrolling now, but NOT the centering/width */
         main {
             flex-grow: 1;  
 			width: 100%;
-            overflow-y: auto;      /* Internal scroll */
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-		/* --- HIDE SCROLLBAR (Professional Look) --- */
         main::-webkit-scrollbar { display: none; }
         main { -ms-overflow-style: none; scrollbar-width: none; }
 		
@@ -259,9 +254,7 @@
             }
         });
 
-        // --- SECURE START TEST ---
         async function startTest() {
-            // 1. Get Selected Level
             selectedLevel = document.getElementById('level-select').value;
 
             document.body.classList.add('focus-mode');
@@ -272,7 +265,6 @@
             startBtn.disabled = true;
 
             try {
-                // 2. Generate Special Questions
                 const questions = window.generateQuestions(selectedLevel, 30); 
                 
                 sumsData = questions.map(q => ({
