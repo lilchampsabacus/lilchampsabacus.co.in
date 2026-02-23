@@ -13,13 +13,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Import Nunito Font */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-        /* Base Settings */
         html { scroll-padding-top: 20px; }
         
-        /* --- ACADEMY THEME BODY --- */
         body {
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
@@ -32,7 +29,6 @@
             flex-direction: column;
         }
 
-        /* Updated Header (Indigo) */
         header {
             background-color: #4f46e5; /* Indigo-600 */
             color: white;
@@ -44,18 +40,16 @@
             z-index: 10;
         }
 
-        /* Updated Footer (White) */
         footer {
             background-color: white;
-            color: #6b7280; /* Gray-500 */
+            color: #6b7280;
             text-align: center;
             padding: 1.5rem;
             font-size: 0.9rem;
             margin-top: auto;
-            border-top: 1px solid #e5e7eb; /* Gray-200 border */
+            border-top: 1px solid #e5e7eb;
         }
         
-        /* Main Content Area */
         main {
             flex-grow: 1;
             display: flex;
@@ -68,11 +62,10 @@
             margin: 0 auto;
         }
 
-        /* The Flashing Display */
         #flash-container {
             width: 100%;
             aspect-ratio: 4/3;
-            background-color: #fffdf5; /* Pearl White */
+            background-color: #fffdf5;
             border: 4px solid #ebdcc4;
             border-radius: 1rem;
             display: flex;
@@ -91,16 +84,15 @@
             text-align: center;
         }
 
-        /* Countdown Overlay Styles */
         .countdown-text {
             font-size: 5rem;
-            color: #e11d48; /* Rose-600 */
+            color: #e11d48;
             animation: popIn 0.5s ease-out;
         }
         
         .start-text {
             font-size: 4rem;
-            color: #16a34a !important; /* Green-600 */
+            color: #16a34a !important;
             animation: popIn 0.5s ease-out;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -111,7 +103,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Input & Controls */
         .control-card {
             background: white;
             padding: 1.5rem;
@@ -121,7 +112,6 @@
             border: 1px solid #e5e7eb;
         }
 
-        /* Inputs */
         select, input {
             width: 100%;
             padding: 0.75rem;
@@ -132,7 +122,6 @@
             margin-bottom: 1rem;
         }
         
-        /* Buttons */
         .btn {
             width: 100%;
             padding: 1rem;
@@ -143,11 +132,9 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background-color: #16a34a; color: white; } /* Green */
-        .btn-blue { background-color: #2563eb; color: white; } /* Blue */
-        .btn-gray { background-color: #4b5563; color: white; } 
-
-        /* Feedback Colors */
+        .btn-primary { background-color: #16a34a; color: white; }
+        .btn-blue { background-color: #2563eb; color: white; }
+        .btn-gray { background-color: #4b5563; color: white; }
         .correct { color: #16a34a; }
         .wrong { color: #dc2626; }
         
@@ -231,17 +218,14 @@
     </footer>
 
     <script>
-        // --- SESSION CHECK ---
         const studentIdentifier = sessionStorage.getItem('studentIdentifier');
         let isUserLoggedIn = !!studentIdentifier;
 
-        // --- GLOBAL VARIABLES ---
         let settings = {};
         let currentTotal = 0;
         let numbersList = [];
         let currentTimeout;
         
-        // Special ranges for first 2 numbers
         const STARTING_RANGES = {
             1: { min: 6, max: 9 },
             2: { min: 71, max: 99 },
@@ -250,7 +234,6 @@
             5: { min: 77777, max: 99999 }
         };
 
-        // --- UTILITIES ---
         function formatStudentName(id) {
             if (!id) return 'Guest';
             const namePart = id.split('@')[0];
@@ -269,14 +252,13 @@
             }
         }
 
-        // --- CORE LOGIC ---
         function generateNumberSequence(digits, count) {
             let sequence = [];
             let runningTotal = 0;
 
             for (let i = 1; i <= count; i++) {
                 let min, max;
-                let isNegative = (i > 2 && i % 3 === 0); // Negative every 3rd number, but not first 2
+                let isNegative = (i > 2 && i % 3 === 0);
 
                 if (i <= 2) {
                     min = STARTING_RANGES[digits].min;
@@ -301,7 +283,6 @@
             return { sequence, total: runningTotal };
         }
 
-        // --- UI FLOW ---
         document.addEventListener('DOMContentLoaded', () => {
             populateRows();
             const nameDisplay = document.getElementById('login-status');
@@ -355,16 +336,14 @@
                     display.classList.add("countdown-text");
                 
                 } else {
-                    // Countdown finished: Show START
                     clearInterval(countInterval);
                     
                     display.textContent = "Start!";
-                    display.className = "start-text"; // NEW: Special green styling for start
+                    display.className = "start-text";
                     
-                    // Wait 1 second showing "Start!" before numbers loop
                     setTimeout(() => {
-                        display.className = ""; // Reset classes
-                        display.style.color = "#333"; // Reset color
+                        display.className = "";
+                        display.style.color = "#333";
                         runFlashLoop();
                     }, 1000);
                 }
@@ -382,8 +361,8 @@
                 if (index < numbersList.length) {
                     const num = numbersList[index];
                     
-                    if (num < 0) display.style.color = "#dc2626"; // Red
-                    else display.style.color = "#333"; // Black
+                    if (num < 0) display.style.color = "#dc2626";
+                    else display.style.color = "#333";
 
                     display.textContent = num;
                     
