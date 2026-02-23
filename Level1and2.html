@@ -9,28 +9,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Import Nunito Font */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-        /* --- LAYOUT RESET --- */
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden; /* STRICTLY NO SCROLL ON BODY */
+            overflow: hidden;
             position: fixed; 
             touch-action: none;
-            
-            /* ACADEMY THEME */
+
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
         }
 
-        /* --- TABLE STYLES --- */
         .sum-table {
             width: 100%;
-            max-width: 200px; /* Keep table compact */
+            max-width: 200px;
             border-collapse: collapse; 
             margin: 0 auto;
             font-family: 'Courier New', Courier, monospace;
@@ -60,7 +56,6 @@
 
         .negative-number { color: #dc2626; } 
 
-        /* --- MOBILE OPTIMIZATION (KEYBOARD OPEN) --- */
         @media (max-height: 700px) {
             .number-cell { font-size: 1.8rem; line-height: 1; }
             .sum-table { max-width: 150px; }
@@ -68,7 +63,6 @@
             .logo-text { font-size: 1rem; }
         }
 
-        /* --- REVIEW CARD --- */
         .review-card { 
             background: white; 
             border: 1px solid #e5e7eb; 
@@ -206,12 +200,10 @@
     </footer>
 
     <script>
-        // --- 1. AUTH CHECK ---
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
 
-        // --- 2. UTILS ---
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
@@ -229,7 +221,6 @@
             }
         });
 
-        // --- 3. DATA & LOGIC ---
         const FORMULA_DATA = {
             '1_sf_add': [ 
                 { id: 'sf_p4', name: '+4 Formula (+5-1)', trigger: 4, setup: [1,2,3,4] }, 
@@ -304,7 +295,6 @@
             document.getElementById('launch-btn').disabled = (this.value === "");
         });
 
-        // --- MATH LOGIC ---
         function isStrictDirectMove(current, val) {
             const unitCurr = current % 10;
             const unitRes = unitCurr + val;
@@ -391,25 +381,21 @@
                  let next = generateRandomDirect(total, MAX_ALLOWED);
                  rows.push(next); total += next;
             }
-            
-            // Store numbers and correct answer
+
             return { numbers: rows, answer: total, userAns: null };
         }
 
-        // --- GAME ENGINE ---
         function startGame() {
             const cat = document.getElementById('category-select').value;
             const fid = document.getElementById('formula-select').value;
             selectedFormulaObj = FORMULA_DATA[cat].find(f => f.id === fid);
-            
-            // Generate 10 Questions
+
             currentQuestions = [];
             for(let i=0; i<10; i++) currentQuestions.push(generateQuestionSet(selectedFormulaObj));
 
             currentQIndex = 0; score = 0; startTime = Date.now();
-            
-            // Show Game UI
-            document.querySelector('.config-section').classList.add('hidden'); // Hide main menu
+
+            document.querySelector('.config-section').classList.add('hidden');
             document.getElementById('game-ui').classList.remove('hidden');
             document.getElementById('game-ui').style.display = 'flex';
             
@@ -420,8 +406,7 @@
             const qData = currentQuestions[currentQIndex];
             const container = document.getElementById('question-container');
             document.getElementById('q-idx').textContent = currentQIndex + 1;
-            
-            // Generate HTML
+
             let html = '<table class="sum-table">';
             qData.numbers.forEach((num, idx) => {
                 const colorClass = num < 0 ? 'negative-number' : '';
@@ -429,8 +414,7 @@
             });
             html += '</table>';
             container.innerHTML = html;
-            
-            // Reset Input
+
             const input = document.getElementById('answer-input');
             input.value = ''; 
             input.disabled = false;
@@ -447,16 +431,13 @@
             }
             
             const val = parseInt(valStr);
-            
-            // Save User Answer
+
             currentQuestions[currentQIndex].userAns = val;
-            
-            // Calculate Score (Silently)
+
             if (val === currentQuestions[currentQIndex].answer) {
                 score++;
             }
-            
-            // Next Question Immediately
+
             currentQIndex++;
             if (currentQIndex < 10) {
                 renderQuestion();
@@ -465,7 +446,6 @@
             }
         }
 
-        // --- REPORTING ---
         function endGame() {
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('report-area').classList.remove('hidden');
@@ -485,7 +465,6 @@
             document.getElementById('score-display').textContent = score;
             document.getElementById('time-display').textContent = finalTimeString;
 
-            // Check for Mistakes
             const mistakes = currentQuestions.filter(q => q.userAns !== q.answer);
             const reviewBtn = document.getElementById('review-btn');
             if (mistakes.length > 0) {
@@ -495,7 +474,6 @@
                 reviewBtn.classList.add('hidden');
             }
 
-            // Google Sheet Logging
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
             if (GOOGLE_SCRIPT_URL) {
                 const payload = {
@@ -513,7 +491,6 @@
             }
         }
 
-        // --- REVIEW MISTAKES ---
         function showMistakes() {
             const container = document.getElementById('wrong-sums-list');
             container.innerHTML = '';
@@ -521,7 +498,6 @@
             const mistakes = currentQuestions.filter(q => q.userAns !== q.answer);
             
             mistakes.forEach(q => {
-                // Rebuild Table HTML
                 let tableHtml = '<table class="sum-table" style="width:100px; margin-bottom:10px;">';
                 q.numbers.forEach((num, idx) => {
                     const colorClass = num < 0 ? 'negative-number' : '';
@@ -566,8 +542,7 @@
                 link.click();
             });
         }
-        
-        // Enter Key Support
+
         document.getElementById('answer-input').addEventListener("keypress", function(event) {
             if (event.key === "Enter") { 
                 event.preventDefault(); 
@@ -577,6 +552,3 @@
     </script>
 </body>
 </html>
-
-
-
