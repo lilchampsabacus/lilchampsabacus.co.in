@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- TABLET SCROLL & GLITCH FIXES --- */
         html, body { 
             height: 100%; 
             width: 100%; 
@@ -21,13 +20,13 @@
             padding: 0;
             font-family: 'Nunito', sans-serif; 
             background-color: #f0f9ff; 
-            overflow-y: auto; /* Natural scrolling for tablet accessibility */
+            overflow-y: auto;
         }
 
         main { 
             min-height: 100vh;
             width: 100%;
-            padding-bottom: 120px; /* Space for the Finish button on tablets */
+            padding-bottom: 120px;
         }
 
         .slide-container { display: none; }
@@ -164,14 +163,12 @@
         let timerInterval, sumsData = [], startTime, currentSlideIndex = 0, tabSwitchCount = 0, isTerminated = false;
         const TOTAL_SUMS = 30, SUMS_PER_SLIDE = 5, TOTAL_SLIDES = 6;
 
-        // --- Offline Sync Functions (CLEANED UP) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -299,7 +296,6 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Submitting... 📡';
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            // -------------------------------------
 
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -329,7 +325,6 @@
             document.getElementById('see-wrong-button').disabled = mistakesArray.length === 0;
             document.getElementById('see-wrong-button').textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
-            // --- Queue the payload ---
             const payload = {
                 challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
                 score: score, total: TOTAL_SUMS, time: timeFormatted,
@@ -339,7 +334,6 @@
             };
             
             saveOrQueueResult(payload);
-            // -------------------------
 
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
