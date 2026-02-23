@@ -75,23 +75,13 @@
     </main>
 
     <script>
-        // ==========================================
-        // 1. SUPABASE CONFIGURATION (FILL THESE IN!)
-        // ==========================================
-        // Go to Supabase Dashboard -> Project Settings -> API
         const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ==========================================
-        // 2. GLOBAL VARIABLES
-        // ==========================================
         let currentStudentName = "";
 
-        // ==========================================
-        // 3. ON PAGE LOAD (Session Check)
-        // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             console.log("Page Loaded. Checking Session..."); 
             
@@ -105,14 +95,12 @@
             }
 
             try {
-                // Name Extraction Logic
                 const namePart = studentId.split('@')[0];
                 const cleanName = namePart.replace(/[0-9]/g, '');
                 currentStudentName = cleanName.split('.').map(part => 
                     part.charAt(0).toUpperCase() + part.slice(1)
                 ).join(' ');
 
-                // Update Header
                 const nameDisplay = document.getElementById('studentNameDisplay');
                 if(nameDisplay) nameDisplay.textContent = currentStudentName;
 
@@ -121,16 +109,12 @@
                 currentStudentName = "Student"; 
             }
             
-            // Set default dates
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             if(document.getElementById('endDate')) document.getElementById('endDate').valueAsDate = today;
             if(document.getElementById('startDate')) document.getElementById('startDate').valueAsDate = firstDay;
         });
 
-        // ==========================================
-        // 4. FETCH FUNCTION (Available Globally)
-        // ==========================================
         async function fetchSupabaseReport() {
             const startDateVal = document.getElementById('startDate').value;
             const endDateVal = document.getElementById('endDate').value;
@@ -144,14 +128,12 @@
                 return;
             }
 
-            // UI Reset
             statusMsg.textContent = "";
             tbody.innerHTML = "";
             tableContainer.classList.add('hidden');
             loader.style.display = 'block';
 
             try {
-                // Fetch data using 'supabaseClient'
                 const { data, error } = await supabaseClient
                     .from('reports')
                     .select('*')
@@ -167,7 +149,6 @@
                     return;
                 }
 
-                // Filter by Date
                 const start = new Date(startDateVal);
                 start.setHours(0,0,0,0);
                 const end = new Date(endDateVal);
@@ -192,7 +173,7 @@
                 loader.style.display = 'none';
                 tableContainer.classList.remove('hidden');
 
-                // Render
+
                 const fragment = document.createDocumentFragment();
                 filteredData.forEach(row => {
                     const tr = document.createElement('tr');
@@ -266,4 +247,3 @@
     </script>
 </body>
 </html>
-
