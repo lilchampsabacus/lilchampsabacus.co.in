@@ -12,39 +12,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
         html, body {
-            height: 100%;          /* Lock height to screen size */
+            height: 100%;
             width: 100%;
-            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
-            position: fixed;       /* Freeze the page in place */
-            touch-action: none;    /* Disable browser gestures */
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
             margin: 0;
-            
-            /* Theme */
+
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex layout to keep Header/Footer/Main organized */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLLABLE CONTENT AREA --- */
         main {
-            flex-grow: 1;          /* Take up all available space */
-            overflow-y: auto;      /* Allow scrolling ONLY inside here */
-            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
-            padding: 0.5rem;       /* Default padding (mobile) */
+            padding: 0.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Focus Mode Update: Just hide elements, don't mess with body scroll */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link { 
@@ -231,14 +226,12 @@
         let timerInterval;
         let isSubmitting = false;
 
-        // --- Offline Sync Functions (NEW) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -247,7 +240,6 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-        // ------------------------------------
 
         function handleKey(key) {
             const input = document.getElementById('answer-input');
@@ -305,7 +297,6 @@
             try {
                 const questions = window.generateQuestions(LEVEL_CODE, 10);
                 
-                // Prepare Data Structure
                 sumsData = questions.map(q => ({
                     numbers: q.numbers,
                     type: 'addition',
@@ -317,14 +308,12 @@
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
                 
-                // Reset Input
                 const input = document.getElementById('answer-input');
                 input.value = '';
                 input.readOnly = true;
                 input.disabled = false;
                 input.focus();
                 
-                // Reset Event Listeners
                 const newNode = input.cloneNode(true);
                 input.parentNode.replaceChild(newNode, input);
 
@@ -332,22 +321,20 @@
                     if (event.defaultPrevented) return;
                     const key = event.key;
                     const input = document.getElementById('answer-input');
-                    if (!input) return; // Safety check
+                    if (!input) return;
 
-                    // Handle Numbers
                     if (/[0-9]/.test(key)) {
-                        event.preventDefault(); // STOP browser from typing
+                        event.preventDefault();
                         handleKey(key);
                         return;
                     }
-                    // Handle Special Keys
                     if (key === '.' || key === '-') {
-                        event.preventDefault(); // STOP browser
+                        event.preventDefault();
                         handleKey(key);
                         return;
                     }
                     if (key === 'Backspace') {
-                        event.preventDefault(); // STOP browser (prevent navigation back)
+                        event.preventDefault();
                         handleKey('backspace');
                         return;
                     }
@@ -437,25 +424,21 @@
             if (isSubmitting) return;
             isSubmitting = true;
 
-            // --- Prevent duplicate submissions visually ---
             const enterBtn = document.getElementById('enter-btn');
             if (enterBtn) {
                 enterBtn.disabled = true;
                 enterBtn.innerHTML = 'Submitting... 📡';
                 enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            // ----------------------------------------------
             
             clearInterval(timerInterval);
 
-            // Time Calculation
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeElapsedSeconds / 60);
             const seconds = timeElapsedSeconds % 60;
             const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // --- GRADE LOCALLY ---
             let score = 0;
             let mistakesArray = [];
 
@@ -476,7 +459,6 @@
                 }
             });
 
-            // Update Report UI
             document.getElementById('report-correct').textContent = score;
             activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
@@ -489,10 +471,8 @@
                 day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
 
-            // Save Data for Review Button
             sessionStorage.setItem('negSumsData', JSON.stringify(sumsData)); 
 
-            // Setup Review Button state
             const wrongBtn = document.getElementById('see-wrong-button');
             if (mistakesArray.length > 0) {
                 wrongBtn.textContent = `Review ${mistakesArray.length} Mistakes`;
@@ -504,7 +484,6 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const typeSelect = document.getElementById('practice-type');
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
@@ -515,15 +494,12 @@
                 time: timeFormatted,
                 accuracy: Math.round((score / TOTAL_SUMS) * 100) + "%",
                 mistakes: mistakesArray,
-                // Pass full data for secure verification
                 questions: sumsData,
                 answers: sumsData.map(s => s.studentAnswer)
             };
             
             saveOrQueueResult(payload);
-            // ------------------------------------------
 
-            // Finish & Show Report
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
@@ -594,7 +570,6 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
                (e.ctrlKey && e.key === 'u')) {
