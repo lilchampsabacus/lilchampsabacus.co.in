@@ -10,13 +10,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Import Nunito Font */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-        /* Base Settings */
         html { scroll-padding-top: 50px; }
 
-        /* ACADEMY THEME BACKGROUND */
         body {
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff;
@@ -24,15 +21,13 @@
             background-size: 24px 24px;
         }
 
-        /* Update Focus Mode to match blue theme */
         body.focus-mode { 
             background-color: #f0f9ff !important; 
             color: #333; 
         }
 
         .math-input:focus { outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
-        
-        /* PRESSURE ANIMATION (OVERLAY) */
+
         @keyframes panicPulse {
             0% { opacity: 0; }
             50% { opacity: 0.6; } 
@@ -213,7 +208,6 @@
         const diffSelect = document.getElementById('difficulty-select');
         const pressureOverlay = document.getElementById('pressure-overlay'); 
 
-        // --- DAILY LIMIT LOGIC ---
         function checkDailyAccess() {
             const studentId = sessionStorage.getItem('studentIdentifier');
             const todayStr = new Date().toDateString(); // E.g. "Tue Dec 23 2025"
@@ -221,7 +215,6 @@
             const lastPlayed = localStorage.getItem(storageKey);
 
             if (lastPlayed === todayStr) {
-                // Block Access
                 configPanel.classList.add('hidden');
                 gamePanel.classList.add('hidden');
                 limitScreen.classList.remove('hidden');
@@ -236,14 +229,12 @@
             const storageKey = `pressure_last_played_${studentId}`;
             localStorage.setItem(storageKey, todayStr);
         }
-        // -------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentIdentifier = sessionStorage.getItem('studentIdentifier');
             if (studentIdentifier) {
                 document.getElementById('display-student-name').textContent = formatStudentName(studentIdentifier);
-                
-                // Check if they played today before enabling the button
+
                 if (checkDailyAccess()) {
                     document.getElementById('start-button').disabled = false;
                 }
@@ -443,6 +434,3 @@
     </script>
 </body>
 </html>
-
-
-
