@@ -139,14 +139,12 @@
         let timerInterval, sumsData = [], startTime, currentSlideIndex = 0, tabSwitchCount = 0, isTerminated = false;
         const TOTAL_SUMS = 30, SUMS_PER_SLIDE = 5, TOTAL_SLIDES = 6;
 
-        // --- Offline Sync Functions (NEW) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -155,7 +153,6 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-        // ------------------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
             const configKey = 'mul-' + CHALLENGE_CODE;
@@ -268,13 +265,11 @@
         function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
-            // --- Prevent duplicate submissions ---
             const submitBtn = document.getElementById('submit-button');
             if (submitBtn.disabled) return; 
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Submitting... 📡';
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            // -------------------------------------
 
             clearInterval(timerInterval);
             const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -307,7 +302,6 @@
             mistakesBtn.disabled = mistakesArray.length === 0;
             mistakesBtn.textContent = mistakesArray.length > 0 ? `Review ${mistakesArray.length} Mistakes` : "Perfect Score!";
 
-            // --- Queue the payload ---
             const payload = {
                 challenge: CHALLENGE_CODE + (isTerminated ? " (B)" : ""),
                 score: score, total: TOTAL_SUMS, time: timeFormatted,
@@ -317,7 +311,6 @@
             };
             
             saveOrQueueResult(payload);
-            // -------------------------
 
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
