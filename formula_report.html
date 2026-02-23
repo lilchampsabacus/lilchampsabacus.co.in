@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; }
-        /* Loading Spinner Animation */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -71,8 +70,6 @@
     </main>
 
     <script>
-        // --- CONFIGURATION ---
-        // Your specific Google Script URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9zSp5IW8U_U1UGjgYGKunSOGEqsyo-XJ2ZpjTwdmM-5WF9PRMXTt-bAvYEVfhL7Y8/exec"; 
 
         let currentStudentName = "";
@@ -82,33 +79,28 @@
             const isLoggedIn = sessionStorage.getItem('isLoggedIn');
             const studentId = sessionStorage.getItem('studentIdentifier');
 
-            // 2. Name Extraction Logic
             if(studentId) {
                 const namePart = studentId.split('@')[0];
                 currentStudentName = namePart.split('.').map(part => 
                     part.charAt(0).toUpperCase() + part.slice(1)
                 ).join(' ');
             } else {
-                // Fallback for testing if not logged in
                 currentStudentName = "Ronit Dagani"; 
             }
 
             document.getElementById('studentNameDisplay').textContent = currentStudentName;
             
-            // 3. Set Default Dates (First day of month to Today)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             document.getElementById('endDate').valueAsDate = today;
             document.getElementById('startDate').valueAsDate = firstDay;
         });
 
-        // Format date string (YYYY-MM-DD) to readable DD/MM/YYYY
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-GB'); 
         }
 
-        // Main Fetch Function
         function fetchReport() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
@@ -123,13 +115,11 @@
                 return;
             }
 
-            // UI Reset
             statusMsg.textContent = "";
             tbody.innerHTML = "";
             tableContainer.classList.add('hidden');
             loader.style.display = 'block';
 
-            // Build URL parameters
             const url = `${SCRIPT_URL}?name=${encodeURIComponent(currentStudentName)}&start=${start}&end=${end}`;
 
             fetch(url)
@@ -143,20 +133,16 @@
                         return;
                     }
 
-                    // Show Table
                     tableContainer.classList.remove('hidden');
 
-                    // Sort: Newest First
                     data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                     data.forEach(row => {
                         const tr = document.createElement('tr');
                         tr.className = "border-b border-gray-200 hover:bg-gray-50";
                         
-                        // Handle Score Styling (Green if 10, else Black)
                         const scoreClass = (row.score == 10) ? "text-green-600" : "text-gray-700";
 
-                        // Create Row HTML
                         tr.innerHTML = `
                             <td class="py-3 px-6 font-medium">${formatDate(row.date)}</td>
                             <td class="py-3 px-6"><span class="bg-indigo-100 text-indigo-700 py-1 px-3 rounded-full text-xs font-bold">${row.formula}</span></td>
@@ -175,7 +161,6 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools)
             if (e.key === 'F12') {
                 e.preventDefault();
                 return false;
