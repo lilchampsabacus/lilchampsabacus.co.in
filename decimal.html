@@ -12,39 +12,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- APP MODE LAYOUT (Prevents Pull-to-Refresh) --- */
         html, body {
-            height: 100%;          /* Lock height to screen size */
+            height: 100%;
             width: 100%;
-            overflow: hidden;      /* STOP THE BODY FROM SCROLLING */
-            position: fixed;       /* Freeze the page in place */
-            touch-action: none;    /* Disable browser gestures */
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
             margin: 0;
-            
-            /* Theme */
+
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex layout to keep Header/Footer/Main organized */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLLABLE CONTENT AREA --- */
         main {
-            flex-grow: 1;          /* Take up all available space */
-            overflow-y: auto;      /* Allow scrolling ONLY inside here */
-            -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
-            padding: 0.5rem;       /* Default padding (mobile) */
+            padding: 0.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Focus Mode Update: Just hide elements, don't mess with body scroll */
         body.focus-mode header, 
         body.focus-mode footer, 
         body.focus-mode .back-link { 
@@ -74,7 +69,6 @@
         body.focus-mode #test-area { background-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
         .hidden { display: none !important; }
 
-        /* --- MOBILE FIX --- */
         @media (max-width: 768px) {
             .sum-table td { padding: 0 !important; height: auto !important; }
             .number-cell { font-size: 1.25rem !important; line-height: 1.1 !important; padding-bottom: 2px !important; }
@@ -220,8 +214,7 @@
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
-        
-        // --- YOUR SECURE SCRIPT URL ---
+
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
         let TOTAL_SUMS = 10; 
@@ -231,14 +224,12 @@
         let timerInterval;
         let isSubmitting = false;
 
-        // --- Offline Sync Functions (NEW) ---
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
                 if (window.lilChampUtils?.saveResult) {
                     window.lilChampUtils.saveResult(payload);
                 }
             } else {
-                // Add exact time: Stamp the payload with the exact time the student finished offline
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
                 let queue = JSON.parse(localStorage.getItem('offlineResultsQueue') || '[]');
@@ -247,7 +238,6 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
-        // ------------------------------------
 
         function handleKey(key) {
             const input = document.getElementById('answer-input');
@@ -302,7 +292,6 @@
             document.getElementById('report-level-title').textContent = typeSelect.options[typeSelect.selectedIndex].text;
 
             try {
-                // GENERATE LOCALLY
                 const questions = window.generateQuestions(LEVEL_CODE, 10);
                 
                 sumsData = questions.map(q => ({
@@ -315,8 +304,7 @@
                 renderCards();
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('test-area').classList.remove('hidden');
-                
-                // Reset Input logic...
+
                 const input = document.getElementById('answer-input');
                 input.value = '';
                 input.readOnly = true;
@@ -328,13 +316,12 @@
                     const input = document.getElementById('answer-input');
                     if (!input) return; // Safety check
 
-                    // Handle Numbers
                     if (/[0-9]/.test(key)) {
                         event.preventDefault(); 
                         handleKey(key);
                         return;
                     }
-                    // Handle Special Keys
+
                     if (key === '.' || key === '-') {
                         event.preventDefault(); 
                         handleKey(key);
@@ -437,25 +424,21 @@
             if (isSubmitting) return;
             isSubmitting = true;
             
-            // --- Prevent duplicate submissions visually ---
             const enterBtn = document.getElementById('enter-btn');
             if (enterBtn) {
                 enterBtn.disabled = true;
                 enterBtn.innerHTML = 'Submitting... 📡';
                 enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            // ----------------------------------------------
 
             clearInterval(timerInterval);
 
-            // Time Calculation
             const endTime = Date.now();
             const timeElapsed = Math.floor((endTime - startTime) / 1000); 
             const mins = Math.floor(timeElapsed / 60);
             const secs = timeElapsed % 60;
             const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
-            // Grade Locally
             let score = 0;
             let mistakesArray = [];
             sumsData.forEach((q, i) => {
@@ -468,7 +451,6 @@
                 }
             });
 
-            // Update UI - Scores
             document.getElementById('report-correct').textContent = score;
             activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
@@ -480,7 +462,6 @@
                 day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
 
-            // --- SAVE TO SUPABASE OR QUEUE LOCALLY ---
             const levelText = document.getElementById('practice-type').options[document.getElementById('practice-type').selectedIndex].text;
             
             const payload = {
@@ -493,12 +474,9 @@
             };
             
             saveOrQueueResult(payload);
-            // ------------------------------------------
-            
-            // Save for review button
+
             sessionStorage.setItem('decimalSumsData', JSON.stringify(sumsData));
-            
-            // Enable/Disable Review Button
+
             const wrongBtn = document.getElementById('see-wrong-button');
             if (mistakesArray.length > 0) {
                 wrongBtn.disabled = false;
@@ -510,7 +488,6 @@
                 wrongBtn.textContent = "Perfect Score!";
             }
 
-            // Switch Screens
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
@@ -582,7 +559,6 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
                (e.ctrlKey && e.key === 'u')) {
