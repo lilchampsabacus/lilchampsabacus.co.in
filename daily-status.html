@@ -172,14 +172,10 @@
             };
 
             addHeader(doc);
-
-            // Dashboard removed from PDF to prevent showing total numbers
-            
-            // Start of Alert List (Pending)
             doc.setFontSize(12);
             doc.setTextColor(220, 38, 38);
             doc.setFont(undefined, 'bold');
-            doc.text("ALERT LIST: Students Not Started Yet", 15, 42); // Moved up since summary box is gone
+            doc.text("ALERT LIST: Students Not Started Yet", 15, 42);
             doc.setFont(undefined, 'normal');
 
             const pendingData = globalPendingStudents.map(name => [name, "Pending"]);
@@ -194,7 +190,6 @@
                 didDrawPage: (data) => { if (data.pageNumber > 1) addHeader(doc); }
             });
 
-            // Start of Completed List
             let nextY = doc.lastAutoTable.finalY + 15;
             if (nextY > 260) { doc.addPage(); addHeader(doc); nextY = 40; }
 
@@ -219,7 +214,6 @@
                 didDrawPage: (data) => { if (data.pageNumber > 1 && data.cursor.y < 40) addHeader(doc); }
             });
 
-            // Pagination and Footer
             const pages = doc.internal.getNumberOfPages();
             for(let i = 1; i <= pages; i++) {
                 doc.setPage(i);
