@@ -13,12 +13,12 @@
 
     <style>
         html {
-            scrollbar-width: none;  /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
         html::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
         
         body {
@@ -33,15 +33,12 @@
             flex-direction: column;
         }
 
-        /* --- ANIMATIONS --- */
-
-        /* 1. The Spring/Bounce Effect on Hover (Card Body) */
         .practice-card {
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                         box-shadow 0.3s ease, 
                         border-color 0.3s ease;
             border: 2px solid transparent;
-            opacity: 0; /* Hidden initially for entrance animation */
+            opacity: 0;
             animation: slideUpFade 0.6s ease-out forwards;
         }
         
@@ -51,20 +48,17 @@
             box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2), 0 10px 10px -5px rgba(99, 102, 241, 0.1);
         }
 
-        /* 2. THE EMOJI SHAKE */
         @keyframes shake-icon {
             0%, 100% { transform: rotate(0deg); }
             25% { transform: rotate(-15deg); }
             75% { transform: rotate(15deg); }
         }
 
-        /* Target the emoji (inside class .text-2xl) when the card is hovered */
         .practice-card:hover .text-2xl {
-            display: inline-block; /* Required for transform to work on text */
+            display: inline-block;
             animation: shake-icon 0.4s ease-in-out infinite;
         }
 
-        /* 3. Page Load Entrance Animation */
         @keyframes slideUpFade {
             from {
                 opacity: 0;
@@ -76,7 +70,6 @@
             }
         }
 
-        /* Stagger delays */
         .card-delay-1 { animation-delay: 0.1s; }
         .card-delay-2 { animation-delay: 0.2s; }
         .card-delay-3 { animation-delay: 0.3s; }
@@ -84,7 +77,6 @@
         .card-delay-5 { animation-delay: 0.5s; }
         .card-delay-6 { animation-delay: 0.6s; }
 
-        /* Category Badge Colors */
         .badge-core { background-color: #dbeafe; color: #1e40af; }     /* Blue */
         .badge-speed { background-color: #fee2e2; color: #991b1b; }    /* Red */
         .badge-visual { background-color: #fef3c7; color: #92400e; }   /* Amber */
@@ -248,12 +240,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
