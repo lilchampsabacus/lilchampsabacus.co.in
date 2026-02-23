@@ -11,12 +11,12 @@
 
     <style>
         html {
-            scrollbar-width: none;  /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
         html::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
         
         body {
@@ -31,7 +31,6 @@
             flex-direction: column;
         }
 
-        /* Card Animation & Hover Effects */
         .practice-card, .level-card {
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                         box-shadow 0.3s ease, 
@@ -45,7 +44,6 @@
             box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2);
         }
 
-        /* Animation Classes */
         .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         
         @keyframes fadeIn {
@@ -53,7 +51,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Badge Colors */
         .badge-level-4 { background-color: #dbeafe; color: #1e40af; } 
         .badge-level-5 { background-color: #d1fae5; color: #065f46; } 
         .badge-level-6 { background-color: #fef3c7; color: #92400e; } 
@@ -63,7 +60,6 @@
 <body class="min-h-screen flex flex-col">
 
     <script>
-        // Check login (Keep existing logic)
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
@@ -238,21 +234,16 @@
     </footer>
 
     <script>
-        // DOM Elements
         const levelContainer = document.getElementById('level-selection-container');
         const practiceContainer = document.getElementById('practice-options-container');
         const levelTitle = document.getElementById('current-level-title');
 
-        // Function to show specific practice cards
         function showPractice(groupClass) {
-            // 1. Hide Level Selection
             levelContainer.classList.add('hidden');
-            
-            // 2. Show Practice Container with animation
+
             practiceContainer.classList.remove('hidden');
             practiceContainer.classList.add('fade-in');
 
-            // 3. Update Title based on selection
             if(groupClass === 'level3') levelTitle.innerText = "3rd Level Practice";
             if(groupClass === 'level4') levelTitle.innerText = "4th Level Practice";
             if(groupClass === 'level5') levelTitle.innerText = "5th Level Practice";
@@ -260,20 +251,17 @@
             if(groupClass === 'level78') levelTitle.innerText = "7th & 8th Level Practice";
             if(groupClass === 'level500') levelTitle.innerText = "Mastery Practice";
 
-            // 4. Hide ALL cards first
             document.querySelectorAll('.practice-card').forEach(card => {
                 card.classList.add('hidden');
-                card.classList.remove('flex'); // Remove flex display
+                card.classList.remove('flex');
             });
 
-            // 5. Show ONLY the cards belonging to the selected group
             document.querySelectorAll('.group-' + groupClass).forEach(card => {
                 card.classList.remove('hidden');
-                card.classList.add('flex'); // Add flex back for layout
+                card.classList.add('flex');
             });
         }
 
-        // Function to go back to Level Selection
         function showLevels() {
             practiceContainer.classList.add('hidden');
             practiceContainer.classList.remove('fade-in');
@@ -284,17 +272,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
