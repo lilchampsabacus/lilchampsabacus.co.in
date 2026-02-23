@@ -14,39 +14,33 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* --- APP MODE LAYOUT (Refresh Lock) --- */
         html, body {
             height: 100%;          
             width: 100%;
-            overflow: hidden;      /* STOP BODY SCROLL */
+            overflow: hidden;
             position: fixed;       
             touch-action: none;    
             margin: 0;
-            
-            /* Theme */
+
             font-family: 'Nunito', sans-serif;
             background-color: #f0f9ff; 
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 24px 24px;
 
-            /* Flex Layout */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- SCROLL CONTAINER --- */
         main {
             flex-grow: 1;          
             width: 100%;           
-            overflow-y: auto;      /* Internal scroll */
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* --- HIDE SCROLLBAR (Professional Look) --- */
         main::-webkit-scrollbar { display: none; }
         main { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Animations */
+
         .slide-container {
             display: none; 
             animation: fadeIn 0.3s ease-in-out;
@@ -59,7 +53,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MATH GRID STYLES (Vertical Sum) --- */
         .math-card {
             background: white;
             padding: 2rem;
@@ -88,7 +81,6 @@
             border-radius: 2px;
         }
 
-        /* --- FOCUS MODE --- */
         body.focus-mode {
             background-color: #f0f9ff !important; 
             color: #433422;
@@ -248,12 +240,10 @@
 	</footer>
 
     <script>
-        // --- SESSION CHECK ---
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
-        
-        // --- CONFIGURATION ---
+
         const TOTAL_QUESTIONS = 10;
         const POSITIVE_NUMBERS = [11, 22, 33, 44, 55, 66, 77, 88, 99];
         const NEGATIVE_NUMBERS = [-11, -22, -33, -44, -55, -66, -77, -88, -99];
@@ -265,7 +255,6 @@
         let timerInterval;
 		let isSubmitting = false;
 
-        // --- UTILITIES ---
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
             const namePart = identifier.split('@')[0];
@@ -287,7 +276,6 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('student-identifier-input');
             const startButton = document.getElementById('start-button');
@@ -306,12 +294,8 @@
             renderQuestion(); 
         });
 
-        // --- MATH GENERATION ---
         function generateQuestion() {
-            // 1. First Number (N1): Always positive
             const N1 = getRandomElement(POSITIVE_NUMBERS);
-
-            // 2. Second Number (N2) logic
             let N2;
             if (N1 > 55) {
                 const restrictedSet = N2_RESTRICTED_NEGATIVE.concat(POSITIVE_NUMBERS);
@@ -319,8 +303,6 @@
             } else { 
                 N2 = getRandomElement(POSITIVE_NUMBERS);
             }
-
-            // 3. Third Number (N3) logic
             const Sum12 = N1 + N2;
             let N3;
             if (Sum12 > 100) {
@@ -347,12 +329,10 @@
             }
         }
 
-        // --- RENDERING ---
         function renderQuestion() {
             const container = document.getElementById('question-carousel');
-            container.innerHTML = ''; // Clear previous
-            
-            // Validation reset
+            container.innerHTML = '';
+
             document.getElementById('validation-message').textContent = '';
 
             const currentQ = quizData[currentQuestionIndex];
@@ -361,14 +341,12 @@
             slideDiv.className = 'slide-container active w-full';
             slideDiv.id = `slide-${currentQuestionIndex}`;
 
-            // Build Math Card
             let html = `<div class="math-card">`;
-            
-            // Row 1
+
             html += `<div class="number-row">${currentQ.numbers[0]}</div>`;
-            // Row 2
+
             html += `<div class="number-row">${currentQ.numbers[1] > 0 ? '' + currentQ.numbers[1] : currentQ.numbers[1]}</div>`;
-            // Row 3
+
             html += `<div class="number-row">${currentQ.numbers[2] > 0 ? '' + currentQ.numbers[2] : currentQ.numbers[2]}</div>`;
             
             html += `<div class="divider-line"></div>`;
@@ -383,7 +361,6 @@
             slideDiv.innerHTML = html;
             container.appendChild(slideDiv);
 
-            // Focus and Event Listener
             const input = document.getElementById('answer-input');
             input.focus();
             input.addEventListener('keydown', (e) => {
@@ -394,18 +371,15 @@
             });
         }
 
-        // --- GAME FLOW (NEW LOGIC) ---
         function submitAndNext() {
 			if (isSubmitting) return;
             const input = document.getElementById('answer-input');
             const valStr = input.value.trim();
             const validationMsg = document.getElementById('validation-message');
 
-            // 1. Validation Check
             if (valStr === '') {
                 validationMsg.textContent = "Please enter an answer";
                 input.focus();
-                // Optional: visual shake
                 input.classList.add('border-red-500', 'border-2');
                 setTimeout(() => input.classList.remove('border-red-500', 'border-2'), 500);
                 return;
@@ -414,29 +388,25 @@
             const val = parseInt(valStr);
             if (isNaN(val)) return;
 
-            // 2. Save Data (No visible feedback)
             const currentQ = quizData[currentQuestionIndex];
             currentQ.userAnswer = val;
             currentQ.isCorrect = (val === currentQ.correctAnswer);
 
-            // 3. Auto Advance
             if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
                 currentQuestionIndex++;
-                updateProgress(); // Move bead
+                updateProgress();
                 renderQuestion();
             } else {
-                updateProgress(); // Ensure bead goes to 100%
+                updateProgress();
                 endTest();
             }
         }
 
         function updateProgress() {
-            // BEAD LOGIC
             const pct = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
             const bead = document.getElementById('progress-bead');
-            const totalAnswered = currentQuestionIndex + 1; // Since we only update after answering
-            
-            // Special check for end of test trigger
+            const totalAnswered = currentQuestionIndex + 1;
+
             if (totalAnswered > TOTAL_QUESTIONS) return;
 
             if(bead) {
@@ -444,15 +414,13 @@
             }
             document.getElementById('progress-text').textContent = `${totalAnswered}/${TOTAL_QUESTIONS} Solved`;
         }
-        
-        // Manual override for 'start' state
+
         function initProgress() {
              const bead = document.getElementById('progress-bead');
              if(bead) bead.style.left = `0%`;
              document.getElementById('progress-text').textContent = `0/${TOTAL_QUESTIONS} Solved`;
         }
 
-        // --- START & END ---
         function startTest() {
             document.body.classList.add('focus-mode');
             document.getElementById('start-screen').classList.add('hidden');
@@ -467,7 +435,6 @@
         }
 
         async function endTest() {
-            // 1. Lock UI
             if (isSubmitting) return;
             isSubmitting = true;
             const submitBtn = document.getElementById('submit-button');
@@ -475,8 +442,7 @@
             submitBtn.disabled = true;
 
             clearInterval(timerInterval);
-            
-            // 2. Calculate Stats
+
             let correctCount = 0;
             let mistakesArray = [];
 
@@ -495,7 +461,6 @@
                 }
             });
 
-            // Time Calc
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
             const mins = Math.floor(totalTime / 60);
@@ -503,7 +468,6 @@
             const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             const avgTimeDisplay = `${(totalTime / TOTAL_QUESTIONS).toFixed(2)}s`;
 
-            // 3. Update UI
             document.getElementById('report-correct').textContent = correctCount;
 			activateWatchdog(correctCount);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
@@ -513,7 +477,6 @@
             const formattedName = formatStudentName(studentName);
             document.getElementById('report-student-name').textContent = formattedName;
 
-            // 4. Setup Review Button
             const wrongBtn = document.getElementById('see-wrong-button');
             if (correctCount === TOTAL_QUESTIONS) {
                 wrongBtn.textContent = "Perfect Score!";
@@ -525,7 +488,6 @@
                 wrongBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
 
-            // 5. --- SAVE TO SUPABASE ---
             if (window.lilChampUtils && window.lilChampUtils.saveResult) {
                 window.lilChampUtils.saveResult({
                     challenge: "2nd Level Addition",
@@ -537,7 +499,6 @@
                 });
             }
 
-            // Switch Screens
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
@@ -546,8 +507,7 @@
                 window.lilChampUtils.celebrate();
             }
         }
-		
-        // --- REVIEW MISTAKES ---
+
         function showWrongAnswers() {
             const wrongSums = quizData.filter(s => s.isCorrect === false);
             const list = document.getElementById('wrong-sums-list');
@@ -594,7 +554,6 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            // Block F12 (DevTools), Ctrl+Shift+I (Inspector), Ctrl+Shift+C (Element Picker)
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || 
                (e.ctrlKey && e.key === 'u')) {
