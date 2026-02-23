@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <script>
-        // Check for login session immediately
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'index.html'; 
         }
@@ -16,8 +15,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Custom animations */
+
         .fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
@@ -57,21 +55,16 @@
                 <h1 class="text-xl md:text-2xl font-black tracking-wide text-center">Li'l Champs Voicebot</h1>
             </div>
             
-            <!-- Empty div for spacing on left on larger screens -->
             <div class="hidden md:block"></div>
             
-            <!-- Status Indicator -->
-            <!-- Will naturally flow below title on mobile due to flex-col -->
             <div id="status-indicator" class="hidden text-xs md:text-sm bg-teal-600 px-3 py-1 rounded-full border border-teal-500/50">
                 <i class="fa-solid fa-volume-high mr-1"></i> Voice Ready
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-grow flex items-center justify-center p-4">
-        
-        <!-- Screen 1: Configuration -->
+
         <div id="config-screen" class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b border-gray-200 pb-2">Practice Settings</h2>
             
@@ -93,7 +86,6 @@
                     </div>
                 </div>
 
-                <!-- Speed Selection -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-2">Voice Speed</label>
                     <div class="grid grid-cols-3 gap-3">
@@ -120,8 +112,7 @@
                         </label>
                     </div>
                 </div>
-                
-                <!-- Voice Selection (Auto-populated) -->
+
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-2">Voice Preference</label>
                     <select id="voice-select" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-teal-500 focus:border-teal-500">
@@ -135,45 +126,35 @@
             </div>
         </div>
 
-        <!-- Screen 2: Game Interface -->
         <div id="game-screen" class="hidden w-full max-w-2xl fade-in">
-            <!-- Progress Header -->
+
             <div class="flex justify-between items-end mb-4 px-2">
                 <div>
                     <span class="text-sm font-bold text-teal-700 tracking-wider uppercase">Question</span>
                     <h2 class="text-3xl md:text-4xl font-black text-gray-800"><span id="current-q-num">1</span><span class="text-gray-400 text-2xl">/10</span></h2>
                 </div>
-                <!-- Back Button in Header for safety (optional, but good for UX) -->
             </div>
 
-            <!-- Active Zone -->
             <div class="bg-white rounded-3xl shadow-2xl overflow-hidden relative min-h-[350px] md:min-h-[400px] flex flex-col">
-                <!-- Visualizer -->
                 <div id="visual-container" class="flex-grow flex flex-col justify-center items-center bg-slate-800 p-4 md:p-8 relative transition-colors duration-200 text-center">
                     
-                    <!-- Intro Message -->
                     <div id="intro-message" class="hidden fade-in px-4">
                         <h3 class="text-3xl md:text-5xl font-bold text-slate-100 mb-4 leading-tight">For best result<br><span class="text-teal-400">use Abacus</span></h3>
                         <div class="mt-8 animate-bounce text-teal-300 text-2xl"><i class="fa-solid fa-headphones"></i></div>
                     </div>
 
-                    <!-- Number Display -->
                     <div id="number-display" class="hidden text-7xl md:text-9xl font-black text-slate-100 pop-in drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-                        <!-- Number injected here -->
                     </div>
 
-                    <!-- Countdown Display -->
                     <div id="countdown-display" class="hidden text-7xl md:text-8xl font-black text-amber-400 countdown-anim drop-shadow-lg text-center leading-tight">
                         <!-- 3.. 2.. 1.. -->
                     </div>
 
-                    <!-- Waiting State (Initial buffer) -->
                     <div id="waiting-visual" class="hidden flex-col items-center justify-center opacity-60">
                         <div class="w-16 h-16 rounded-full border-4 border-teal-500 border-t-transparent animate-spin mb-4"></div>
                         <p class="text-teal-200 font-medium">Ready...</p>
                     </div>
 
-                    <!-- Input Area (Hidden while speaking) -->
                     <div id="input-area" class="hidden w-full max-w-xs text-center z-10 flex-col gap-3">
                         <label class="text-slate-400 text-sm block">Enter the Sum</label>
                         <input type="number" id="user-answer" class="w-full bg-slate-700 border-2 border-teal-500 text-slate-100 text-center text-4xl md:text-5xl font-bold rounded-xl py-6 focus:outline-none focus:ring-4 focus:ring-teal-500/30 transition placeholder-slate-500" placeholder="?" onkeydown="if(event.key === 'Enter') app.submitAnswer()">
@@ -188,7 +169,6 @@
                         </button>
                     </div>
 
-                    <!-- Feedback Overlay -->
                     <div id="feedback-overlay" class="absolute inset-0 bg-white z-20 hidden flex-col items-center justify-center text-center p-6 fade-in">
                         <div id="feedback-icon" class="text-6xl mb-4"></div>
                         <h3 id="feedback-text" class="text-3xl font-bold mb-2"></h3>
@@ -204,15 +184,13 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Progress Bar -->
+
                 <div class="h-2 bg-gray-200 w-full">
                     <div id="progress-bar" class="h-full bg-teal-500 transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Screen 3: Report -->
         <div id="report-screen" class="hidden w-full max-w-4xl fade-in pb-10">
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div class="bg-teal-700 p-8 text-white text-center">
@@ -222,7 +200,6 @@
                     </p>
                 </div>
                 
-                <!-- Stats Header -->
                 <div class="grid grid-cols-2 gap-4 p-6 border-b border-gray-200 bg-stone-50 justify-center">
                     <div class="text-center border-r border-gray-300">
                         <div class="text-xs text-gray-500 uppercase font-bold">Difficulty</div>
@@ -245,7 +222,6 @@
                             </tr>
                         </thead>
                         <tbody id="report-body">
-                            <!-- Rows injected by JS -->
                         </tbody>
                     </table>
                 </div>
@@ -290,7 +266,6 @@
                 this.initVoice();
             }
 
-            // --- Utility: Safe Timeout ---
             setTimeout(fn, delay) {
                 const id = window.setTimeout(fn, delay);
                 this.timeouts.push(id);
@@ -302,7 +277,6 @@
                 this.timeouts = [];
             }
 
-            // --- Voice Handling ---
             
             initVoice() {
                 if (this.synth.onvoiceschanged !== undefined) {
@@ -318,8 +292,7 @@
                 
                 const voiceSelect = document.getElementById('voice-select');
                 voiceSelect.innerHTML = '<option value="">Auto-detect Female AI</option>';
-                
-                // Sort generally to put preferred regions (US/UK) at the top
+
                 this.voices.sort((a, b) => {
                     const aUS = a.lang.includes('US') || a.lang.includes('GB');
                     const bUS = b.lang.includes('US') || b.lang.includes('GB');
@@ -335,7 +308,6 @@
                     voiceSelect.appendChild(option);
                 });
 
-                // Heuristic to find a good female voice within the English subset
                 const femaleKeywords = ['female', 'zira', 'google us english', 'samantha', 'victoria', 'susan'];
                 this.femaleVoiceIndex = this.voices.findIndex(v => 
                     femaleKeywords.some(k => v.name.toLowerCase().includes(k))
@@ -379,7 +351,6 @@
                 this.synth.speak(utterance);
             }
 
-            // --- Updated Number Text Formatting for Natural Speech ---
 formatNumberText(num) {
     const absNum = Math.abs(num);
     const prefix = num < 0 ? "Minus " : "";
@@ -392,22 +363,18 @@ formatNumberText(num) {
 
     function convertChunk(n) {
         let str = "";
-        // Handle Hundreds
         if (n >= 100) {
             str += ones[Math.floor(n / 100)] + " hundred ";
             n %= 100;
         }
-        // Handle Tens (20-99)
         if (n >= 20) {
             str += tens[Math.floor(n / 10)] + " ";
             n %= 10;
         } 
-        // Handle Teens (10-19)
         else if (n >= 10) {
             str += teens[n - 10] + " ";
-            n = 0; // Teens are self-contained
+            n = 0;
         }
-        // Handle Units (1-9)
         if (n > 0) {
             str += ones[n] + " ";
         }
@@ -427,7 +394,6 @@ formatNumberText(num) {
     return prefix + text.trim();
     }
 
-            // --- Game Logic ---
 
             generateNumbers() {
                 const digits = parseInt(this.config.digits);
@@ -474,7 +440,7 @@ formatNumberText(num) {
             }
 
             startSession() {
-                this.clearAllTimeouts(); // Fix: Clear overlapping sequences
+                this.clearAllTimeouts();
 
                 this.config.digits = document.getElementById('digit-select').value;
                 
@@ -486,7 +452,6 @@ formatNumberText(num) {
                     } 
                 }
 
-                // Force Reset UI
                 document.getElementById('number-display').classList.add('hidden');
                 document.getElementById('countdown-display').classList.add('hidden');
                 document.getElementById('waiting-visual').classList.add('hidden');
@@ -523,7 +488,7 @@ formatNumberText(num) {
             }
 
             backToSettings() {
-                this.clearAllTimeouts(); // Critical: Stop any pending Next Question logic
+                this.clearAllTimeouts();
                 if (this.synth.speaking) this.synth.cancel();
 
                 document.getElementById('game-screen').classList.add('hidden');
@@ -542,8 +507,7 @@ formatNumberText(num) {
 
             nextQuestion() {
                 document.getElementById('current-q-num').textContent = this.state.currentQuestion + 1;
-                
-                // Reset View
+
                 document.getElementById('input-area').classList.add('hidden');
                 document.getElementById('input-area').classList.remove('flex');
                 document.getElementById('waiting-visual').classList.remove('hidden');
@@ -607,7 +571,6 @@ formatNumberText(num) {
     const numbers = this.state.currentSumData.numbers;
 
     if (index >= numbers.length) {
-        // "That is" signal before writing the answer
         this.speak("That is", () => {
             this.enableInput();
         });
@@ -624,24 +587,15 @@ formatNumberText(num) {
     numDisplay.classList.remove('pop-in');
     void numDisplay.offsetWidth; 
     numDisplay.classList.add('pop-in');
-    
-    // Color coding for positive/negative
+
     numDisplay.textContent = num;
     numDisplay.className = num < 0 ? 
         "text-7xl md:text-9xl font-black text-rose-400 pop-in" : 
         "text-7xl md:text-9xl font-black text-slate-100 pop-in";
 
     this.speak(text, () => {
-        /* DYNAMIC DELAY CALCULATION:
-           We wait longer for long words (like "seventy-seven") 
-           and shorter for small words (like "five").
-        */
-        let baseDelay = this.config.speed * 0.4; // Initial gap
-        
-        // Add extra 150ms for every 5 characters to prevent overlap
+        let baseDelay = this.config.speed * 0.4;
         let wordBuffer = (text.length / 5) * 150; 
-        
-        // Ensure "Turbo" mode remains fast but audible
         let finalDelay = Math.max(100, baseDelay + wordBuffer);
 
         this.setTimeout(() => this.speakSequence(index + 1), finalDelay);
@@ -756,8 +710,3 @@ formatNumberText(num) {
     </script>
 </body>
 </html>
-
-
-
-
-
