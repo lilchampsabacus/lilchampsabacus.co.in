@@ -431,11 +431,16 @@
         let timerInterval;
         let isSubmitting = false;
 
-        function saveOrQueueResult(payload) {
+        async function saveOrQueueResult(payload) {
             if (navigator.onLine) {
+                try {
                 if (window.lilChampUtils?.saveResult) {
-                    window.lilChampUtils.saveResult(payload);
+                    await window.lilChampUtils.saveResult(payload);
                 }
+            } catch (error) {
+            console.error("Save failed:", error);
+            showRetryButton(payload);
+        }
             } else {
                 payload.offlineTimestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
                 
@@ -445,6 +450,37 @@
                 alert("📡 Connection lost! Don't worry, your mission report is saved locally. It will automatically upload to headquarters when you reconnect to the internet.");
             }
         }
+
+        function showRetryButton(payload) {
+    // Check if button already exists to prevent duplicates
+    if (document.getElementById('manual-retry-btn')) return;
+
+    const reportCard = document.getElementById('report-card');
+    const retryBtn = document.createElement('button');
+    retryBtn.id = "manual-retry-btn";
+    
+    // Using Tailwind classes to match your "Save Badge" button style
+    retryBtn.className = "w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 mb-3 shadow-lg flex items-center justify-center gap-2 transition-all";
+    retryBtn.innerHTML = "⚠️ Save Failed - Click to Retry";
+    
+    retryBtn.onclick = async () => {
+        retryBtn.innerHTML = "Retrying... 📡";
+        retryBtn.disabled = true;
+        try {
+            await window.lilChampUtils.saveResult(payload);
+            retryBtn.remove(); // Remove button on success
+            alert("✅ Mission saved successfully!");
+        } catch (e) {
+            retryBtn.disabled = false;
+            retryBtn.innerHTML = "❌ Still Failing - Try Again";
+            console.error("Retry failed:", e);
+        }
+    };
+    
+    // Inserts the button before the "Replay Mission" button
+    const replayBtn = reportCard.querySelector('button[onclick="window.location.reload()"]');
+    reportCard.insertBefore(retryBtn, replayBtn);
+}
 
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
