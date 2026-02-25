@@ -92,13 +92,13 @@ async function saveExamResult(data, isBackgroundSync = false) {
 
     if (!supabaseClient && window.supabase) initSupabase();
     if (!supabaseClient) {
-        if (!isBackgroundSync) alert("Database connecting... Please wait 2 seconds and click Submit again.");
+        if (!isBackgroundSync) alert("Database connecting... Please wait and try again.");
         return;
     }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-        if (!isBackgroundSync) alert("⚠️ Not Logged In! Please go to the login page.");
+        if (!isBackgroundSync) alert("⚠️ Not Logged In!");
         return;
     }
 
@@ -114,18 +114,15 @@ async function saveExamResult(data, isBackgroundSync = false) {
     const isVerificationDataProvided = data.questions && Array.isArray(data.questions);
 
     if (isVerificationDataProvided) {
-        console.log("🔍 Verifying Score locally...");
         let calculatedScore = 0;
         let verifiedMistakes = [];
-
         data.questions.forEach((q, index) => {
             let correctVal;
             if (q.type === 'mul' || !q.type) { correctVal = q.x * q.y; } 
             else if (q.type === 'div') { correctVal = q.quotient; } 
             else if (q.type === 'addition') { correctVal = q.numbers.reduce((a, b) => a + b, 0); }
 
-            let studentVal = null;
-            if (data.answers && Array.isArray(data.answers)) { studentVal = data.answers[index]; }
+            let studentVal = (data.answers && Array.isArray(data.answers)) ? data.answers[index] : null;
 
             if (studentVal !== null && studentVal !== undefined && Number(studentVal) === correctVal) {
                 calculatedScore++;
@@ -137,7 +134,6 @@ async function saveExamResult(data, isBackgroundSync = false) {
                 });
             }
         });
-
         numericScore = calculatedScore;
         totalScore = data.questions.length;
         mistakes = verifiedMistakes;
@@ -147,55 +143,54 @@ async function saveExamResult(data, isBackgroundSync = false) {
         totalScore = data.total;
     }
 
-    // CAPTURE CORRECT TIME: Use offline timestamp if it exists, otherwise get current Indian time
     const indianTime = data.offlineTimestamp || new Date().toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         dateStyle: "medium",
         timeStyle: "short"
     });
 
-    const { data: reportData, error } = await supabaseClient
-        .from('reports')
-        .insert({
-            user_id: session.user.id,
-            student_name: studentName,
-            challenge_type: data.challenge,
-            score_text: `${numericScore}/${totalScore}`,
-            score_val: numericScore,
-            total_val: totalScore,
-            time_taken: data.time,
-            accuracy: accuracyStr,
-            mistakes_summary: mistakes ? mistakes.map(m => m.question).join(', ') : "",
-            indian_time: indianTime
-        })
-        .select()
-        .single();
+    try {
+        // WRAP THE NETWORK CALL TO PREVENT "FAILED TO FETCH" CRASHES
+        const { data: reportData, error } = await supabaseClient
+            .from('reports')
+            .insert({
+                user_id: session.user.id,
+                student_name: studentName,
+                challenge_type: data.challenge,
+                score_text: `${numericScore}/${totalScore}`,
+                score_val: numericScore,
+                total_val: totalScore,
+                time_taken: data.time,
+                accuracy: accuracyStr,
+                mistakes_summary: mistakes ? mistakes.map(m => m.question).join(', ') : "",
+                indian_time: indianTime
+            })
+            .select()
+            .single();
 
-    if (error) {
-        console.error(error);
-        if (!isBackgroundSync) alert("Save Error: " + error.message);
-        return;
-    }
+        if (error) throw error; 
 
-    if (mistakes && mistakes.length > 0) {
-        const mistakeRows = mistakes.map(m => ({
-            report_id: reportData.id,
-            question: m.question,
-            wrong_answer: sanitizeString(String(m.wrong)), 
-            correct_answer: String(m.correct)
-        }));
-        await supabaseClient.from('mistakes').insert(mistakeRows);
-    }
+        if (mistakes && mistakes.length > 0) {
+            const mistakeRows = mistakes.map(m => ({
+                report_id: reportData.id,
+                question: m.question,
+                wrong_answer: sanitizeString(String(m.wrong)), 
+                correct_answer: String(m.correct)
+            }));
+            await supabaseClient.from('mistakes').insert(mistakeRows);
+        }
 
-    console.log("✅ Saved!");
-    
-    // Prevent confetti and alert spam if this is a background sync
-    if (!isBackgroundSync) {
-        triggerWinConfetti();
-        alert("✅ Report Saved Successfully!");
+        console.log("✅ Saved!");
+        if (!isBackgroundSync) {
+            triggerWinConfetti();
+            alert("✅ Report Saved Successfully!");
+        }
+    } catch (err) {
+        console.error("Critical Save Failure:", err);
+        // Throwing the error allows mission pages to trigger the Retry UI
+        throw err; 
     }
 }
-
 window.lilChampUtils = {
     playCorrect: () => playSound('correct'),
     playWrong: () => playSound('wrong'),
