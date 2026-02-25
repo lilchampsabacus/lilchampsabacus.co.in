@@ -43,8 +43,16 @@
 
                 <div>
                     <label for="password" class="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                    <input type="password" id="password" placeholder="••••"
-                        class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-700 bg-gray-50 placeholder-gray-400" required>
+                    <div class="relative">
+                        <input type="password" id="password" placeholder="••••"
+                            class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-gray-700 bg-gray-50 placeholder-gray-400" required>
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="button" onclick="handleLogin()" id="loginBtn"
@@ -69,21 +77,33 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.setAttribute('stroke', '#4f46e5');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.setAttribute('stroke', 'currentColor');
+        }
+    }
+
     async function handleLogin() {
-        let emailInput = document.getElementById('emailInput').value.trim();
+        // Lowercase fix to handle mobile auto-capitalization issues
+        let emailInput = document.getElementById('emailInput').value.trim().toLowerCase();
         const password = document.getElementById('password').value.trim();
         const messageElement = document.getElementById('login-message');
         const loginBtn = document.getElementById('loginBtn');
         const originalBtnText = "Log In"; 
 
-        messageElement.innerHTML = ''; // Clear previous errors
+        messageElement.innerHTML = ''; 
 
         if (!emailInput || !password) {
             messageElement.innerHTML = '<span class="text-red-600 font-bold">Please enter email and password.</span>';
             return;
         }
 
-        // Auto-append @gmail.com for student convenience
         if (!emailInput.includes('@')) {
             emailInput += "@gmail.com";
         }
@@ -92,7 +112,6 @@
         loginBtn.innerHTML = `<span>Verifying...</span>`;
 
         try {
-            // 1. AUTHENTICATE: Check Email & Password
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: emailInput,
                 password: password
@@ -102,44 +121,35 @@
 
             const user = data.user;
             
-            // 2. THE GATEKEEPER: Check Profile Status
             const { data: profile, error: profileError } = await supabaseClient
                 .from('profiles')
                 .select('is_active, role, current_level, full_name')
                 .eq('id', user.id)
                 .single();
 
-            // If profile exists, check for BAN or GRADUATION
             if (profile) {
                 if (profile.is_active === false) {
-                    await supabaseClient.auth.signOut(); // Kick them out immediately
+                    await supabaseClient.auth.signOut(); 
                     throw new Error("🚫 Access Denied: This account has been deactivated.");
                 }
 
-                // Optional: Block if Level > 8 (Course Completed) - Only for students
                 if (profile.role === 'student' && profile.current_level > 8) {
                     await supabaseClient.auth.signOut();
                     throw new Error("🎓 Course Completed. Please contact the center.");
                 }
             }
 
-            // 3. SUCCESS: Set Session & Redirect
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userId', user.id);
             sessionStorage.setItem('userEmail', user.email);
-            sessionStorage.setItem('userRole', profile ? profile.role : 'student'); // Default to student if no profile
+            sessionStorage.setItem('userRole', profile ? profile.role : 'student');
 
-            if (profile && profile.role === 'admin') {
-                messageElement.innerHTML = '<span class="text-indigo-600 font-bold">✅ Welcome, Center Owner!</span>';
-                setTimeout(() => window.location.href = 'teacher-dashboard.html', 1000);
-            } else if (profile && profile.role === 'teacher') {
+            if (profile && (profile.role === 'admin' || profile.role === 'teacher')) {
                 messageElement.innerHTML = '<span class="text-indigo-600 font-bold">✅ Welcome, Teacher!</span>';
                 setTimeout(() => window.location.href = 'teacher-dashboard.html', 1000);
             } else {
-                // Student Login
                 const studentName = profile ? profile.full_name : emailInput.split('@')[0];
                 sessionStorage.setItem('studentIdentifier', studentName);
-                
                 messageElement.innerHTML = `<span class="text-green-600 font-bold">✅ Welcome, ${studentName}!</span>`;
                 setTimeout(() => window.location.href = 'practice_options.html', 1000);
             }
@@ -147,10 +157,10 @@
         } catch (err) {
             console.error("Login Error:", err);
             loginBtn.disabled = false;
-            loginBtn.innerHTML = originalBtnText; // Reset button text
+            // Restore button with the original arrow icon
+            loginBtn.innerHTML = `<span>${originalBtnText}</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>`;
             
-            // Show specific error message (Ban vs Wrong Password)
-            if (err.message.includes("Access Denied")) {
+            if (err.message.includes("Access Denied") || err.message.includes("Course Completed")) {
                 messageElement.innerHTML = `<span class="text-red-600 font-bold">${err.message}</span>`;
             } else {
                 messageElement.innerHTML = '<span class="text-red-600 font-bold">❌ Login Failed. Check Password.</span>';
@@ -158,7 +168,6 @@
         }
     }
 
-    // Allow "Enter" key to submit
     document.getElementById('password').addEventListener('keypress', (e) => { 
         if (e.key === 'Enter') handleLogin(); 
     });
