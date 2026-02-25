@@ -145,7 +145,7 @@
             if (err.message.includes("Access Denied")) {
                 messageElement.innerHTML = `<span class="text-red-600 font-bold">${err.message}</span>`;
             } else {
-                messageElement.innerHTML = '<span class="text-red-600 font-bold">❌ Login Failed. Check Password.</span>';
+                messageElement.innerHTML = '<span class="text-red-600 font-bold">❌ Error: ${err.message}</span>';
             }
         }
     }
