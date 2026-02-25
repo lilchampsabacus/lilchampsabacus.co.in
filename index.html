@@ -96,7 +96,7 @@
                 password: password
             });
 
-            if (error) throw new Error("Incorrect Password or Email.");
+            if (error) throw new Error(error.message);
 
             const user = data.user;
 
