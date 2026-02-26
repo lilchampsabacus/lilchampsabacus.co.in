@@ -93,9 +93,9 @@
             }
 
             try {
-                // Improved parsing to match DB exactly
                 const namePart = studentId.split('@')[0];
                 const cleanName = namePart.replace(/[0-9]/g, '');
+                // Ensure name is clean and capitalized correctly to match DB
                 currentStudentName = cleanName.split('.').map(part => 
                     part.charAt(0).toUpperCase() + part.slice(1)
                 ).join(' ').trim();
@@ -127,7 +127,7 @@
                 return;
             }
 
-            // Convert local input dates to ISO format for database filtering
+            // Fix: Create ISO strings to ensure midnight-to-midnight coverage across timezones
             const startISO = `${startDateVal}T00:00:00.000Z`;
             const endISO = `${endDateVal}T23:59:59.999Z`;
 
@@ -137,7 +137,7 @@
             loader.style.display = 'block';
 
             try {
-                // Fetch filtered data directly from Supabase
+                // Fix: Filter directly in the Supabase query instead of in JavaScript
                 const { data, error } = await supabaseClient
                     .from('reports')
                     .select('*')
@@ -150,7 +150,7 @@
 
                 if (!data || data.length === 0) {
                     loader.style.display = 'none';
-                    statusMsg.textContent = `No practice records found for "${currentStudentName}" between ${startDateVal} and ${endDateVal}.`;
+                    statusMsg.textContent = `No practice records found for "${currentStudentName}" in this date range.`;
                     return;
                 }
 
@@ -162,9 +162,9 @@
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-gray-200 hover:bg-gray-50";
 
-                    // Format date for display (e.g., 21-02-2026 22:49)
+                    // Display date in easy-to-read DD/MM/YYYY format
                     const dateObj = new Date(row.indian_time);
-                    const formattedDate = dateObj.toLocaleString('en-GB', { 
+                    const formattedDisplayDate = dateObj.toLocaleString('en-GB', { 
                         day: '2-digit', month: '2-digit', year: 'numeric', 
                         hour: '2-digit', minute: '2-digit', hour12: false 
                     }).replace(',', '');
@@ -189,7 +189,7 @@
                     else if(accuracyVal < 0.9) accuracyColor = "text-yellow-600";
                     
                     tr.innerHTML = `
-                        <td class="py-3 px-6 font-medium text-gray-700">${formattedDate}</td>
+                        <td class="py-3 px-6 font-medium text-gray-700">${formattedDisplayDate}</td>
                         <td class="py-3 px-6">${row.challenge_type}</td>
                         <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
                         <td class="py-3 px-6 text-center">${row.time_taken}</td>
