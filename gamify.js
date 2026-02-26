@@ -4,7 +4,7 @@
 // PART 1: CONFIGURATION (KEYS MUST BE AT THE TOP)
 // ==================================================
 
-const SUPABASE_URL = "https://ipakwgzbbjywzccoahiw.supabase.co";
+const SUPABASE_URL = "https://portal-bridge.ucmas-ambernath-pg.workers.dev";
 // NOTE: This ANON key is safe to be public as long as Row Level Security (RLS)
 // is enabled on the Supabase backend. It should NOT be a service_role key.
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
