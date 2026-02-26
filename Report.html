@@ -55,13 +55,13 @@
         </div>
 
         <div id="loader" class="loader mb-4"></div>
-        <div id="statusMsg" class="text-red-500 font-bold mb-4 text-center"></div>
+        <div id="statusMsg" class="text-red-500 font-bold mb-4"></div>
 
         <div class="w-full max-w-6xl overflow-x-auto bg-white rounded-2xl shadow-lg hidden" id="tableContainer">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">Date & Time</th>
+                        <th class="py-3 px-6 text-left">Date</th>
                         <th class="py-3 px-6 text-left">Challenge</th>
                         <th class="py-3 px-6 text-center">Score</th>
                         <th class="py-3 px-6 text-center">Time (mm:ss)</th>
@@ -69,123 +69,181 @@
                     </tr>
                 </thead>
                 <tbody id="reportBody" class="text-gray-600 text-sm font-light">
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </main>
 
     <script>
-    const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let currentStudentName = "Akshit Joshi"; // Forcing exact name match for testing
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const studentId = sessionStorage.getItem('studentIdentifier');
-
-        if (studentId) {
-            try {
-                // Improved name cleaner to ensure it matches "Akshit Joshi"
-                const namePart = studentId.split('@')[0];
-                const cleanName = namePart.replace(/[0-9]/g, '');
-                currentStudentName = cleanName.split('.').map(part => 
-                    part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-                ).join(' ').trim();
-
-                document.getElementById('studentNameDisplay').textContent = currentStudentName;
-            } catch (err) {
-                console.error("Name parsing error:", err);
-            }
-        }
+        const SUPABASE_URL = 'https://ipakwgzbbjywzccoahiw.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk';
         
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        document.getElementById('endDate').valueAsDate = today;
-        document.getElementById('startDate').valueAsDate = firstDay;
-    });
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function fetchSupabaseReport() {
-        const startDateVal = document.getElementById('startDate').value; // YYYY-MM-DD
-        const endDateVal = document.getElementById('endDate').value;     // YYYY-MM-DD
-        const statusMsg = document.getElementById('statusMsg');
-        const loader = document.getElementById('loader');
-        const tableContainer = document.getElementById('tableContainer');
-        const tbody = document.getElementById('reportBody');
+        let currentStudentName = "";
 
-        // Prepare ISO strings for the database (UTC)
-        const startISO = `${startDateVal}T00:00:00.000Z`;
-        const endISO = `${endDateVal}T23:59:59.999Z`;
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Page Loaded. Checking Session..."); 
+            
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            const studentId = sessionStorage.getItem('studentIdentifier');
 
-        statusMsg.textContent = "";
-        tbody.innerHTML = "";
-        tableContainer.classList.add('hidden');
-        loader.style.display = 'block';
-
-        try {
-            // FIX: Search the whole database for this specific student AND date range
-            const { data, error } = await supabaseClient
-                .from('reports')
-                .select('*')
-                .eq('student_name', currentStudentName) // Exact Match
-                .gte('indian_time', startISO)           // Filter by Date Start
-                .lte('indian_time', endISO)             // Filter by Date End
-                .order('indian_time', { ascending: false });
-
-            if (error) throw error;
-
-            if (!data || data.length === 0) {
-                loader.style.display = 'none';
-                statusMsg.textContent = `No records found for "${currentStudentName}" between ${startDateVal} and ${endDateVal}.`;
+            if (isLoggedIn !== 'true' || !studentId) {
+                alert("Session missing! Please go back to the Login page.");
+                window.location.href = 'index.html'; 
                 return;
             }
 
-            loader.style.display = 'none';
-            tableContainer.classList.remove('hidden');
+            try {
+                const namePart = studentId.split('@')[0];
+                const cleanName = namePart.replace(/[0-9]/g, '');
+                currentStudentName = cleanName.split('.').map(part => 
+                    part.charAt(0).toUpperCase() + part.slice(1)
+                ).join(' ');
 
-            const fragment = document.createDocumentFragment();
-            data.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-200 hover:bg-gray-50";
+                const nameDisplay = document.getElementById('studentNameDisplay');
+                if(nameDisplay) nameDisplay.textContent = currentStudentName;
 
-                // Format date for the table display
-                const dateObj = new Date(row.indian_time);
-                const displayDate = dateObj.toLocaleDateString('en-GB') + " " + dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            } catch (err) {
+                console.error("Name parsing error:", err);
+                currentStudentName = "Student"; 
+            }
+            
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            if(document.getElementById('endDate')) document.getElementById('endDate').valueAsDate = today;
+            if(document.getElementById('startDate')) document.getElementById('startDate').valueAsDate = firstDay;
+        });
 
-                let scoreParts = (row.score_text || "0/0").split('/');
-                let score = parseFloat(scoreParts[0]) || 0;
-                let total = parseFloat(scoreParts[1]) || 1;
-                let accuracyVal = score / total;
-                const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
+        async function fetchSupabaseReport() {
+            const startDateVal = document.getElementById('startDate').value;
+            const endDateVal = document.getElementById('endDate').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const loader = document.getElementById('loader');
+            const tableContainer = document.getElementById('tableContainer');
+            const tbody = document.getElementById('reportBody');
 
-                let accuracyColor = accuracyVal < 0.7 ? "text-red-600" : (accuracyVal < 0.9 ? "text-yellow-600" : "text-green-600");
+            if(!currentStudentName) {
+                statusMsg.textContent = "Error: Student Name not identified. Please re-login.";
+                return;
+            }
 
-                tr.innerHTML = `
-                    <td class="py-3 px-6 font-medium text-gray-700">${displayDate}</td>
+            statusMsg.textContent = "";
+            tbody.innerHTML = "";
+            tableContainer.classList.add('hidden');
+            loader.style.display = 'block';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('reports')
+                    .select('*')
+                    .eq('student_name', currentStudentName)
+                    .order('indian_time', { ascending: false })
+                    .limit(100);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    loader.style.display = 'none';
+                    statusMsg.textContent = `No practice records found for "${currentStudentName}".`;
+                    return;
+                }
+
+                const start = new Date(startDateVal);
+                start.setHours(0,0,0,0);
+                const end = new Date(endDateVal);
+                end.setHours(23,59,59,999);
+
+                const filteredData = data.filter(row => {
+                    const rawDateString = row.indian_time.slice(0, 19);
+                    const rowDate = new Date(rawDateString);
+                    return rowDate >= start && rowDate <= end;
+                });
+
+                if (filteredData.length === 0) {
+                    loader.style.display = 'none';
+                    statusMsg.textContent = "No records found in this date range.";
+                    return;
+                }
+                
+                filteredData.sort((a, b) => {
+                return new Date(b.indian_time) - new Date(a.indian_time);
+                });
+
+                loader.style.display = 'none';
+                tableContainer.classList.remove('hidden');
+
+
+                const fragment = document.createDocumentFragment();
+                filteredData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-200 hover:bg-gray-50";
+
+                    let formattedDate = row.indian_time.replace('T', ' ').slice(0, 19);
+
+                    let score = 0;
+                    let total = 1;
+
+                    if (row.score_text && row.score_text.includes('/')) {
+                    const parts = row.score_text.split('/');
+                    score = parseFloat(parts[0]);
+                    total = parseFloat(parts[1]);
+                    } else {
+                    score = row.score_val || 0;
+                    total = row.total_val || 1;
+                    }
+                    
+                    let accuracyVal = score / total;
+                    const accuracyPercentage = Math.round(accuracyVal * 100) + "%";
+
+                    let accuracyColor = "text-green-600";
+                    
+                    if(accuracyVal < 0.7) { 
+                        accuracyColor = "text-red-600";
+                        } else if(accuracyVal < 0.9) {
+                        accuracyColor = "text-yellow-600";
+                    }
+                    
+                    tr.innerHTML = `
+                    <td class="py-3 px-6 font-medium text-gray-700">${formattedDate}</td>
                     <td class="py-3 px-6">${row.challenge_type}</td>
                     <td class="py-3 px-6 text-center font-bold text-blue-600">${row.score_text}</td>
                     <td class="py-3 px-6 text-center">${row.time_taken}</td>
                     <td class="py-3 px-6 text-center font-bold ${accuracyColor}">${accuracyPercentage}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-            tbody.appendChild(fragment);
+                    `;
+                    fragment.appendChild(tr);
+                });
+                tbody.appendChild(fragment);
 
-        } catch (err) {
-            loader.style.display = 'none';
-            statusMsg.textContent = "Error: " + err.message;
-            console.error(err);
+            } catch (err) {
+                loader.style.display = 'none';
+                statusMsg.textContent = "Error loading data: " + err.message;
+                console.error("Supabase Error:", err);
+            }
         }
-    }
-        // Security: Prevent Inspections
+
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.key === 'u') {
                 e.preventDefault();
                 return false;
             }
         });
-</script>
+    </script>
 </body>
 </html>
-
-
