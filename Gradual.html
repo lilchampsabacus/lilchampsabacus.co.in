@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gradual Practice - Li'l Champs Abacus Academy</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
@@ -165,6 +166,11 @@
     </footer>
 
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://portal-bridge.ucmas-ambernath-pg.workers.dev";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let studentIdentifier = sessionStorage.getItem('studentIdentifier');
         let studentName = studentIdentifier ? studentIdentifier.split('@')[0].split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ') : 'Student'; 
 
@@ -226,10 +232,38 @@
             if (e.key === 'Enter' && !userAnswerInput.disabled) { e.preventDefault(); checkAnswer(); }
         });
 
+        async function savePracticeToSupabase(practiceType, stepsCompleted) {
+            try {
+                const { data, error } = await supabase
+                    .from('dailypractice')
+                    .insert([
+                        {
+                            student_name: studentName,
+                            practice_type: practiceType,
+                            steps_completed: stepsCompleted,
+                            practice_time: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) {
+                    console.error('Error saving to Supabase:', error);
+                } else {
+                    console.log('Practice saved successfully!');
+                }
+            } catch (err) {
+                console.error('Exception saving to Supabase:', err);
+            }
+        }
+
         function generateReport() {
               const totalSec = Math.round((Date.now() - startTime) / 1000);
+              const practiceType = mode === 'addition' ? 'Gradual Addition' : 'Gradual Subtraction';
+              
+              // Save to Supabase
+              savePracticeToSupabase(practiceType, TOTAL_STEPS);
+              
               $('report-name').textContent = studentName;
-              $('report-mode').textContent = mode === 'addition' ? 'Gradual Addition' : 'Gradual Subtraction';
+              $('report-mode').textContent = practiceType;
               $('report-time').textContent = `${Math.floor(totalSec / 60)}m ${totalSec % 60}s`;
               $('report-datetime').textContent = new Date().toLocaleString();
               exerciseScreen.style.display = 'none'; reportScreen.style.display = 'block';
@@ -237,4 +271,3 @@
     </script>
 </body>
 </html>
-
