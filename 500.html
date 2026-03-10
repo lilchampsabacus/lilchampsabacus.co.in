@@ -84,6 +84,7 @@
                     <li>Solve <strong>500</strong> sums.</li>
                     <li>No feedback until the end.</li>
                     <li>Internet required to Start & Finish.</li>
+                    <li>⏱️ Auto-submits after <strong>15 minutes</strong>.</li>
                 </ul>
             </div>
 
@@ -95,6 +96,10 @@
         <div id="practice-area" style="display: none;">
             <div class="absolute top-4 w-full px-6 flex justify-between items-center text-gray-400 font-bold">
                 <div class="text-xs uppercase tracking-wider">Mission Progress</div>
+                <div id="countdown-display" class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+                    <span class="text-indigo-500 text-sm">⏱️</span>
+                    <span id="countdown-text" class="font-black text-indigo-700 text-lg tabular-nums">15:00</span>
+                </div>
                 <div class="bg-gray-200 rounded-full px-4 py-1 text-sm text-gray-700 shadow-inner">
                     <span id="current-count">1</span> / 500
                 </div>
@@ -133,7 +138,7 @@
                     <h2 class="text-xl font-bold text-gray-700 mt-2">2 Digit x 1 Digit (500 sums)</h2>
                 </div>
 
-                <h3 class="text-2xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <h3 id="report-main-msg" class="text-2xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
                 <p class="text-center text-gray-500 mb-6 border-b pb-4 text-sm"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600">Student</span></p>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -191,12 +196,15 @@
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         const TOTAL_QUESTIONS = 500;
+        const TIMER_SECONDS = 900; // 15 minutes fixed
         
-        let questionsData = []; // Stores the 500 fetched questions
+        let questionsData = [];
         let currentQuestionIndex = 0;
         let startTime;
         let studentNameFormatted = "Student";
         let isSubmitting = false;
+        let countdownInterval;
+        let isTimedOut = false;
 
         const practiceArea = document.getElementById('practice-area');
         const numTopEl = document.getElementById('num-top');
@@ -253,6 +261,7 @@
                 practiceArea.style.display = 'flex';
                 currentQuestionIndex = 0;
                 startTime = Date.now();
+                startCountdown();
                 showQuestion();
 
             } catch (err) {
@@ -317,15 +326,56 @@
             document.getElementById('finish-screen').style.display = 'flex';
         }
 
+        function startCountdown() {
+            let remaining = TIMER_SECONDS;
+            function updateDisplay() {
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                const el = document.getElementById('countdown-text');
+                const wrapper = document.getElementById('countdown-display');
+                el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (remaining <= 30) {
+                    wrapper.className = 'flex items-center gap-1.5 bg-red-100 border border-red-400 px-3 py-1 rounded-full animate-pulse';
+                    el.className = 'font-black text-red-600 text-lg tabular-nums';
+                } else if (remaining <= 60) {
+                    wrapper.className = 'flex items-center gap-1.5 bg-orange-50 border border-orange-400 px-3 py-1 rounded-full';
+                    el.className = 'font-black text-orange-600 text-lg tabular-nums';
+                }
+            }
+            updateDisplay();
+            countdownInterval = setInterval(() => {
+                remaining--;
+                updateDisplay();
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    isTimedOut = true;
+                    // Close encouragement modal if open
+                    document.getElementById('encouragement-modal').classList.add('hidden');
+                    endMission();
+                }
+            }, 1000);
+        }
+
         async function endMission() {
             if (isSubmitting) return;
             isSubmitting = true;
 
-            const btn = document.getElementById('submit-final-btn');
-            btn.textContent = "Submitting... 📡";
-            btn.disabled = true;
-            btn.classList.remove('bg-green-600', 'animate-bounce');
-            btn.classList.add('bg-gray-500', 'cursor-not-allowed', 'opacity-75');
+            clearInterval(countdownInterval);
+            document.getElementById('countdown-text').textContent = '0:00';
+            document.getElementById('countdown-display').className = 'flex items-center gap-1.5 bg-gray-100 border border-gray-300 px-3 py-1 rounded-full';
+
+            // If triggered by timeout: hide practice area + finish screen, go straight to report
+            if (isTimedOut) {
+                practiceArea.style.display = 'none';
+                document.getElementById('finish-screen').style.display = 'none';
+            } else {
+                // Normal finish — update the "See Report Card" button
+                const btn = document.getElementById('submit-final-btn');
+                btn.textContent = "Submitting... 📡";
+                btn.disabled = true;
+                btn.classList.remove('bg-green-600', 'animate-bounce');
+                btn.classList.add('bg-gray-500', 'cursor-not-allowed', 'opacity-75');
+            }
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -378,8 +428,14 @@
                 wrongBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
+            if (isTimedOut) {
+                const reportMsg = document.getElementById('report-main-msg');
+                reportMsg.textContent = "⏰ Time's Up!";
+                reportMsg.classList.replace('text-blue-800', 'text-orange-700');
+            }
+
             const payload = {
-                challenge: "500 Sum Marathon",
+                challenge: "500 Sum Marathon" + (isTimedOut ? " (T)" : ""),
                 score: score,
                 total: TOTAL_QUESTIONS, 
                 time: timeFormatted,
@@ -391,7 +447,7 @@
             
             saveOrQueueResult(payload);
             
-            if (score === TOTAL_QUESTIONS && window.lilChampUtils) {
+            if (score === TOTAL_QUESTIONS && !isTimedOut && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
@@ -471,5 +527,3 @@
     </script>
 </body>
 </html>
-
-
