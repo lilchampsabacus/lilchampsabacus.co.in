@@ -111,7 +111,32 @@
                 <br>Be careful with the zero placement!
             </p>
 
-            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-50 disabled:scale-100" disabled>
+            <!-- ⏱️ TIME LIMIT SELECTION -->
+            <div class="mb-6">
+                <p class="text-base font-bold text-gray-700 mb-3">⏱️ Select Your Time Limit:</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="selectTimeLimit(600, this)" id="time-btn-600"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-green-400 hover:bg-green-50">
+                        <div class="text-2xl mb-1">🐢</div>
+                        <div class="text-lg">10 Minutes</div>
+                        <div class="text-xs font-semibold text-green-600 uppercase tracking-wide mt-1">Beginner</div>
+                    </button>
+                    <button onclick="selectTimeLimit(300, this)" id="time-btn-300"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-yellow-400 hover:bg-yellow-50">
+                        <div class="text-2xl mb-1">🚀</div>
+                        <div class="text-lg">5 Minutes</div>
+                        <div class="text-xs font-semibold text-yellow-600 uppercase tracking-wide mt-1">Intermediate</div>
+                    </button>
+                    <button onclick="selectTimeLimit(180, this)" id="time-btn-180"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-red-400 hover:bg-red-50">
+                        <div class="text-2xl mb-1">⚡</div>
+                        <div class="text-lg">3 Minutes</div>
+                        <div class="text-xs font-semibold text-red-600 uppercase tracking-wide mt-1">Pro</div>
+                    </button>
+                </div>
+            </div>
+
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
                 🚀 Launch Mission
             </button>
         </section>
@@ -120,8 +145,15 @@
             <div class="bg-white p-4 rounded-xl shadow-md mb-6 sticky top-4 z-20 border-b-4 border-blue-200">
                 <div class="flex justify-between items-center mb-2">
                     <div class="text-gray-600 font-semibold">Progress</div>
-                    <div id="streak-display" class="font-bold text-orange-500 text-lg hidden" style="display:none">
-                        🔥 Streak: <span id="streak-count">0</span>
+                    <div class="flex items-center gap-3">
+                        <!-- Countdown Timer -->
+                        <div id="countdown-display" class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+                            <span class="text-indigo-500 text-sm">⏱️</span>
+                            <span id="countdown-text" class="font-black text-indigo-700 text-lg tabular-nums">--:--</span>
+                        </div>
+                        <div id="streak-display" class="font-bold text-orange-500 text-lg hidden" style="display:none">
+                            🔥 Streak: <span id="streak-count">0</span>
+                        </div>
                     </div>
                 </div>
                 <div class="relative w-full h-8 mt-2 mb-2 select-none">
@@ -159,7 +191,7 @@
                     <h2 class="text-2xl font-extrabold text-gray-700 mt-2">Special Division (Zero)</h2>
                 </div>
 
-                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <h3 id="report-main-msg" class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
                 <p class="text-center text-gray-500 mb-6 border-b pb-4"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
                 
                 <div class="grid grid-cols-2 gap-6 mb-6">
@@ -216,11 +248,14 @@
         const TOTAL_SLIDES = TOTAL_SUMS / SUMS_PER_SLIDE;
         
         let timerInterval;
+        let countdownInterval;
         let sumsData = [];
         let startTime;
         let currentSlideIndex = 0;
         let currentStreak = 0;
         let selectedLevel = "special-div-3d1d"; // Default
+        let selectedTimeLimit = null;
+        let isTimedOut = false;
 
         function formatStudentName(identifier) {
             if (!identifier || typeof identifier !== 'string') return 'Pilot';
@@ -248,11 +283,37 @@
             if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
-                startButton.disabled = false;
+                // Button stays disabled until time is also selected
             } else {
                 startButton.disabled = true;
             }
         });
+
+        function selectTimeLimit(seconds, btn) {
+            selectedTimeLimit = seconds;
+            // Reset all button styles
+            document.querySelectorAll('.time-option-btn').forEach(b => {
+                b.classList.remove('border-green-500', 'bg-green-50', 'border-yellow-500', 'bg-yellow-50', 'border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
+                b.classList.add('border-gray-200', 'bg-white');
+            });
+            // Highlight selected
+            btn.classList.remove('border-gray-200', 'bg-white');
+            if (seconds === 600) {
+                btn.classList.add('border-green-500', 'bg-green-50', 'scale-105', 'shadow-md');
+            } else if (seconds === 300) {
+                btn.classList.add('border-yellow-500', 'bg-yellow-50', 'scale-105', 'shadow-md');
+            } else {
+                btn.classList.add('border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
+            }
+            // Enable launch button only if student is also loaded
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            if (studentIdentifier) {
+                const launchBtn = document.getElementById('start-button');
+                launchBtn.disabled = false;
+                launchBtn.classList.add('animate-pulse');
+                setTimeout(() => launchBtn.classList.remove('animate-pulse'), 1200);
+            }
+        }
 
         async function startTest() {
             selectedLevel = document.getElementById('level-select').value;
@@ -400,7 +461,35 @@
             window.scrollTo(0,0);
         }
 
-        function startTimer() { timerInterval = setInterval(() => {}, 1000); }
+        function startTimer() {
+            let remaining = selectedTimeLimit;
+            function updateDisplay() {
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                const text = `${m}:${s < 10 ? '0' : ''}${s}`;
+                const el = document.getElementById('countdown-text');
+                const wrapper = document.getElementById('countdown-display');
+                el.textContent = text;
+                if (remaining <= 30) {
+                    wrapper.className = 'flex items-center gap-1.5 bg-red-100 border border-red-400 px-3 py-1 rounded-full animate-pulse';
+                    el.className = 'font-black text-red-600 text-lg tabular-nums';
+                } else if (remaining <= 60) {
+                    wrapper.className = 'flex items-center gap-1.5 bg-orange-50 border border-orange-400 px-3 py-1 rounded-full';
+                    el.className = 'font-black text-orange-600 text-lg tabular-nums';
+                }
+            }
+            updateDisplay();
+            countdownInterval = setInterval(() => {
+                remaining--;
+                updateDisplay();
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    isTimedOut = true;
+                    endTest();
+                }
+            }, 1000);
+            timerInterval = setInterval(() => {}, 1000);
+        }
 		
 		function activateWatchdog(correctScore) {
     	const scoreElement = document.getElementById('report-correct');
@@ -431,10 +520,16 @@
             console.log("🚀 Ending Special Division Test..."); 
 
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.textContent = "Processing...";
+            if (submitBtn.disabled) return;
+            // Make visible in case auto-triggered from a non-last slide
+            submitBtn.classList.remove('hidden');
+            submitBtn.textContent = isTimedOut ? "⏰ Time's Up! Processing..." : "Processing...";
             submitBtn.disabled = true;
 
             clearInterval(timerInterval);
+            clearInterval(countdownInterval);
+            document.getElementById('countdown-text').textContent = '0:00';
+            document.getElementById('countdown-display').className = 'flex items-center gap-1.5 bg-gray-100 border border-gray-300 px-3 py-1 rounded-full';
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -463,7 +558,7 @@
             });
 
             document.getElementById('report-correct').textContent = score;
-			activateWatchdog(score);
+            activateWatchdog(score);
             document.getElementById('report-time-elapsed').textContent = timeFormatted;
             
             let attemptedCount = sumsData.filter(s => s.studentAnswer !== null).length;
@@ -491,7 +586,7 @@
 
             if (window.lilChampUtils && window.lilChampUtils.saveResult) {
                 window.lilChampUtils.saveResult({
-                    challenge: selectedLevel, // Use the selected level as the DB tag
+                    challenge: selectedLevel + (isTimedOut ? " (T)" : ""),
                     score: score,
                     total: sumsData.length, 
                     time: timeFormatted,
@@ -503,11 +598,17 @@
                 alert("Error: Could not save result. Please refresh.");
             }
 
+            if (isTimedOut) {
+                const reportMsg = document.getElementById('report-main-msg');
+                reportMsg.textContent = "⏰ Time's Up!";
+                reportMsg.classList.replace('text-blue-800', 'text-orange-700');
+            }
+
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
-            if (score === sumsData.length && window.lilChampUtils) {
+            if (score === sumsData.length && !isTimedOut && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
