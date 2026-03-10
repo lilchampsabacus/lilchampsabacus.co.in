@@ -423,20 +423,70 @@ function generateSpecialZeroDivision(code) {
 function generateNegativeSum(digits, rows) {
     var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
     var max = Math.pow(10, digits) - 1;
-    var limit = Math.pow(10, digits);
-    var nums = [];
-    var isValid = false;
-    while (!isValid) {
+    var borrow = Math.pow(10, digits); // 10, 100, 1000 ...
+    var nums, runningSum, isValid;
+
+    for (var attempt = 0; attempt < 300; attempt++) {
         nums = [];
-        var sum = 0;
-        for (var i = 0; i < rows; i++) {
+        runningSum = 0;
+
+        // Phase 1: 2 to (rows-3) positive numbers — build up a positive sum < max
+        var phase1Rows = 2 + Math.floor(Math.random() * Math.max(1, rows - 4));
+
+        for (var i = 0; i < phase1Rows; i++) {
             var n = Math.floor(Math.random() * (max - min + 1)) + min;
-            if (Math.random() > 0.4) { n = -n; }
             nums.push(n);
-            sum += n;
+            runningSum += n;
         }
-        if (sum < 0 && sum > -limit) { isValid = true; }
+
+        // Phase 1 sum must be in [1, max] so one negative number can push it below 0
+        if (runningSum < 1 || runningSum > max) continue;
+
+        // Borrow row: one negative number with magnitude in [runningSum+1, max]
+        // This is the ONLY time sum crosses zero
+        var negMin = runningSum + 1;
+        var negMax = max;
+        if (negMin > negMax) continue;
+
+        var mag = negMin + Math.floor(Math.random() * (negMax - negMin + 1));
+        nums.push(-mag);
+        runningSum -= mag; // now negative, in range [-(max), -1]
+
+        // Phase 2: remaining rows keep sum strictly in (-borrow, 0) — never back to >= 0
+        var remaining = rows - phase1Rows - 1;
+        var ok = true;
+
+        for (var j = 0; j < remaining; j++) {
+            var found = false, n2;
+            for (var t = 0; t < 50; t++) {
+                if (Math.random() > 0.4) {
+                    // Positive: must not push sum back to >= 0
+                    var maxPos = Math.min(max, -runningSum - 1);
+                    if (maxPos >= min) {
+                        n2 = min + Math.floor(Math.random() * (maxPos - min + 1));
+                        found = true; break;
+                    }
+                } else {
+                    // Negative: must not push sum below -borrow
+                    var maxNeg = Math.min(max, borrow + runningSum - 1);
+                    if (maxNeg >= min) {
+                        n2 = -(min + Math.floor(Math.random() * (maxNeg - min + 1)));
+                        found = true; break;
+                    }
+                }
+            }
+            if (!found) { ok = false; break; }
+            nums.push(n2);
+            runningSum += n2;
+        }
+
+        // Valid: sum is negative and above -borrow (single borrow confirmed)
+        if (ok && runningSum < 0 && runningSum > -borrow) {
+            isValid = true;
+            break;
+        }
     }
+
     return nums;
 }
 
