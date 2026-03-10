@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Horizontal Addition/Subtraction Practice</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
@@ -164,6 +165,11 @@
     </footer>
 	
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://portal-bridge.ucmas-ambernath-pg.workers.dev";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         if (!sessionStorage.getItem('studentIdentifier')) { window.location.replace("index.html"); }
         let timerInterval, totalTimeElapsedSeconds = 0, startTime, currentNumber, currentOperation, currentSequence, targetNumber, stepsCompleted = 0;
 
@@ -270,8 +276,44 @@
             document.getElementById('feedback-area').classList.remove('hidden');
         }
 
+        async function savePracticeToSupabase(practiceType, stepsCompleted) {
+            try {
+                const { data, error } = await supabase
+                    .from('dailypractice')
+                    .insert([
+                        {
+                            student_name: formatStudentName(sessionStorage.getItem('studentIdentifier')),
+                            practice_type: practiceType,
+                            steps_completed: stepsCompleted,
+                            practice_time: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) {
+                    console.error('Error saving to Supabase:', error);
+                } else {
+                    console.log('Practice saved successfully!');
+                }
+            } catch (err) {
+                console.error('Exception saving to Supabase:', err);
+            }
+        }
+
         function endTest() {
             clearInterval(timerInterval);
+            
+            // Calculate steps completed
+            const config = SEQUENCE_DATA[currentSequence][currentOperation];
+            const sequenceValue = SEQUENCE_DATA[currentSequence].value.toString();
+            const numSteps = sequenceValue.length; // Number of digits in the sequence
+            
+            // Create descriptive practice type
+            const operationType = currentOperation === 'add' ? 'Addition' : 'Subtraction';
+            const practiceType = `Horizontal ${operationType} (${sequenceValue})`;
+            
+            // Save to Supabase
+            savePracticeToSupabase(practiceType, numSteps);
+            
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             const totalSec = totalTimeElapsedSeconds;
@@ -281,4 +323,3 @@
     </script>
 </body>
 </html>
-
