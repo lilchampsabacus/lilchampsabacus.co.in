@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Li'l Champs Abacus Academy</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
@@ -170,6 +171,11 @@
     </footer>
 
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://portal-bridge.ucmas-ambernath-pg.workers.dev";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwYWt3Z3piYmp5d3pjY29haGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTAyMjQsImV4cCI6MjA3Nzc2NjIyNH0.VNjAhpbMzv9c19-IAg8UF2u28aIhh5OYCjAhcec9dRk";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let state = { studentName: '', studentNumber: 0, totalSteps: 0, operation: '', currentStep: 0, currentValue: 0, targetValue: 0 };
         const $ = id => document.getElementById(id);
         const setupScreen = $('setupScreen'), practiceScreen = $('practiceScreen'), completionScreen = $('completionScreen');
@@ -217,7 +223,7 @@
         function nextStep() {
             state.currentStep++;
             if (state.currentStep > state.totalSteps) {
-                sendDataToGoogleSheet();
+                savePracticeToSupabase();
                 const now = new Date();
                 completionMessage.textContent = `Excellent work, ${state.studentName}! Completed ${state.totalSteps} steps of ${state.operation}.`;
                 dateTimeDisplay.textContent = `Finished: ${now.toLocaleString()}`;
@@ -244,9 +250,30 @@
             }
         }
 
-        function sendDataToGoogleSheet() {
-            const scriptURL = "https://script.google.com/macros/s/AKfycbwzaHaLlh8hdi6Vv2baqSh-b1XfDRRgSkEjO8mlPlOvnJh10adABNaswqDvmzIyhR6n/exec";
-            fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: state.studentName, operation: state.operation, number: state.studentNumber, steps: state.totalSteps }) });
+        async function savePracticeToSupabase() {
+            try {
+                const operationType = state.operation === 'addition' ? 'Addition' : 'Subtraction';
+                const practiceType = `Continuous ${operationType} (${state.studentNumber})`;
+                
+                const { data, error } = await supabase
+                    .from('dailypractice')
+                    .insert([
+                        {
+                            student_name: state.studentName,
+                            practice_type: practiceType,
+                            steps_completed: state.totalSteps,
+                            practice_time: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) {
+                    console.error('Error saving to Supabase:', error);
+                } else {
+                    console.log('Practice saved successfully!');
+                }
+            } catch (err) {
+                console.error('Exception saving to Supabase:', err);
+            }
         }
          
         startButton.addEventListener('click', startGame);
@@ -272,4 +299,3 @@
     </script>
 </body>
 </html>
-
