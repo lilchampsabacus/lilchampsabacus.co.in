@@ -62,7 +62,59 @@
         .sum-table tr:nth-child(even) { background-color: #f9fafb; }
         .sum-table tr:last-child .number-cell { border-bottom: 4px solid #1f2937; }
         .row-index { font-size: 0.7rem; color: #9ca3af; text-align: right; padding-right: 6px; width: 25px; border: none; }
-        .negative-number { color: #dc2626; } 
+        .negative-number { color: #dc2626; }
+
+        /* Borrow badge column */
+        .borrow-cell {
+            text-align: left;
+            padding-left: 6px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: 1%;
+        }
+        .borrow-tag {
+            display: inline-block;
+            background: #fef3c7;
+            border: 1.5px solid #fbbf24;
+            color: #92400e;
+            font-size: 0.58rem;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Answer formula box */
+        .answer-formula-wrap {
+            margin: 0.6rem 0.2rem 0.2rem;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px solid #86efac;
+            border-radius: 0.6rem;
+            padding: 0.55rem 0.8rem;
+            text-align: center;
+        }
+        .formula-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .formula-label {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #15803d;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .formula-text {
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: #166534;
+            font-family: 'Courier New', monospace;
+        }
         
         body.focus-mode { background-color: #f0f9ff !important; color: #433422; height: 100vh; overflow-y: auto; }
         body.focus-mode header, body.focus-mode footer, body.focus-mode .back-link { display: none !important; }
@@ -117,33 +169,8 @@
                     ⚠️ The final answer will always be negative (-).
                 </p>
             </div>
-
-            <!-- ⏱️ TIME LIMIT SELECTION -->
-            <div class="mb-6 w-full">
-                <p class="text-base font-bold text-gray-700 mb-3">⏱️ Select Your Time Limit:</p>
-                <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button onclick="selectTimeLimit(720, this)" id="time-btn-720"
-                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-green-400 hover:bg-green-50">
-                        <div class="text-2xl mb-1">🐢</div>
-                        <div class="text-lg">12 Minutes</div>
-                        <div class="text-xs font-semibold text-green-600 uppercase tracking-wide mt-1">Beginner</div>
-                    </button>
-                    <button onclick="selectTimeLimit(600, this)" id="time-btn-600"
-                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-yellow-400 hover:bg-yellow-50">
-                        <div class="text-2xl mb-1">🚀</div>
-                        <div class="text-lg">10 Minutes</div>
-                        <div class="text-xs font-semibold text-yellow-600 uppercase tracking-wide mt-1">Intermediate</div>
-                    </button>
-                    <button onclick="selectTimeLimit(480, this)" id="time-btn-480"
-                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-red-400 hover:bg-red-50">
-                        <div class="text-2xl mb-1">⚡</div>
-                        <div class="text-lg">8 Minutes</div>
-                        <div class="text-xs font-semibold text-red-600 uppercase tracking-wide mt-1">Pro</div>
-                    </button>
-                </div>
-            </div>
-
-            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
                 🚀 Launch Mission
             </button>
         </section>
@@ -163,11 +190,6 @@
                     <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
-                            <!-- Countdown Timer -->
-                            <div id="countdown-display" class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                                <span class="text-indigo-500 text-xs">⏱️</span>
-                                <span id="countdown-text" class="font-black text-indigo-700 text-base tabular-nums">--:--</span>
-                            </div>
                         </div>
                         <div class="relative w-full h-8 mt-2 mb-2 select-none">
                             <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
@@ -211,7 +233,7 @@
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
                     <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="report-level-title">Negative Sums</h2>
                 </div>
-                <h3 id="report-main-msg" class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
                 <p class="text-center text-gray-500 mb-6 border-b pb-4"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
@@ -254,10 +276,7 @@
         let startTime;
         let currentSlideIndex = 0;
         let timerInterval;
-        let countdownInterval;
         let isSubmitting = false;
-        let selectedTimeLimit = null;
-        let isTimedOut = false;
 
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
@@ -310,34 +329,11 @@
             if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
-                // Button stays disabled until time is also selected
+                startButton.disabled = false;
             } else {
                 startButton.disabled = true;
             }
         });
-
-        function selectTimeLimit(seconds, btn) {
-            selectedTimeLimit = seconds;
-            document.querySelectorAll('.time-option-btn').forEach(b => {
-                b.classList.remove('border-green-500', 'bg-green-50', 'border-yellow-500', 'bg-yellow-50', 'border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
-                b.classList.add('border-gray-200', 'bg-white');
-            });
-            btn.classList.remove('border-gray-200', 'bg-white');
-            if (seconds === 720) {
-                btn.classList.add('border-green-500', 'bg-green-50', 'scale-105', 'shadow-md');
-            } else if (seconds === 600) {
-                btn.classList.add('border-yellow-500', 'bg-yellow-50', 'scale-105', 'shadow-md');
-            } else {
-                btn.classList.add('border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
-            }
-            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
-            if (studentIdentifier) {
-                const launchBtn = document.getElementById('start-button');
-                launchBtn.disabled = false;
-                launchBtn.classList.add('animate-pulse');
-                setTimeout(() => launchBtn.classList.remove('animate-pulse'), 1200);
-            }
-        }
 
         async function startTest() {
             document.body.classList.add('focus-mode');
@@ -413,14 +409,44 @@
         }
         
         function createSumTableHtml(numbers) {
+            // Determine borrow amount from max digit length in the list
+            var maxAbs = Math.max.apply(null, numbers.map(function(n) { return Math.abs(n); }));
+            var digits = maxAbs.toString().length;
+            var borrowAmount = Math.pow(10, digits);
+            var borrowDisplay = borrowAmount.toLocaleString('en-IN');
+
+            // Find the first row where running sum goes negative (the borrow row)
+            var runningSum = 0;
+            var borrowRowIndex = -1;
+            for (var i = 0; i < numbers.length; i++) {
+                runningSum += numbers[i];
+                if (runningSum < 0 && borrowRowIndex === -1) {
+                    borrowRowIndex = i;
+                }
+            }
+
             let tableHtml = '<table class="sum-table">';
             numbers.forEach((num, rIndex) => {
                 const isNeg = num < 0;
                 const displayNum = isNeg ? `-${Math.abs(num)}` : `${num}`;
                 const colorClass = isNeg ? 'negative-number' : '';
-                tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}</td></tr>`;
+                const isBorrowRow = rIndex === borrowRowIndex;
+                const borrowCell = isBorrowRow
+                    ? `<td class="borrow-cell"><span class="borrow-tag">Borrow ${borrowDisplay}</span></td>`
+                    : `<td class="borrow-cell"></td>`;
+                tableHtml += `<tr><td class="row-index">${rIndex + 1}</td><td class="number-cell ${colorClass}">${displayNum}</td>${borrowCell}</tr>`;
             });
             tableHtml += '</table>';
+
+            // Answer formula hint
+            tableHtml += `
+                <div class="answer-formula-wrap">
+                    <div class="formula-row">
+                        <span class="formula-label">Answer</span>
+                        <span class="formula-text">&nbsp;=&nbsp; &minus;(Remaining Beads + 1)</span>
+                    </div>
+                </div>`;
+
             return tableHtml;
         }
 
@@ -474,34 +500,7 @@
             }
         }
 
-        function startTimer() {
-            let remaining = selectedTimeLimit;
-            function updateDisplay() {
-                const m = Math.floor(remaining / 60);
-                const s = remaining % 60;
-                const el = document.getElementById('countdown-text');
-                const wrapper = document.getElementById('countdown-display');
-                el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-                if (remaining <= 30) {
-                    wrapper.className = 'flex items-center gap-1 bg-red-100 border border-red-400 px-2 py-0.5 rounded-full animate-pulse';
-                    el.className = 'font-black text-red-600 text-base tabular-nums';
-                } else if (remaining <= 60) {
-                    wrapper.className = 'flex items-center gap-1 bg-orange-50 border border-orange-400 px-2 py-0.5 rounded-full';
-                    el.className = 'font-black text-orange-600 text-base tabular-nums';
-                }
-            }
-            updateDisplay();
-            countdownInterval = setInterval(() => {
-                remaining--;
-                updateDisplay();
-                if (remaining <= 0) {
-                    clearInterval(countdownInterval);
-                    isTimedOut = true;
-                    endTest();
-                }
-            }, 1000);
-            timerInterval = setInterval(() => {}, 1000);
-        }
+        function startTimer() { timerInterval = setInterval(() => {}, 1000); }
 
         async function endTest() {
             if (isSubmitting) return;
@@ -510,14 +509,11 @@
             const enterBtn = document.getElementById('enter-btn');
             if (enterBtn) {
                 enterBtn.disabled = true;
-                enterBtn.innerHTML = isTimedOut ? '⏰ Time\'s Up!' : 'Submitting... 📡';
+                enterBtn.innerHTML = 'Submitting... 📡';
                 enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
             
             clearInterval(timerInterval);
-            clearInterval(countdownInterval);
-            document.getElementById('countdown-text').textContent = '0:00';
-            document.getElementById('countdown-display').className = 'flex items-center gap-1 bg-gray-100 border border-gray-300 px-2 py-0.5 rounded-full';
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -529,6 +525,7 @@
             let mistakesArray = [];
 
             sumsData.forEach((q, index) => {
+                // Calculate correct sum locally
                 let correctVal = q.numbers.reduce((a, b) => a + b, 0);
                 
                 if (q.studentAnswer === correctVal) {
@@ -573,7 +570,7 @@
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
             const payload = {
-                challenge: levelText + (isTimedOut ? " (T)" : ""),
+                challenge: levelText, // e.g. "2-Digit 10 Rows (Negative)"
                 score: score,
                 total: TOTAL_SUMS, 
                 time: timeFormatted,
@@ -585,17 +582,11 @@
             
             saveOrQueueResult(payload);
 
-            if (isTimedOut) {
-                const reportMsg = document.getElementById('report-main-msg');
-                reportMsg.textContent = "⏰ Time's Up!";
-                reportMsg.classList.replace('text-blue-800', 'text-orange-700');
-            }
-
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
-            if (score === TOTAL_SUMS && !isTimedOut && window.lilChampUtils) {
+            if (score === TOTAL_SUMS && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
