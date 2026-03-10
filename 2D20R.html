@@ -451,8 +451,6 @@
 
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'index.html'; }
-
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvkMXKRqBq7Szo1EWQvYhk5nFcDik-n4GDooEqd2Vxv1b_4V4SfxOnr9VauSZYUWy-6Q/exec";
         
         let TOTAL_SUMS = 10; 
         let sumsData = [];
@@ -574,26 +572,9 @@
         let pendingQuestionsPromise = null; 
 
         function preLoadQuestions() {
-            const typeSelect = document.getElementById('practice-type');
-            const val = typeSelect.value;
-            
-            let digits = "2"; 
-            if (val === "3") digits = "1";
-            if (val === "1") digits = "2";
-            if (val === "2") digits = "3";
-            if (val === "4") digits = "4";
-            if (val === "5") digits = "5";
-
-            const LEVEL_CODE = `add-${digits}d10r`;
-            
-            console.log("Pre-fetching data for:", LEVEL_CODE);
-
-            pendingQuestionsPromise = fetch(`${SCRIPT_URL}?levelCode=${LEVEL_CODE}`)
-                .then(response => response.json())
-                .catch(err => {
-                    console.error("Pre-load failed", err);
-                    return null;
-                });
+            // No longer needed - questions are generated locally in startTest()
+            // using window.generateQuestions from gamify.js
+            console.log("Ready to generate questions locally");
         }
 
         async function startTest() {
