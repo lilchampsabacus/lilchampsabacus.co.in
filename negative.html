@@ -169,8 +169,33 @@
                     ⚠️ The final answer will always be negative (-).
                 </p>
             </div>
-            
-            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-50" disabled>
+
+            <!-- ⏱️ TIME LIMIT SELECTION -->
+            <div class="mb-6 w-full">
+                <p class="text-base font-bold text-gray-700 mb-3">⏱️ Select Your Time Limit:</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="selectTimeLimit(720, this)" id="time-btn-720"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-green-400 hover:bg-green-50">
+                        <div class="text-2xl mb-1">🐢</div>
+                        <div class="text-lg">12 Minutes</div>
+                        <div class="text-xs font-semibold text-green-600 uppercase tracking-wide mt-1">Beginner</div>
+                    </button>
+                    <button onclick="selectTimeLimit(600, this)" id="time-btn-600"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-yellow-400 hover:bg-yellow-50">
+                        <div class="text-2xl mb-1">🚀</div>
+                        <div class="text-lg">10 Minutes</div>
+                        <div class="text-xs font-semibold text-yellow-600 uppercase tracking-wide mt-1">Intermediate</div>
+                    </button>
+                    <button onclick="selectTimeLimit(480, this)" id="time-btn-480"
+                        class="time-option-btn flex-1 py-4 px-4 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-700 transition-all duration-200 hover:border-red-400 hover:bg-red-50">
+                        <div class="text-2xl mb-1">⚡</div>
+                        <div class="text-lg">8 Minutes</div>
+                        <div class="text-xs font-semibold text-red-600 uppercase tracking-wide mt-1">Pro</div>
+                    </button>
+                </div>
+            </div>
+
+            <button id="start-button" onclick="startTest()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg disabled:opacity-40 disabled:cursor-not-allowed" disabled>
                 🚀 Launch Mission
             </button>
         </section>
@@ -190,6 +215,11 @@
                     <div class="bg-white p-3 rounded-xl shadow-md border-l-4 border-orange-400">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-gray-500 font-bold text-xs uppercase">Progress</span>
+                            <!-- Countdown Timer -->
+                            <div id="countdown-display" class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                                <span class="text-indigo-500 text-xs">⏱️</span>
+                                <span id="countdown-text" class="font-black text-indigo-700 text-base tabular-nums">--:--</span>
+                            </div>
                         </div>
                         <div class="relative w-full h-8 mt-2 mb-2 select-none">
                             <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-800 -translate-y-1/2 rounded shadow-inner border border-gray-600"></div>
@@ -233,7 +263,7 @@
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Skill Mastery</span>
                     <h2 class="text-2xl font-extrabold text-gray-700 mt-2" id="report-level-title">Negative Sums</h2>
                 </div>
-                <h3 class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
+                <h3 id="report-main-msg" class="text-3xl font-black text-center text-blue-800 mb-2">Mission Accomplished!</h3>
                 <p class="text-center text-gray-500 mb-6 border-b pb-4"><span id="report-datetime"></span> | Agent: <span id="report-student-name" class="font-bold text-blue-600"></span></p>
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-green-50 p-4 rounded-xl border-2 border-green-100 text-center">
@@ -276,7 +306,10 @@
         let startTime;
         let currentSlideIndex = 0;
         let timerInterval;
+        let countdownInterval;
         let isSubmitting = false;
+        let selectedTimeLimit = null;
+        let isTimedOut = false;
 
         function saveOrQueueResult(payload) {
             if (navigator.onLine) {
@@ -329,11 +362,34 @@
             if (studentIdentifier) {
                 nameInput.value = studentIdentifier;
                 document.getElementById('auto-student-name-display').textContent = displayStudentName;
-                startButton.disabled = false;
+                // Button stays disabled until time is also selected
             } else {
                 startButton.disabled = true;
             }
         });
+
+        function selectTimeLimit(seconds, btn) {
+            selectedTimeLimit = seconds;
+            document.querySelectorAll('.time-option-btn').forEach(b => {
+                b.classList.remove('border-green-500', 'bg-green-50', 'border-yellow-500', 'bg-yellow-50', 'border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
+                b.classList.add('border-gray-200', 'bg-white');
+            });
+            btn.classList.remove('border-gray-200', 'bg-white');
+            if (seconds === 720) {
+                btn.classList.add('border-green-500', 'bg-green-50', 'scale-105', 'shadow-md');
+            } else if (seconds === 600) {
+                btn.classList.add('border-yellow-500', 'bg-yellow-50', 'scale-105', 'shadow-md');
+            } else {
+                btn.classList.add('border-red-500', 'bg-red-50', 'scale-105', 'shadow-md');
+            }
+            const studentIdentifier = sessionStorage.getItem('studentIdentifier');
+            if (studentIdentifier) {
+                const launchBtn = document.getElementById('start-button');
+                launchBtn.disabled = false;
+                launchBtn.classList.add('animate-pulse');
+                setTimeout(() => launchBtn.classList.remove('animate-pulse'), 1200);
+            }
+        }
 
         async function startTest() {
             document.body.classList.add('focus-mode');
@@ -500,7 +556,34 @@
             }
         }
 
-        function startTimer() { timerInterval = setInterval(() => {}, 1000); }
+        function startTimer() {
+            let remaining = selectedTimeLimit;
+            function updateDisplay() {
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                const el = document.getElementById('countdown-text');
+                const wrapper = document.getElementById('countdown-display');
+                el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (remaining <= 30) {
+                    wrapper.className = 'flex items-center gap-1 bg-red-100 border border-red-400 px-2 py-0.5 rounded-full animate-pulse';
+                    el.className = 'font-black text-red-600 text-base tabular-nums';
+                } else if (remaining <= 60) {
+                    wrapper.className = 'flex items-center gap-1 bg-orange-50 border border-orange-400 px-2 py-0.5 rounded-full';
+                    el.className = 'font-black text-orange-600 text-base tabular-nums';
+                }
+            }
+            updateDisplay();
+            countdownInterval = setInterval(() => {
+                remaining--;
+                updateDisplay();
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    isTimedOut = true;
+                    endTest();
+                }
+            }, 1000);
+            timerInterval = setInterval(() => {}, 1000);
+        }
 
         async function endTest() {
             if (isSubmitting) return;
@@ -509,11 +592,14 @@
             const enterBtn = document.getElementById('enter-btn');
             if (enterBtn) {
                 enterBtn.disabled = true;
-                enterBtn.innerHTML = 'Submitting... 📡';
+                enterBtn.innerHTML = isTimedOut ? '⏰ Time\'s Up!' : 'Submitting... 📡';
                 enterBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
             
             clearInterval(timerInterval);
+            clearInterval(countdownInterval);
+            document.getElementById('countdown-text').textContent = '0:00';
+            document.getElementById('countdown-display').className = 'flex items-center gap-1 bg-gray-100 border border-gray-300 px-2 py-0.5 rounded-full';
 
             const endTime = Date.now();
             const timeElapsedSeconds = Math.floor((endTime - startTime) / 1000);
@@ -525,7 +611,6 @@
             let mistakesArray = [];
 
             sumsData.forEach((q, index) => {
-                // Calculate correct sum locally
                 let correctVal = q.numbers.reduce((a, b) => a + b, 0);
                 
                 if (q.studentAnswer === correctVal) {
@@ -570,7 +655,7 @@
             const levelText = typeSelect.options[typeSelect.selectedIndex].text;
 
             const payload = {
-                challenge: levelText, // e.g. "2-Digit 10 Rows (Negative)"
+                challenge: levelText + (isTimedOut ? " (T)" : ""),
                 score: score,
                 total: TOTAL_SUMS, 
                 time: timeFormatted,
@@ -582,11 +667,17 @@
             
             saveOrQueueResult(payload);
 
+            if (isTimedOut) {
+                const reportMsg = document.getElementById('report-main-msg');
+                reportMsg.textContent = "⏰ Time's Up!";
+                reportMsg.classList.replace('text-blue-800', 'text-orange-700');
+            }
+
             document.body.classList.remove('focus-mode');
             document.getElementById('test-area').classList.add('hidden');
             document.getElementById('report-area').classList.remove('hidden');
             
-            if (score === TOTAL_SUMS && window.lilChampUtils) {
+            if (score === TOTAL_SUMS && !isTimedOut && window.lilChampUtils) {
                 window.lilChampUtils.celebrate();
             }
         }
