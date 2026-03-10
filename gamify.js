@@ -517,11 +517,55 @@ function generateDecimalSum(code) {
 function generateAdditionSum(digits, rows) {
     var nums = [];
     var sum = 0;
-    var min = digits === 1 ? 1 : Math.pow(10, digits - 1);
-    var max = Math.pow(10, digits) - 1;
+    
+    // Positions that must be POSITIVE: 0,1,3,4,6,7,9 (rows 1,2,4,5,7,8,10)
+    var mustBePositive = [0, 1, 3, 4, 6, 7, 9];
+    // Positions that must be NEGATIVE: 2,5,8 (rows 3,6,9)
+    var mustBeNegative = [2, 5, 8];
+    
     for (var i = 0; i < rows; i++) {
-        var n = Math.floor(Math.random() * (max - min + 1)) + min;
-        if (i > 0 && Math.random() > 0.5 && sum - n >= 0) n = -n;
+        var n;
+        
+        if (mustBePositive.indexOf(i) !== -1) {
+            // Always positive
+            var min, max;
+            if (i === 0 || i === 1) {
+                // First two numbers: special range (upper half)
+                if (digits === 1) {
+                    min = 5;
+                    max = 9;
+                } else {
+                    var baseMin = Math.pow(10, digits - 1);
+                    var baseMax = Math.pow(10, digits) - 1;
+                    min = Math.floor((baseMin + baseMax) / 2);
+                    max = baseMax;
+                }
+            } else {
+                // Other positive positions: normal range
+                min = digits === 1 ? 1 : Math.pow(10, digits - 1);
+                max = Math.pow(10, digits) - 1;
+            }
+            n = Math.floor(Math.random() * (max - min + 1)) + min;
+        } else if (mustBeNegative.indexOf(i) !== -1) {
+            // Always negative (rows 3, 6, 9)
+            min = digits === 1 ? 1 : Math.pow(10, digits - 1);
+            max = Math.pow(10, digits) - 1;
+            n = Math.floor(Math.random() * (max - min + 1)) + min;
+            n = -n;
+            
+            // Safety check: ensure sum doesn't go below 0
+            var attempts = 0;
+            while (sum + n < 0 && attempts < 100) {
+                n = Math.floor(Math.random() * (max - min + 1)) + min;
+                n = -n;
+                attempts++;
+            }
+            // If still negative after 100 attempts, use minimum negative that keeps sum >= 0
+            if (sum + n < 0) {
+                n = -Math.min(sum, max);
+            }
+        }
+        
         nums.push(n);
         sum += n;
     }
