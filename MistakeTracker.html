@@ -153,8 +153,6 @@
 
         function formatNumber(numValInt) {
             if (currentDecimals === 0) {
-        function formatNumber(numValInt) {
-            if (currentDecimals === 0) {
                 return numValInt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             } else {
                 let isNeg = numValInt < 0;
