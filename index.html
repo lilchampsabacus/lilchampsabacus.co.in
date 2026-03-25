@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Li'l Champs Pricing Poster</title>
+<title>Li'l Champs</title>
 <style>
   * {
     margin: 0;
@@ -28,30 +28,36 @@
   }
   /* LOGIN BUTTON - TOP RIGHT */
   .login-btn-container {
-    position: fixed;
-    top: 20px;
-    right: 30px;
+    position: absolute;
+    top: 25px;
+    right: 40px;
     z-index: 100;
   }
   .login-btn {
     background: white;
     color: #667eea;
-    padding: 12px 28px;
-    border-radius: 30px;
+    padding: 14px 32px;
+    border-radius: 35px;
     border: none;
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
-    display: inline-block;
-    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
   }
   .login-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-    background: #f8f9ff;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    background: #f5f7ff;
+  }
+  .login-btn:active {
+    transform: translateY(-2px);
   }
   /* HEADER */
   .header {
@@ -304,6 +310,14 @@
     .card {
       padding: 30px 20px;
     }
+    .login-btn-container {
+      top: 20px;
+      right: 20px;
+    }
+    .login-btn {
+      padding: 12px 28px;
+      font-size: 13px;
+    }
   }
   @media (max-width: 768px) {
     .pricing-container {
@@ -316,14 +330,37 @@
     .academy-name {
       font-size: 28px;
     }
+    .login-btn-container {
+      top: 15px;
+      right: 15px;
+    }
+    .login-btn {
+      padding: 11px 22px;
+      font-size: 12px;
+      border-radius: 25px;
+    }
+  }
+  @media (max-width: 480px) {
+    .poster {
+      padding: 70px 15px 30px 15px;
+    }
+    .login-btn-container {
+      top: 12px;
+      right: 12px;
+    }
+    .login-btn {
+      padding: 10px 18px;
+      font-size: 11px;
+      gap: 6px;
+    }
   }
 </style>
 </head>
 <body>
 
-<!-- LOGIN BUTTON - FIXED TOP RIGHT -->
+<!-- LOGIN BUTTON - TOP RIGHT -->
 <div class="login-btn-container">
-  <a href="login.html" class="login-btn">🔐 Login Existing Students</a>
+  <a href="login.html" class="login-btn">🔐 Student Login</a>
 </div>
 
 <div class="poster">
