@@ -14,70 +14,84 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: white;
   }
-  /* NAVIGATION BAR - STICKY */
+  
+  /* RESPONSIVE NAVIGATION BAR */
   .navbar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 0 40px;
-    height: 70px;
+    padding: 0;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     z-index: 1000;
   }
+  
   .navbar-logo {
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    padding: 12px 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
+  
   .navbar-logo span {
-    font-size: 14px;
-    opacity: 0.9;
+    font-size: 11px;
+    opacity: 0.85;
     display: block;
-    font-weight: 400;
-    margin-top: 2px;
+    font-weight: 500;
   }
+  
   .navbar-links {
     display: flex;
-    gap: 15px;
+    gap: 8px;
     align-items: center;
+    padding: 10px 15px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
+  
   .nav-link {
     color: white;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 6px;
     transition: all 0.3s;
-    opacity: 0.9;
+    opacity: 0.95;
+    white-space: nowrap;
   }
+  
   .nav-link:hover {
     opacity: 1;
     background: rgba(255,255,255,0.1);
   }
+  
   .login-btn-nav {
     background: white;
     color: #667eea;
-    padding: 10px 24px;
-    border-radius: 25px;
+    padding: 9px 18px;
+    border-radius: 20px;
     font-weight: 700;
-    font-size: 12px;
-    white-space: nowrap;
+    font-size: 11px;
     transition: all 0.3s;
+    flex-shrink: 0;
   }
+  
   .login-btn-nav:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   }
-  /* BODY PADDING FOR FIXED NAV */
+  
   body {
-    padding-top: 70px;
+    padding-top: 60px;
   }
   
   .poster {
@@ -92,12 +106,14 @@
     justify-content: space-between;
     position: relative;
   }
+  
   /* HEADER */
   .header {
     text-align: center;
     color: white;
     margin-bottom: 40px;
   }
+  
   .academy-name {
     font-size: 48px;
     font-weight: 800;
@@ -105,12 +121,14 @@
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
   }
+  
   .tagline {
     font-size: 20px;
     font-weight: 300;
     opacity: 0.95;
     margin-bottom: 5px;
   }
+  
   .subtext {
     font-size: 14px;
     opacity: 0.85;
@@ -129,6 +147,7 @@
     font-weight: 600;
     letter-spacing: 0.3px;
   }
+  
   .free-banner strong {
     color: #a7f3d0;
     font-size: 16px;
@@ -147,6 +166,7 @@
     font-weight: 700;
     letter-spacing: 0.5px;
   }
+  
   .feature-banner strong {
     color: #fff;
     font-size: 18px;
@@ -179,6 +199,7 @@
     position: relative;
     padding-top: 20px;
   }
+  
   .card {
     background: white;
     border-radius: 20px;
@@ -189,14 +210,17 @@
     position: relative;
     overflow: visible;
   }
+  
   .card.featured {
     margin-top: 35px;
     padding-top: 50px;
   }
+  
   .card:hover {
     transform: translateY(-10px);
     box-shadow: 0 30px 80px rgba(0,0,0,0.4);
   }
+  
   .card::before {
     content: '';
     position: absolute;
@@ -206,6 +230,7 @@
     height: 8px;
     background: linear-gradient(90deg, #667eea, #764ba2);
   }
+  
   .featured-badge {
     position: absolute;
     top: -20px;
@@ -223,28 +248,33 @@
     z-index: 10;
     white-space: nowrap;
   }
+  
   .card-icon {
     font-size: 50px;
     margin-bottom: 15px;
     margin-top: 10px;
   }
+  
   .card-title {
     font-size: 26px;
     font-weight: 700;
     color: #1a1a1a;
     margin-bottom: 15px;
   }
+  
   .card-price {
     font-size: 48px;
     font-weight: 800;
     color: #667eea;
     margin-bottom: 10px;
   }
+  
   .card-duration {
     font-size: 13px;
     color: #999;
     margin-bottom: 25px;
   }
+  
   .card-frequency {
     background: #f0f0f0;
     padding: 12px 20px;
@@ -255,10 +285,12 @@
     margin-bottom: 25px;
     display: inline-block;
   }
+  
   .card-benefits {
     text-align: left;
     margin-bottom: 25px;
   }
+  
   .benefit-item {
     font-size: 13px;
     color: #666;
@@ -267,6 +299,7 @@
     position: relative;
     line-height: 1.5;
   }
+  
   .benefit-item:before {
     content: '✓';
     position: absolute;
@@ -275,6 +308,7 @@
     font-weight: 700;
     font-size: 16px;
   }
+  
   .benefit-highlight {
     background: #f0fdf4;
     border-left: 3px solid #22c55e;
@@ -285,6 +319,7 @@
     color: #16a34a;
     font-size: 12px;
   }
+  
   .card-cta {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
@@ -297,6 +332,7 @@
     transition: all 0.3s;
     width: 100%;
   }
+  
   .card-cta:hover {
     transform: scale(1.05);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
@@ -311,18 +347,21 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     border-left: 5px solid #667eea;
   }
+  
   .pricing-clarification h3 {
     color: #667eea;
     font-size: 16px;
     margin-bottom: 12px;
     font-weight: 700;
   }
+  
   .pricing-clarification p {
     color: #555;
     font-size: 13px;
     line-height: 1.7;
     margin-bottom: 8px;
   }
+  
   .pricing-clarification strong {
     color: #1a1a1a;
   }
@@ -339,6 +378,7 @@
     font-weight: 600;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   }
+  
   .callout strong {
     font-size: 16px;
     display: block;
@@ -357,6 +397,7 @@
     gap: 30px;
     border: 1px solid rgba(255,255,255,0.2);
   }
+  
   .footer-section h3 {
     font-size: 14px;
     font-weight: 700;
@@ -364,95 +405,339 @@
     text-transform: uppercase;
     letter-spacing: 1px;
   }
+  
   .footer-content {
     font-size: 13px;
     opacity: 0.95;
     line-height: 1.8;
   }
+  
   .phone-number {
     font-size: 20px;
     font-weight: 700;
     margin-top: 5px;
   }
+  
   .location-list {
     font-size: 12px;
     line-height: 1.7;
   }
+  
   .location-list p {
     margin-bottom: 5px;
   }
   
-  /* RESPONSIVE */
+  /* ===== RESPONSIVE DESIGN ===== */
+  
+  /* TABLET (768px - 1024px) */
   @media (max-width: 1024px) {
-    .navbar {
-      padding: 0 20px;
+    body {
+      padding-top: 55px;
     }
+    
+    .navbar {
+      height: auto;
+    }
+    
+    .navbar-logo {
+      font-size: 14px;
+      padding: 10px 15px;
+    }
+    
+    .navbar-logo span {
+      font-size: 10px;
+    }
+    
+    .navbar-links {
+      gap: 6px;
+      padding: 8px 12px;
+    }
+    
+    .nav-link {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+    
+    .login-btn-nav {
+      padding: 8px 14px;
+      font-size: 10px;
+    }
+    
     .poster {
       padding: 40px 20px 40px 20px;
     }
+    
     .academy-name {
       font-size: 36px;
     }
+    
     .pricing-container {
       gap: 20px;
     }
+    
     .card {
       padding: 30px 20px;
     }
   }
+  
+  /* MOBILE (480px - 768px) */
   @media (max-width: 768px) {
+    body {
+      padding-top: 65px;
+    }
+    
     .navbar {
-      padding: 0 15px;
-      height: 60px;
+      flex-wrap: wrap;
+      height: auto;
     }
+    
     .navbar-logo {
-      font-size: 15px;
+      font-size: 13px;
+      padding: 12px 12px;
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
+    
+    .navbar-logo span {
+      font-size: 10px;
+      margin-top: 2px;
+    }
+    
     .navbar-links {
-      gap: 10px;
+      width: 100%;
+      gap: 6px;
+      padding: 10px 8px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
+    
+    .nav-link {
+      font-size: 11px;
+      padding: 7px 11px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+    }
+    
     .login-btn-nav {
       padding: 8px 16px;
       font-size: 11px;
+      background: white;
+      color: #667eea;
     }
-    body {
-      padding-top: 60px;
-    }
+    
     .pricing-container {
       grid-template-columns: 1fr;
       gap: 20px;
     }
+    
+    .card.featured {
+      margin-top: 0;
+      padding-top: 40px;
+    }
+    
+    .featured-badge {
+      top: -15px;
+      padding: 10px 24px;
+      font-size: 11px;
+    }
+    
     .footer {
       grid-template-columns: 1fr;
+      padding: 20px;
+      gap: 20px;
     }
+    
     .academy-name {
       font-size: 28px;
     }
+    
+    .tagline {
+      font-size: 16px;
+    }
+    
+    .subtext {
+      font-size: 12px;
+    }
+    
     .feature-banner {
+      font-size: 13px;
+      padding: 12px 15px;
+    }
+    
+    .feature-banner strong {
       font-size: 14px;
+    }
+    
+    .free-banner {
+      font-size: 13px;
+      padding: 12px 15px;
+    }
+    
+    .free-banner strong {
+      font-size: 14px;
+    }
+    
+    .poster {
+      padding: 20px 15px;
+    }
+  }
+  
+  /* SMALL MOBILE (< 480px) */
+  @media (max-width: 480px) {
+    body {
+      padding-top: 70px;
+    }
+    
+    .navbar {
+      flex-wrap: wrap;
+    }
+    
+    .navbar-logo {
+      font-size: 12px;
+      padding: 10px 10px;
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .navbar-logo span {
+      font-size: 9px;
+    }
+    
+    .navbar-links {
+      width: 100%;
+      gap: 5px;
+      padding: 8px 6px;
+      justify-content: center;
+    }
+    
+    .nav-link {
+      font-size: 10px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    
+    .login-btn-nav {
+      padding: 7px 14px;
+      font-size: 10px;
+    }
+    
+    .poster {
+      padding: 15px 12px;
+    }
+    
+    .academy-name {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .subtext {
+      font-size: 11px;
+    }
+    
+    .header {
+      margin-bottom: 20px;
+    }
+    
+    .feature-banner {
+      font-size: 12px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+    }
+    
+    .free-banner {
+      font-size: 12px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+    }
+    
+    .pricing-label {
+      font-size: 12px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+    }
+    
+    .pricing-container {
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .card {
+      padding: 20px 15px;
+      border-radius: 15px;
+    }
+    
+    .card-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .card-price {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .card-duration {
+      font-size: 11px;
+      margin-bottom: 15px;
+    }
+    
+    .benefit-item {
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .footer {
+      grid-template-columns: 1fr;
+      padding: 15px;
+      gap: 15px;
+    }
+    
+    .footer-section h3 {
+      font-size: 12px;
+    }
+    
+    .footer-content {
+      font-size: 12px;
+    }
+    
+    .phone-number {
+      font-size: 16px;
     }
   }
 </style>
 </head>
 <body>
 
-<!-- NAVIGATION BAR -->
+<!-- RESPONSIVE NAVIGATION BAR -->
 <div class="navbar">
   <div class="navbar-logo">
     🎓 Li'l Champs
-    <span>Abacus Academy Ambernath</span>
+    <span>Abacus Academy</span>
   </div>
   <div class="navbar-links">
     <a href="#pricing" class="nav-link">Course Pricing</a>
-    <a href="#calculator" class="nav-link">Payment Calculator</a>
-    <a href="login.html" class="nav-link login-btn-nav">🔐 Exisiting Student Login</a>
+    <a href="payment-calculator.html" class="nav-link">Payment Calculator</a>
+    <a href="login.html" class="nav-link login-btn-nav">🔐 Existing Student Login</a>
   </div>
 </div>
 
 <div class="poster">
   <!-- HEADER -->
   <div class="header">
-    <div class="academy-name">Li'l Champs Abacus Academy</div>
+    <div class="academy-name">Li'l Champs Abacus Academy Ambernath</div>
     <div class="tagline">4-Year Complete Abacus Training Program</div>
     <div class="subtext">Master 10 Levels of Abacus Excellence</div>
   </div>
