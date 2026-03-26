@@ -14,50 +14,83 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: white;
   }
+  /* NAVIGATION BAR - STICKY */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0 40px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+  .navbar-logo {
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .navbar-logo span {
+    font-size: 14px;
+    opacity: 0.9;
+    display: block;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .navbar-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    opacity: 0.9;
+  }
+  .nav-link:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+  }
+  .login-btn-nav {
+    background: white;
+    color: #667eea;
+    padding: 10px 24px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.3s;
+  }
+  .login-btn-nav:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  /* BODY PADDING FOR FIXED NAV */
+  body {
+    padding-top: 70px;
+  }
+  
   .poster {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 80px 40px 60px 40px;
-    min-height: 100vh;
+    padding: 60px 40px 60px 40px;
+    min-height: auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     position: relative;
-  }
-  /* LOGIN BUTTON - TOP RIGHT */
-  .login-btn-container {
-    position: absolute;
-    top: 25px;
-    right: 40px;
-    z-index: 100;
-  }
-  .login-btn {
-    background: white;
-    color: #667eea;
-    padding: 14px 32px;
-    border-radius: 35px;
-    border: none;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-  }
-  .login-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    background: #f5f7ff;
-  }
-  .login-btn:active {
-    transform: translateY(-2px);
   }
   /* HEADER */
   .header {
@@ -82,7 +115,26 @@
     font-size: 14px;
     opacity: 0.85;
   }
-  /* UNIQUE FEATURE BANNER */
+  
+  /* FREE PRACTICE BANNER */
+  .free-banner {
+    background: rgba(34, 197, 94, 0.15);
+    border: 2px solid rgba(34, 197, 94, 0.3);
+    border-radius: 12px;
+    padding: 16px 24px;
+    color: #d1fae5;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .free-banner strong {
+    color: #a7f3d0;
+    font-size: 16px;
+  }
+  
+  /* FEATURE BANNER */
   .feature-banner {
     background: rgba(255,255,255,0.2);
     border: 2px solid rgba(255,255,255,0.3);
@@ -99,6 +151,25 @@
     color: #fff;
     font-size: 18px;
   }
+  
+  /* PRICING SECTION LABEL */
+  .pricing-label {
+    background: rgba(255,255,255,0.95);
+    color: #667eea;
+    padding: 12px 24px;
+    border-radius: 30px;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
   /* PRICING CARDS */
   .pricing-container {
     display: grid;
@@ -135,7 +206,6 @@
     height: 8px;
     background: linear-gradient(90deg, #667eea, #764ba2);
   }
-  /* FEATURED BADGE - FIXED POSITION */
   .featured-badge {
     position: absolute;
     top: -20px;
@@ -231,6 +301,32 @@
     transform: scale(1.05);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
   }
+  
+  /* PRICING CLARIFICATION BOX */
+  .pricing-clarification {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-left: 5px solid #667eea;
+  }
+  .pricing-clarification h3 {
+    color: #667eea;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .pricing-clarification p {
+    color: #555;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .pricing-clarification strong {
+    color: #1a1a1a;
+  }
+  
   /* CALLOUT */
   .callout {
     background: white;
@@ -248,6 +344,7 @@
     display: block;
     margin-bottom: 8px;
   }
+  
   /* FOOTER */
   .footer {
     background: rgba(255,255,255,0.15);
@@ -284,22 +381,14 @@
   .location-list p {
     margin-bottom: 5px;
   }
-  /* PRINT STYLES */
-  @media print {
-    body {
-      margin: 0;
-      padding: 0;
-    }
-    .poster {
-      max-width: 100%;
-      margin: 0;
-      padding: 80px 40px 60px 40px;
-    }
-  }
+  
   /* RESPONSIVE */
   @media (max-width: 1024px) {
+    .navbar {
+      padding: 0 20px;
+    }
     .poster {
-      padding: 60px 20px 40px 20px;
+      padding: 40px 20px 40px 20px;
     }
     .academy-name {
       font-size: 36px;
@@ -310,16 +399,25 @@
     .card {
       padding: 30px 20px;
     }
-    .login-btn-container {
-      top: 20px;
-      right: 20px;
-    }
-    .login-btn {
-      padding: 12px 28px;
-      font-size: 13px;
-    }
   }
   @media (max-width: 768px) {
+    .navbar {
+      padding: 0 15px;
+      height: 60px;
+    }
+    .navbar-logo {
+      font-size: 15px;
+    }
+    .navbar-links {
+      gap: 10px;
+    }
+    .login-btn-nav {
+      padding: 8px 16px;
+      font-size: 11px;
+    }
+    body {
+      padding-top: 60px;
+    }
     .pricing-container {
       grid-template-columns: 1fr;
       gap: 20px;
@@ -330,37 +428,25 @@
     .academy-name {
       font-size: 28px;
     }
-    .login-btn-container {
-      top: 15px;
-      right: 15px;
-    }
-    .login-btn {
-      padding: 11px 22px;
-      font-size: 12px;
-      border-radius: 25px;
-    }
-  }
-  @media (max-width: 480px) {
-    .poster {
-      padding: 70px 15px 30px 15px;
-    }
-    .login-btn-container {
-      top: 12px;
-      right: 12px;
-    }
-    .login-btn {
-      padding: 10px 18px;
-      font-size: 11px;
-      gap: 6px;
+    .feature-banner {
+      font-size: 14px;
     }
   }
 </style>
 </head>
 <body>
 
-<!-- LOGIN BUTTON - TOP RIGHT -->
-<div class="login-btn-container">
-  <a href="login.html" class="login-btn">🔐 Student Login</a>
+<!-- NAVIGATION BAR -->
+<div class="navbar">
+  <div class="navbar-logo">
+    🎓 Li'l Champs
+    <span>Abacus Academy Ambernath</span>
+  </div>
+  <div class="navbar-links">
+    <a href="#pricing" class="nav-link">Course Pricing</a>
+    <a href="#calculator" class="nav-link">Payment Calculator</a>
+    <a href="login.html" class="nav-link login-btn-nav">🔐 Exisiting Student Login</a>
+  </div>
 </div>
 
 <div class="poster">
@@ -371,13 +457,16 @@
     <div class="subtext">Master 10 Levels of Abacus Excellence</div>
   </div>
 
-  <!-- UNIQUE FEATURE BANNER -->
-  <div class="feature-banner">
-    🌐 <strong>UNLIMITED WEBSITE PRACTICE</strong> • Practice anywhere, anytime with our online platform FREE
+  <!-- FREE PRACTICE BANNER -->
+  <div class="free-banner">
+    ✨ <strong>UNLIMITED WEBSITE PRACTICE - COMPLETELY FREE!</strong> Practice anywhere, anytime with our online platform at no cost
   </div>
 
+  <!-- PRICING SECTION LABEL -->
+  <div class="pricing-label">Abacus Course Fee Plans</div>
+
   <!-- PRICING CARDS -->
-  <div class="pricing-container">
+  <div id="pricing" class="pricing-container">
     <!-- QUARTERLY -->
     <div class="card">
       <div class="card-icon">📊</div>
@@ -389,7 +478,7 @@
         <div class="benefit-item">Flexible payment schedule</div>
         <div class="benefit-item">Low commitment required</div>
         <div class="benefit-item">Pay every 3 months</div>
-        <div class="benefit-highlight">🌐 Unlimited Practice Online</div>
+        <div class="benefit-highlight">🌐 Unlimited Free Practice Online</div>
         <div class="benefit-item">Best for budget-conscious</div>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #dc2626; font-weight: 600;">
           + ₹1,700 Kit Fee (One-Time)
@@ -410,7 +499,7 @@
         <div class="benefit-item">Aligns with 6-month levels</div>
         <div class="benefit-item">Balanced payment cycle</div>
         <div class="benefit-item">Natural level progression</div>
-        <div class="benefit-highlight">🌐 Unlimited Practice Online</div>
+        <div class="benefit-highlight">🌐 Unlimited Free Practice Online</div>
         <div class="benefit-item">Most popular choice</div>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #dc2626; font-weight: 600;">
           + ₹1,700 Kit Fee (One-Time)
@@ -430,7 +519,7 @@
         <div class="benefit-item">Maximum upfront savings</div>
         <div class="benefit-item">Highest commitment reward</div>
         <div class="benefit-item">Simple annual billing</div>
-        <div class="benefit-highlight">🌐 Unlimited Practice Online</div>
+        <div class="benefit-highlight">🌐 Unlimited Free Practice Online</div>
         <div class="benefit-item">Best for committed families</div>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #dc2626; font-weight: 600;">
           + ₹1,700 Kit Fee (One-Time)
@@ -440,22 +529,29 @@
     </div>
   </div>
 
+  <!-- PRICING CLARIFICATION -->
+  <div class="pricing-clarification">
+    <h3>✨ What Do These Fees Cover?</h3>
+    <p><strong>Course Fees:</strong> In-class training (1x/week, 2 hours) • Expert instruction • Progress assessments • Learning materials • Level certificates</p>
+    <p style="margin-top: 12px;"><strong style="color: #22c55e;">Free Forever:</strong> Unlimited online practice tools • Practice problems • Timed challenges • Progress tracking • Assessments (No additional charges)</p>
+  </div>
+
+  <!-- PAYMENT CALCULATOR -->
+  <div id="calculator" style="text-align: center; margin: 30px 0; padding: 25px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+    <p style="color: white; margin-bottom: 15px; font-size: 15px; font-weight: 600;">Ready to enroll? Calculate your exact payment schedule:</p>
+    <a href="payment-calculator.html" style="background: white; color: #667eea; padding: 14px 40px; border-radius: 35px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: all 0.3s; letter-spacing: 0.5px;">
+      📅 Payment Schedule Calculator
+    </a>
+  </div>
+
   <!-- CALLOUT -->
   <div class="callout">
-    <strong>✓ What's Included in All Plans?</strong>
-    In-class Training (1x/week, 2hrs) • Assessments • Materials • Progress Tracking • Unlimited Online Practice
+    <strong>✓ Complete Package Included</strong>
+    In-class Training (1x/week, 2hrs) • Assessments • Materials • Progress Tracking • Unlimited Free Online Practice
     <div style="margin-top: 12px; border-top: 1px solid #ddd; padding-top: 12px; font-size: 12px; color: #dc2626;">
       <strong>+ ₹1,700 One-Time Kit Fee (Level 1)</strong> — Includes Practice Abacus Kit & Learning Materials
     </div>
   </div>
-
- <!-- PAYMENT CALCULATOR BUTTON -->
-<div style="text-align: center; margin: 40px 0; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;">
-  <p style="color: white; margin-bottom: 15px; font-size: 15px; font-weight: 600;">Ready to enroll? Calculate your exact payment schedule:</p>
-  <a href="payment-calculator.html" style="background: white; color: #667eea; padding: 14px 40px; border-radius: 35px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: all 0.3s; letter-spacing: 0.5px;">
-    📅 Payment Schedule Calculator
-  </a>
-</div>
 
   <!-- FOOTER -->
   <div class="footer">
