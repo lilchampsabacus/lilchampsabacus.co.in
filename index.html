@@ -65,13 +65,28 @@
     padding: 8px 14px;
     border-radius: 6px;
     transition: all 0.3s;
-    opacity: 0.95;
+    background: rgba(255,255,255,0.15);
     white-space: nowrap;
   }
   
   .nav-link:hover {
-    opacity: 1;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.25);
+  }
+  
+  /* Pulse animation for login button */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(102, 126, 234, 0);
+      transform: scale(1.02);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+      transform: scale(1);
+    }
   }
   
   .login-btn-nav {
@@ -83,11 +98,15 @@
     font-size: 11px;
     transition: all 0.3s;
     flex-shrink: 0;
+    animation: pulse-glow 2s infinite;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   }
   
   .login-btn-nav:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    animation: none;
+  }
   }
   
   body {
@@ -115,23 +134,22 @@
   }
   
   .academy-name {
-    font-size: 38px;
+    font-size: 48px;
     font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
   }
   
   .tagline {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 300;
     opacity: 0.95;
     margin-bottom: 5px;
   }
   
   .subtext {
-    font-size: 12px;
+    font-size: 14px;
     opacity: 0.85;
   }
   
@@ -152,25 +170,6 @@
   .free-banner strong {
     color: #a7f3d0;
     font-size: 16px;
-  }
-  
-  /* FEATURE BANNER */
-  .feature-banner {
-    background: rgba(255,255,255,0.2);
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 15px;
-    padding: 15px 30px;
-    color: white;
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  
-  .feature-banner strong {
-    color: #fff;
-    font-size: 18px;
   }
   
   /* PRICING SECTION LABEL */
@@ -288,7 +287,7 @@
   }
   
   .card-benefits {
-    text-align: left;
+    text-align: center;
     margin-bottom: 25px;
   }
   
@@ -296,15 +295,17 @@
     font-size: 13px;
     color: #666;
     margin-bottom: 10px;
-    padding-left: 25px;
+    padding-left: 0;
     position: relative;
     line-height: 1.5;
+    display: inline-block;
+    margin-left: 25px;
   }
   
   .benefit-item:before {
     content: '✓';
     position: absolute;
-    left: 0;
+    left: -20px;
     color: #22c55e;
     font-weight: 700;
     font-size: 16px;
@@ -319,24 +320,6 @@
     font-weight: 600;
     color: #16a34a;
     font-size: 12px;
-  }
-  
-  .card-cta {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 14px 30px;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    width: 100%;
-  }
-  
-  .card-cta:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
   }
   
   /* PRICING CLARIFICATION BOX */
@@ -430,14 +413,14 @@
   
   /* ===== RESPONSIVE DESIGN ===== */
   
-  /* TABLET (768px - 1024px) */
-  @media (max-width: 1024px) {
+  /* HALF-SCREEN / TABLET LANDSCAPE (769px - 1024px) */
+  @media (max-width: 1024px) and (min-width: 769px) {
     body {
       padding-top: 55px;
     }
     
     .navbar {
-      height: auto;
+      padding: 0 20px;
     }
     
     .navbar-logo {
@@ -457,11 +440,17 @@
     .nav-link {
       font-size: 11px;
       padding: 7px 12px;
+      background: rgba(255,255,255,0.15);
     }
     
     .login-btn-nav {
       padding: 8px 14px;
       font-size: 10px;
+      background: white;
+      color: #667eea;
+      border: none;
+      animation: pulse-glow 2s infinite;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
     
     .poster {
@@ -469,27 +458,47 @@
     }
     
     .academy-name {
-      font-size: 36px;
+      font-size: 38px;
+      line-height: 1.2;
+      letter-spacing: 0.5px;
+    }
+    
+    .tagline {
+      font-size: 17px;
+    }
+    
+    .subtext {
+      font-size: 12px;
     }
     
     .pricing-container {
-      gap: 20px;
+      gap: 15px;
     }
     
     .card {
-      padding: 30px 20px;
+      padding: 25px 18px;
+    }
+    
+    .card-icon {
+      font-size: 45px;
+      margin-bottom: 12px;
+    }
+    
+    .card-price {
+      font-size: 40px;
     }
   }
   
-  /* MOBILE (480px - 768px) */
-  @media (max-width: 768px) {
+  /* MOBILE (481px - 768px) */
+  @media (max-width: 768px) and (min-width: 481px) {
     body {
-      padding-top: 65px;
+      padding-top: 120px;
     }
     
     .navbar {
       flex-wrap: wrap;
       height: auto;
+      padding: 0 12px;
     }
     
     .navbar-logo {
@@ -516,32 +525,83 @@
     .nav-link {
       font-size: 11px;
       padding: 7px 11px;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      border: 1px solid white;
+      background: rgba(255,255,255,0.15);
+      border-radius: 5px;
     }
     
     .login-btn-nav {
-      padding: 8px 16px;
-      font-size: 11px;
+      padding: 10px 18px;
+      font-size: 12px;
       background: white;
-      color: white;
+      color: #667eea;
+      border: none;
+      font-weight: 600;
+      animation: pulse-glow 2s infinite;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
     
     .pricing-container {
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: 12px;
+    }
+    
+    .card {
+      padding: 20px 15px;
+      border-radius: 15px;
     }
     
     .card.featured {
       margin-top: 0;
-      padding-top: 40px;
+      padding-top: 25px;
     }
     
     .featured-badge {
-      top: -15px;
-      padding: 10px 24px;
+      top: -12px;
+      padding: 8px 18px;
+      font-size: 10px;
+    }
+    
+    .card-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .card-price {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .card-duration {
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .card-frequency {
+      padding: 10px 16px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .benefit-item {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    
+    .benefit-highlight {
+      padding: 10px;
+      margin: 10px 0;
       font-size: 11px;
+    }
+    
+    .card-btn {
+      padding: 10px 20px;
+      font-size: 13px;
+      margin-top: 10px;
     }
     
     .footer {
@@ -562,15 +622,6 @@
       font-size: 12px;
     }
     
-    .feature-banner {
-      font-size: 13px;
-      padding: 12px 15px;
-    }
-    
-    .feature-banner strong {
-      font-size: 14px;
-    }
-    
     .free-banner {
       font-size: 13px;
       padding: 12px 15px;
@@ -588,11 +639,12 @@
   /* SMALL MOBILE (< 480px) */
   @media (max-width: 480px) {
     body {
-      padding-top: 70px;
+      padding-top: 140px;
     }
     
     .navbar {
       flex-wrap: wrap;
+      padding: 0 10px;
     }
     
     .navbar-logo {
@@ -617,16 +669,19 @@
     .nav-link {
       font-size: 10px;
       padding: 6px 10px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.15);
       border-radius: 4px;
     }
     
     .login-btn-nav {
-      padding: 7px 14px;
-      font-size: 10px;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      border: 1px solid white;
+      padding: 9px 16px;
+      font-size: 11px;
+      background: white;
+      color: #667eea;
+      border: none;
+      font-weight: 600;
+      animation: pulse-glow 2s infinite;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
     
     .poster {
@@ -651,12 +706,6 @@
       margin-bottom: 20px;
     }
     
-    .feature-banner {
-      font-size: 12px;
-      padding: 10px 12px;
-      margin-bottom: 20px;
-    }
-    
     .free-banner {
       font-size: 12px;
       padding: 10px 12px;
@@ -670,18 +719,62 @@
     }
     
     .pricing-container {
-      gap: 15px;
+      gap: 10px;
       margin-bottom: 20px;
     }
     
     .card {
-      padding: 20px 15px;
-      border-radius: 15px;
+      padding: 15px 12px;
+      border-radius: 12px;
     }
     
     .card-icon {
-      font-size: 40px;
+      font-size: 35px;
+      margin-bottom: 8px;
+    }
+    
+    .card-title {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .card-price {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+    
+    .card-duration {
+      font-size: 11px;
       margin-bottom: 10px;
+    }
+    
+    .card-frequency {
+      padding: 8px 14px;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+    
+    .benefit-item {
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+    
+    .benefit-highlight {
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 10px;
+    }
+    
+    .card-btn {
+      padding: 9px 16px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    
+    .featured-badge {
+      top: -10px;
+      padding: 6px 14px;
+      font-size: 9px;
     }
     
     .card-title {
@@ -729,8 +822,8 @@
 <!-- RESPONSIVE NAVIGATION BAR -->
 <div class="navbar">
   <div class="navbar-logo">
-    🎓 Li'l Champs
-    <span>Abacus Academy</span>
+    🎓 Li'l Champs Abacus Academy
+    <span>Ambernath</span>
   </div>
   <div class="navbar-links">
     <a href="#pricing" class="nav-link">Course Pricing</a>
@@ -774,7 +867,6 @@
           + ₹1,700 Kit Fee (One-Time)
         </div>
       </div>
-      <button class="card-cta">Choose Quarterly</button>
     </div>
 
     <!-- HALF-YEARLY (FEATURED) -->
@@ -795,7 +887,6 @@
           + ₹1,700 Kit Fee (One-Time)
         </div>
       </div>
-      <button class="card-cta">Choose Half-Yearly</button>
     </div>
 
     <!-- YEARLY -->
@@ -815,7 +906,6 @@
           + ₹1,700 Kit Fee (One-Time)
         </div>
       </div>
-      <button class="card-cta">Choose Yearly</button>
     </div>
   </div>
 
@@ -858,7 +948,7 @@
       <div class="location-list">
         <p>✓ Ambernath East (Near Station)</p>
         <p>✓ Ambernath East (Near Nisarg Greens)</p>
-        <p>✓ Ambernath West (Near Father Agnel school)</p>
+        <p>✓ Ambernath West (Near Father Agnel)</p>
         <p style="font-size: 11px; margin-top: 8px; opacity: 0.8;">Serving Ambernath East & West</p>
       </div>
     </div>
